@@ -83,6 +83,7 @@ The server can simultaneously maintain its connection with the client  while it 
   
 * **A Request for Comments (RFC)**, in the context of Internet governance, is a type of publication from the Internet Engineering Task Force (IETF) and the Internet Society(ISOC), the principal technical development and standards-setting bodies for the Internet.
 
+* **Domain Name Server** or DNS is the phonebook of domain name=IP Address.
 
 </details>
 
