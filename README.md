@@ -36,6 +36,13 @@ Le concept d'hypertexte implique que les pages web renvoient les utilisateurs su
 
 Lorsqu’on clique sur un client ou qu’on entre une URL, votre navigateur envoie une requête au serveur web concerne, la requête HTTP détermine le type d’action qu’on souhaite effectuer (GET pour obtenir des donees, PUT ou POST pour envoyer des données de formulaire ou télécharger des fichiers, DELETE etc).
 
+A REQUEST
+![image](https://github.com/chmadran/Webserv/assets/113340699/22c64d00-d991-44c0-b177-57c37999df20)
+
+A RESPONSE 
+![image](https://github.com/chmadran/Webserv/assets/113340699/948b4503-4334-4a84-a232-b6043ba1e30c)
+
+
 </details>
 
 <details><summary><h6>What is a socket ?</h6></summary>
