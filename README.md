@@ -1,5 +1,28 @@
 # Webserv
 
+<h2> STEP BY STEP </h2>
+
+<details><summary><h3>STEP 1 : configuration file</h3></summary>
+Our executable is meant to run as follows : `./webserv [configuration file]`.
+
+So this means you can start by creating a default configuration file, if there is no argument after the executable then the programme uses it. The requirements on what is to be found in the conf file is in the third part of the subject. A configuration file is used to customize the behavior of a server without requiring changes to the underlying code.
+
+In our case, we must include : 
+* the port the server will listen to
+* the server name (domain name)
+* default / customised error pages
+* the maximum size of the data sent by the client
+* which HTTP methods are allowed per route (GET, POST etc)
+* redirection request (e.g from /old-page to /new-page)
+* define directory/file location for some requested ressources
+* you can specify that some file extensions be interpreted as scripts and executed as separate programs rather than just serving as static files (CGI Scripts)
+
+In essence, these concepts collectively define how your web server routes requests, handles different HTTP methods, interacts with CGI scripts, and manages configuration and default files. They are key components in building a fully functional and configurable web server.
+
+
+</details>
+
+
 <h2> BASICS </h2>
 
 <details><summary><h6>What is a web server ?</h6></summary>
