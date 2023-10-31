@@ -99,6 +99,7 @@ The server can simultaneously maintain its connection with the client  while it 
 * [RFC](http://www.rfc.fr/rfc/fr/rfc2616.pdf) - initially it is RFC 2616 but later replaced by RFC 7230, RFC 7231, RFC 7232, RFC 7233, RFC 7234, RFC 7235
 * [The ultime guide to build a web server](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa)
 * To understand [sockets](https://www.youtube.com/watch?v=gntyAFoZp-E&t=1250s)
+* Kaydoo's [README](https://github.com/Kaydooo/Webserv_42)
   
 </details>
 
