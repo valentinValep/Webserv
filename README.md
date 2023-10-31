@@ -4,7 +4,11 @@
 
 <details><summary><h6>What is a web server ?</h6></summary>
 
-From a hardware point of view, anything with an internet connection can be a web server e.g a laptop, anything… It’s not about hardware (even if some are more suited), it’s a piece of software that serves web content. Being a server is a role. Let’s look at the 6 things (roughly) that a web server does : 
+From a hardware point of view, anything with an internet connection can be a web server e.g a laptop, anything… It’s not about hardware (even if some are more suited), it’s a piece of software that serves web content. Being a server is a role. 
+
+An HTTP web server is a software application that listens for and responds to HTTP requests from clients (such as web browsers). The main purpose of a web server is to host web content and make it available to users over the internet.
+
+Let’s look at the 6 things (roughly) that a web server does : 
 
 1. LISTENS
 2. ON A PORT
@@ -13,8 +17,20 @@ From a hardware point of view, anything with an internet connection can be a web
 5. Returns a RESPONSE
 6. Containing the requested RESOURCES
 
-
 Once a web server has been set up, it justs sits there i.e listens until something comes around. If nothing comes around it’s idle. The web server listens to a network port provided by the operating system that the web server is running on. 
+
+HTTP Message Format
+
+```
+start-line CRLF
+Headers CRLF
+CRLF(end of headers)
+[message-body]
+
+CRLF are Carriage Return and Line Feed (\r\n), which is just a new line.
+```
+
+
 </details>
 
 
