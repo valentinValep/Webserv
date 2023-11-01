@@ -22,11 +22,12 @@ In essence, these concepts collectively define how your web server routes reques
 
 </details>
 
-<details><summary><h3>STEP 2 : set up the socket / network and set status to listening</h3></summary> </details>
+<details><summary><h3>IDEAS</h3></summary>
+STEP 2 : set up the socket / network and set status to listening
+STEP 3 : receive client request, parse it
+STEP 4 : send approriate response
 
-<details><summary><h3>STEP 3 : receive client request, parse it</h3></summary> </details>
-
-<details><summary><h3>STEP 4 : send approriate response </h3></summary> </details>
+</details>
 
 <h2> BASICS </h2>
 
