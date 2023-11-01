@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:41 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/01 15:34:07 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/01 15:43:15 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,11 +39,8 @@ void Server::setupNetwork() {
 }
 
 void Server::handleClientRequest(int clientSocket) {
-	// std::vector<char> buffer(settings.max_client_body_size, '\0');
-	// printf("%s\n", buffer.data());
-
-	std::vector<char> buffer(10, '\0');
-	ssize_t bytesRead = read(clientSocket, buffer.data(), 10);
+	std::vector<char> buffer(10000, '\0');
+	ssize_t bytesRead = read(clientSocket, buffer.data(), 10000);
 
 	if (bytesRead < 0) {
 		perror("In read");
