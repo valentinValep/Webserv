@@ -1,24 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
-    <style>
-        body {
-            background-color: orange;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        h1 {
-            color: white;
-        }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Hello World</title>
+
+	<style>
+		body {
+			background-color: orange;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			margin: 0;
+		}
+
+		h1 {
+			color: white;
+			text-align: center;
+			margin-bottom: 20px;
+		}
+
+		form {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			color: white;
+		}
+
+		input {
+			margin: 10px;
+			padding: 5px;
+		}
+	</style>
 </head>
 <body>
-    <h1>Hello World</h1>
+	<h1>Hello World</h1>
+
+	<form action="/submit" method="post">
+		<label for="fname">write anything that comes to mind</label><br>
+		<input type="text" id="fname" name="fname"><br>
+		<input type="submit" value="Submit">
+	</form> 
+
+	<form action="/upload" method="post" enctype="multipart/form-data">
+		Select file to upload:
+		<input type="file" name="fileToUpload" id="fileToUpload">
+		<input type="submit" value="Upload File" name="submit">
+	  </form>
+	  
+	<p>Click "Submit" to send POST request to the server.</p>
 </body>
 </html>
