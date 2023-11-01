@@ -6,25 +6,16 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:41 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/01 11:35:36 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/01 12:14:17 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Server.hpp"
-#include <stdio.h>
-#include <fstream>
-#include <iterator>
 
 Server::Server(const ConfigSettings& _settings) : settings(_settings) {
 }
 
-void Server::start() {
-	int server_fd;
-	int new_socket;
-	long valread;
-	struct sockaddr_in address;
-
-	int addrlen = sizeof(address);
+void Server::setupNetwork() {
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
 		perror("In socket");
 		exit(EXIT_FAILURE);
@@ -45,31 +36,50 @@ void Server::start() {
 		perror("In listen");
 		exit(EXIT_FAILURE);
 	}
+}
+
+void Server::handleClientRequest(int clientSocket) {
+	std::vector<char> buffer(settings.max_client_body_size, '\0');
+	printf("%s\n", buffer.data());
+	std::string content = readFileContent("src/index.html");
+	sendHttpResponse(clientSocket, content);
+}
+
+std::string Server::readFileContent(const std::string& filePath) {
+	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
+	if (!file.is_open()) {
+		perror("In opening file");
+		exit(EXIT_FAILURE);
+	}
+	return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+}
+
+void Server::sendHttpResponse(int clientSocket, const std::string& content) {
+	std::string httpResponse = "HTTP/1.1 200 OK\r\n"
+							   "Content-Type: text/html\r\n"
+							   "\r\n" +
+							   content;
+
+	write(clientSocket, httpResponse.c_str(), httpResponse.size());
+}
+
+void Server::start() {
+	setupNetwork();
 
 	while (1) {
 		printf("\n+++++++ Waiting for new connection ++++++++\n\n");
 
-		if ((new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) < 0) {
+		int clientSocket;
+		struct sockaddr_in clientAddress;
+		socklen_t clientAddressLength = sizeof(clientAddress);
+
+		if ((clientSocket = accept(server_fd, (struct sockaddr*)&clientAddress, &clientAddressLength)) < 0) {
 			perror("In accept");
 			exit(EXIT_FAILURE);
 		}
 
-		std::vector<char> buffer(settings.max_client_body_size, '\0');
-		valread = read(new_socket, buffer.data(), settings.max_client_body_size);
-		printf("%s\n", buffer.data());
- 		std::ifstream file("src/index.html", std::ios::in | std::ios::binary);
-		if (!file.is_open()) {
-			perror("In opening file");
-			exit(EXIT_FAILURE);
-		}
-		std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-		std::string httpResponse = "HTTP/1.1 200 OK\r\n"
-									"Content-Type: text/html\r\n"
-									"\r\n" +
-									content;
+		handleClientRequest(clientSocket);
 
-		write(new_socket, httpResponse.c_str(), httpResponse.size());
-
-		close(new_socket);
+		close(clientSocket);
 	}
 }
