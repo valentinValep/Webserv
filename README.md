@@ -138,7 +138,24 @@ The server can simultaneously maintain its connection with the client  while it 
 
 * **Domain Name Server** or DNS is the phonebook of domain name=IP Address.
 
+* **Whats a fully static website?**
+A fully static website is a website that consists only of HTML, CSS, JavaScript, images, and other client-side resources, and does not require any server-side processing or dynamic content generation.     
+
+In a fully static website:       
+     
+HTML: Contains the structure and content of the web pages.    
+CSS: Defines the styling and layout of the web pages.    
+JavaScript: Provides interactivity and dynamic behavior on the client side.    
+Images and other resources: Enhance the visual elements of the website.    
+
+There is no server-side processing or database interaction involved. All the content is pre-defined and stored as files, and the web server simply serves these files to the client upon request.    
 </details>
+
+
+<h2>TO DO</h2>
+
+- [ ] Error handling, add try catch blocks everywhere and send out with correct exit code and send to default error pages
+- [ ] 
 
 <h2> TESTS / OTHER </h2>
 
