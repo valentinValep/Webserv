@@ -6,13 +6,14 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:41 by chmadran          #+#    #+#             */
-/*   Updated: 2023/10/31 16:52:17 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/01 11:35:36 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Server.hpp"
 #include <stdio.h>
-
+#include <fstream>
+#include <iterator>
 
 Server::Server(const ConfigSettings& _settings) : settings(_settings) {
 }
@@ -24,8 +25,6 @@ void Server::start() {
 	struct sockaddr_in address;
 
 	int addrlen = sizeof(address);
-	// const char* hello = "Hello from server";
-
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
 		perror("In socket");
 		exit(EXIT_FAILURE);
@@ -58,12 +57,18 @@ void Server::start() {
 		std::vector<char> buffer(settings.max_client_body_size, '\0');
 		valread = read(new_socket, buffer.data(), settings.max_client_body_size);
 		printf("%s\n", buffer.data());
+ 		std::ifstream file("src/index.html", std::ios::in | std::ios::binary);
+		if (!file.is_open()) {
+			perror("In opening file");
+			exit(EXIT_FAILURE);
+		}
+		std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 		std::string httpResponse = "HTTP/1.1 200 OK\r\n"
-                           "Content-Type: text/html\r\n"
-                           "\r\n"
-                           "<html><body><h1>Hello World!</h1></body></html>";
-		write(new_socket, httpResponse.c_str(), httpResponse.size());
+									"Content-Type: text/html\r\n"
+									"\r\n" +
+									content;
 
+		write(new_socket, httpResponse.c_str(), httpResponse.size());
 
 		close(new_socket);
 	}
