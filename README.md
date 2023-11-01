@@ -139,3 +139,7 @@ The server can simultaneously maintain its connection with the client  while it 
 
 </details>
 
+<h2> TESTS / OTHER </h2>
+
+* To see the client request being made/sent to your server, head to Inspect > Nextwork 
+![Screenshot from 2023-11-01 14-12-44](https://github.com/chmadran/Webserv/assets/113340699/627d7a73-b642-42cf-b566-a54258792e2f)
