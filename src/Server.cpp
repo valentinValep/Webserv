@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:41 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/01 12:14:17 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/01 13:27:12 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,23 @@ void Server::setupNetwork() {
 }
 
 void Server::handleClientRequest(int clientSocket) {
+	// std::vector<char> buffer(settings.max_client_body_size, '\0');
+	// printf("%s\n", buffer.data());
+
 	std::vector<char> buffer(settings.max_client_body_size, '\0');
-	printf("%s\n", buffer.data());
+	ssize_t bytesRead = read(clientSocket, buffer.data(), settings.max_client_body_size);
+
+	if (bytesRead < 0) {
+		perror("In read");
+		close(clientSocket);
+		return;
+	}
+
+	std::string request(buffer.data(), bytesRead);
+
+	ClientRequest clientRequest(request);
+	clientRequest.print();
+
 	std::string content = readFileContent("src/index.html");
 	sendHttpResponse(clientSocket, content);
 }
