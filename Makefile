@@ -9,7 +9,7 @@ SOURCES_DIR := src/
 BUILD_DIR := build/
 INCLUDES_DIR := includes/
 
-OBJ := $(BUILD_DIR)Server.o $(BUILD_DIR)ClientRequest.o $(MAIN_OBJ) $(TEST_OBJ)
+OBJ := $(BUILD_DIR)Server.o $(MAIN_OBJ) $(TEST_OBJ)
 
 MAIN_OBJ := $(BUILD_DIR)main.o
 

@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 16:44:46 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/01 13:06:02 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/01 11:16:56 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,6 @@ struct ConfigSettings {
 	int max_client_body_size;
 
 	std::vector<Route> routes;
-	std::vector<std::string> supported_methods;
 };
 
 #endif

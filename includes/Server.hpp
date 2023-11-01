@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/01 13:18:38 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/01 12:13:58 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include <string>
 # include <vector>
+# include "ConfigSettings.hpp"
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <unistd.h>
@@ -23,11 +24,6 @@
 # include <cstring>
 # include <fstream>
 # include <iostream>
-# include <algorithm>
-# include "ConfigSettings.hpp"
-# include "ClientRequest.hpp"
-
-
 class Server {
 public:
 	Server(const ConfigSettings& settings);
