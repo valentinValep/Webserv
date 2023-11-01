@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/01 14:42:45 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/01 15:35:05 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,19 @@
 # include <fstream>
 # include <iostream>
 # include <algorithm>
-# include "ConfigSettings.hpp"
 # include "ClientRequest.hpp"
 
 
 class Server {
 public:
-	Server(const ConfigSettings& settings);
+	Server();
 	void start();
 
 private:
-	ConfigSettings settings;
+	
 	int server_fd;
 	struct sockaddr_in address;
+	
 	void setupNetwork();
 	void handleClientRequest(int clientSocket);
 	std::string readFileContent(const std::string& filePath);
