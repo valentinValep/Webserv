@@ -1,6 +1,6 @@
 # Webserv
 
-<h2> STEP BY STEP </h2>
+<h2> STEP BY STEP (WIP) </h2>
 
 <details><summary><h3>STEP 1 : configuration file</h3></summary>
 Our executable is meant to run as follows : `./webserv [configuration file]`.
@@ -22,6 +22,11 @@ In essence, these concepts collectively define how your web server routes reques
 
 </details>
 
+<details><summary><h3>STEP 2 : set up the socket / network and set status to listening</h3></summary> </details>
+
+<details><summary><h3>STEP 3 : receive client request, parse it</h3></summary> </details>
+
+<details><summary><h3>STEP 4 : send approriate response </h3></summary> </details>
 
 <h2> BASICS </h2>
 
