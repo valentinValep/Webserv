@@ -17,7 +17,7 @@ In our case, we must include :
 * define directory/file location for some requested ressources
 * you can specify that some file extensions be interpreted as scripts and executed as separate programs rather than just serving as static files (CGI Scripts)
 
-In essence, these concepts collectively define how your web server routes requests, handles different HTTP methods, interacts with CGI scripts, and manages configuration and default files. They are key components in building a fully functional and configurable web server.
+In essence, these concepts collectively define how your web server routes requests, handles different HTTP methods, interacts with CGI scripts, and manages configuration and default files. They are key components in building a fully functional and configurable web server. This is the first item that must be parsed and stored.  
 
 
 </details>
