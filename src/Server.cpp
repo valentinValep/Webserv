@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:41 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/01 15:43:15 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/01 16:08:08 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,27 +53,11 @@ void Server::handleClientRequest(int clientSocket) {
 	ClientRequest clientRequest(request);
 	clientRequest.print();
 
-	std::string content = readFileContent("src/index.html");
-	sendHttpResponse(clientSocket, content);
+	ServerResponse serverResponse;
+	serverResponse.process(request, clientSocket);
+
 }
 
-std::string Server::readFileContent(const std::string& filePath) {
-	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
-	if (!file.is_open()) {
-		perror("In opening file");
-		exit(EXIT_FAILURE);
-	}
-	return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-}
-
-void Server::sendHttpResponse(int clientSocket, const std::string& content) {
-	std::string httpResponse = "HTTP/1.1 200 OK\r\n"
-							   "Content-Type: text/html\r\n"
-							   "\r\n" +
-							   content;
-
-	write(clientSocket, httpResponse.c_str(), httpResponse.size());
-}
 
 void Server::start() {
 	setupNetwork();

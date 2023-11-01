@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/01 16:07:58 by chmadran         ###   ########.fr       */
+/*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
+/*   Updated: 2023/11/01 16:04:20 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SERVER_HPP
-# define SERVER_HPP
+#ifndef SERVERRESPONSE_HPP
+# define SERVERRESPONSE_HPP
 
 # include <string>
 # include <vector>
@@ -25,19 +25,14 @@
 # include <iostream>
 # include <algorithm>
 # include "ClientRequest.hpp"
-# include "ServerResponse.hpp"
 
-class Server {
-public:
-	Server();
-	void start();
-
-protected:
-	int server_fd;
-	struct sockaddr_in address;
-
-	void setupNetwork();
-	void handleClientRequest(int clientSocket);
+class ServerResponse {
+	public:
+		ServerResponse();
+		
+		void process(const ClientRequest& request, int clientSocket);
+		std::string readFileContent(const std::string& filePath);
+		void sendHttpResponse(int clientSocket, const std::string& content);
 };
 
 #endif
