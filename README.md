@@ -124,7 +124,7 @@ The server can simultaneously maintain its connection with the client  while it 
 
 <details><summary><h4>USEFUL RESSOURCES</h4></summary>
 
-
+* [Webserv TUTORIAL](https://42seoul.gitbook.io/webserv/) so goood for a braod understanding of the main topics
 * [HTML, an Overview](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview)
 * [HTML, an other Overview](https://feel5ny.github.io/2019/08/03/HTTP_001/)
 *  [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/html/split/index.html) in case of emergency
