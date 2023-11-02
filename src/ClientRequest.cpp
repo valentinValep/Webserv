@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/01 15:42:43 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/02 14:49:37 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/ClientRequest.hpp"
+#include "ClientRequest.hpp"
 
 ClientRequest::ClientRequest(const std::string& request) {
 	// Parse the request
