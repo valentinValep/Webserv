@@ -123,8 +123,10 @@ The server can simultaneously maintain its connection with the client  while it 
 <h2> NOTES & RESSOURCES </h2>
 
 <details><summary><h4>USEFUL RESSOURCES</h4></summary>
-  
+
+
 * [HTML, an Overview](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview)
+* [HTML, an other Overview](https://feel5ny.github.io/2019/08/03/HTTP_001/)
 *  [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/html/split/index.html) in case of emergency
 * [RFC](http://www.rfc.fr/rfc/fr/rfc2616.pdf) - initially it is RFC 2616 but later replaced by RFC 7230, RFC 7231, RFC 7232, RFC 7233, RFC 7234, RFC 7235
 * [The ultime guide to build a web server](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa)
