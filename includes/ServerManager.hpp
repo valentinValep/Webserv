@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/02 14:47:23 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/02 15:01:44 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@
 # include <unistd.h>
 # include <cstdlib>
 # include <cstring>
-# include <cstring>
 # include <fstream>
 # include <iostream>
 # include <algorithm>
@@ -29,7 +28,7 @@
 
 class ServerManager {
 public:
-	ServerManager();
+	ServerManager(std::string config_file);
 	void start();
 
 protected:

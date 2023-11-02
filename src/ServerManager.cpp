@@ -6,13 +6,14 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/02 14:48:05 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/02 15:03:10 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerManager.hpp"
 
-ServerManager::ServerManager() {
+ServerManager::ServerManager(std::string configFilePath) {
+	(void)configFilePath;
 }
 
 void ServerManager::setupNetwork() {
