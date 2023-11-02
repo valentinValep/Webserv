@@ -2,3 +2,4 @@ build/
 webserv
 unit_tests
 .vscode/
+ignore_me*

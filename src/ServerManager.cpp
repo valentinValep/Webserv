@@ -6,14 +6,19 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/02 15:03:10 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/02 15:13:08 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerManager.hpp"
 
 ServerManager::ServerManager(std::string configFilePath) {
+	// @TODO parse config file
 	(void)configFilePath;
+	Server current;
+
+
+	this->servers.push_back(current);
 }
 
 void ServerManager::setupNetwork() {

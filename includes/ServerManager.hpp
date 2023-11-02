@@ -6,13 +6,16 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/02 15:01:44 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/02 15:09:02 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_MANAGER_HPP
 # define SERVER_MANAGER_HPP
 
+# include "ClientRequest.hpp"
+# include "ServerResponse.hpp"
+# include "Server.hpp"
 # include <string>
 # include <vector>
 # include <sys/socket.h>
@@ -23,8 +26,6 @@
 # include <fstream>
 # include <iostream>
 # include <algorithm>
-# include "ClientRequest.hpp"
-# include "ServerResponse.hpp"
 
 class ServerManager {
 public:
@@ -34,6 +35,7 @@ public:
 protected:
 	int server_fd;
 	struct sockaddr_in address;
+	std::vector<Server> servers;
 
 	void setupNetwork();
 	void handleClientRequest(int clientSocket);
