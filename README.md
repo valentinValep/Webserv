@@ -113,7 +113,8 @@ Once the connection has been approved, the socket facilitates the connection and
 
 When we create a socket, it is yet to be bound to an IP or a port number. The status in this case is **unbound**. When the IP address and port number have been set, the socket is bound. Once bound, the socket can be set to a listening state for incoming connections on the port. The client then makes a request to connect to the server’s port number. Once the server request has been acknowledged and accepted by the server, we dont just connect the two sockets but the server duplicates the socket to enable the connection between the server and the client and maintains the original socket so its ready to listen to other clients. 
 
-The server can simultaneously maintain its connection with the client  while it can keep on listening out to other clients attempting to connect to that socket. 
+The server can simultaneously maintain its connection with the client  while it can keep on listening out to other clients attempting to connect to that socket. However, creating a socket on the server does not mean that all clients' requests come into that socket. Since connections are managed 1:1, one socket is used only to detect connection requests from new clients. When detected, an individual connection (socket) is created with each client and messages are exchanged. It is good for variable names and collaboration to clearly agree on names for the former and the latter. The former is a rendezvous socket, but we called it a server socket for convenience, and the latter uses client fd/socket/connection interchangeably.
+
 
 ![Screenshot from 2023-10-30 14-36-07](https://github.com/chmadran/Webserv/assets/113340699/ad28d0c7-18ab-44f1-942c-ff6f5c2467aa)
 
