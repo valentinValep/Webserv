@@ -1,5 +1,5 @@
 NAME := webserv
-TEST_NAME := tests
+TEST_NAME := unit_tests
 
 CXX := c++
 
@@ -32,6 +32,7 @@ test: $(TEST_NAME)
 
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
+	mkdir $(BUILD_DIR)tests
 
 $(BUILD_DIR)%.o: $(SOURCES_DIR)%.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
