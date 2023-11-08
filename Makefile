@@ -41,6 +41,9 @@ $(TEST_NAME): $(OBJ) $(TEST_OBJ) $(LIBS)
 $(LIBS_DIR)fileParser/libfp.a:
 	make -C $(LIBS_DIR)fileParser
 
+$(LIBS_DIR)fileParser/:
+	git submodule update --init --recursive
+
 test: $(TEST_NAME)
 	./$(TEST_NAME)
 
@@ -48,16 +51,16 @@ $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
 	mkdir $(BUILD_DIR)tests
 
-$(BUILD_DIR)%.o: $(SOURCES_DIR)%.cpp | $(BUILD_DIR)
+$(BUILD_DIR)%.o: $(SOURCES_DIR)%.cpp | $(BUILD_DIR) $(LIBS_DIR)fileParser/
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 all: $(NAME)
 
-clean:
+clean: $(LIBS_DIR)fileParser/Makefile
 	rm -rf $(BUILD_DIR)
 	make -C $(LIBS_DIR)fileParser clean
 
-fclean: clean
+fclean: clean $(LIBS_DIR)fileParser/Makefile
 	rm -f $(NAME) $(TEST_NAME)
 	make -C $(LIBS_DIR)fileParser fclean
 

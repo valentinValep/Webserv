@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/08 19:49:48 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/08 19:50:50 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,6 +170,7 @@ void Server::parseErrorPages(fp::Module &mod)
 
 void Server::parseRoutes(fp::Module &mod)
 {
+	(void)mod;
 	// @TODO
 }
 
