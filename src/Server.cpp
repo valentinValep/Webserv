@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/08 19:50:50 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/08 20:08:49 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,10 @@ void Server::parsePort(fp::Module &mod)
 {
 	fp::Variable	*var;
 
-	var = mod.getVariable("port");
+	var = mod.getVariable("listen");
 	if (!var || var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: port need one value" << std::endl;
+		std::cerr << "Error: listen need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	if (anti_overflow_atoi(var->getAttributes()[0].c_str(), &this->port))
