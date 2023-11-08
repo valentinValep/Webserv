@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/08 19:29:25 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/08 19:38:35 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ class Server {
 		// Attributes
 		int 		port;
 		int			methods; // optional if some routes and all these routes have methods
-		long		max_body_size; // optional
+		int			max_body_size; // optional // @TODO convert to long ?
 		std::string root;
 		std::string index;
 		std::map<int, std::string> error_pages;
@@ -38,11 +38,11 @@ class Server {
 
 		void		parsePort(fp::Module &mod);
 		void		parseMaxBodySize(fp::Module &mod);
-		void		parseErrorPages(fp::Module &mod);
 		void		parseRoot(fp::Module &mod);
 		void		parseIndex(fp::Module &mod);
 		void		parseMethods(fp::Module &mod);
 		void		parseServerNames(fp::Module &mod);
+		void		parseErrorPages(fp::Module &mod);
 		void		parseRoutes(fp::Module &mod);
 	public:
 		// Constructor & Destructor

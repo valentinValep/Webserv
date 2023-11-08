@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/08 19:29:31 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/08 19:49:48 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,15 +54,134 @@ void Server::parsePort(fp::Module &mod)
 	}
 }
 
+void Server::parseMaxBodySize(fp::Module &mod)
+{
+	fp::Variable	*var;
+
+	var = mod.getVariable("client_max_body_size");
+	if (!var || var->getAttributes().size() != 1)
+	{
+		std::cerr << "Error: client_max_body_size need one value" << std::endl;
+		throw ServerManager::ParsingException();
+	}
+	if (anti_overflow_atoi(var->getAttributes()[0].c_str(), &this->max_body_size))
+	{
+		std::cerr << "Error: client_max_body_size value need to be an integer" << std::endl;
+		throw ServerManager::ParsingException();
+	}
+}
+
+void Server::parseRoot(fp::Module &mod)
+{
+	fp::Variable	*var;
+
+	var = mod.getVariable("root");
+	if (!var || var->getAttributes().size() != 1)
+	{
+		std::cerr << "Error: root need one value" << std::endl;
+		throw ServerManager::ParsingException();
+	}
+	this->root = var->getAttributes()[0];
+}
+
+void Server::parseIndex(fp::Module &mod)
+{
+	fp::Variable	*var;
+
+	var = mod.getVariable("index");
+	if (!var || var->getAttributes().size() != 1)
+	{
+		std::cerr << "Error: index need one value" << std::endl;
+		throw ServerManager::ParsingException();
+	}
+	this->index = var->getAttributes()[0];
+}
+
+void Server::parseMethods(fp::Module &mod)
+{
+	fp::Variable	*var;
+
+	var = mod.getVariable("allow_methods");
+	if (!var || var->getAttributes().size() == 0)
+		return ;
+	this->methods = 0;
+	for (std::vector<std::string>::const_iterator it = var->getAttributes().begin(); it != var->getAttributes().end(); it++)
+	{
+		if (*it == "GET")
+			this->methods |= GET;
+		else if (*it == "POST")
+			this->methods |= POST;
+		else if (*it == "DELETE")
+			this->methods |= DELETE;
+		else
+		{
+			std::cerr << "Error: allow_methods value need to be GET, POST or DELETE" << std::endl;
+			throw ServerManager::ParsingException();
+		}
+	}
+}
+
+void Server::parseServerNames(fp::Module &mod)
+{
+	fp::Variable	*var;
+
+	var = mod.getVariable("server_name");
+	if (!var || var->getAttributes().size() == 0)
+		return ;
+	this->server_names.clear();
+	for (std::vector<std::string>::const_iterator it = var->getAttributes().begin(); it != var->getAttributes().end(); it++)
+	{
+		this->server_names.push_back(*it);
+	}
+}
+
+void Server::parseErrorPages(fp::Module &mod)
+{
+	for (std::vector<fp::Object *>::const_iterator it = mod.getObjects().begin(); it != mod.getObjects().end(); it++)
+	{
+		// error_page 400 error/400.html
+		if ((*it)->getName() == "error_page")
+		{
+			fp::Variable	*var;
+			int				code;
+			std::string		path;
+
+			var = dynamic_cast<fp::Variable *>(*it);
+			if (!var || var->getAttributes().size() != 2)
+			{
+				std::cerr << "Error: error_page need two values" << std::endl;
+				throw ServerManager::ParsingException();
+			}
+			if (anti_overflow_atoi(var->getAttributes()[0].c_str(), &code))
+			{
+				std::cerr << "Error: error_page code value need to be an integer" << std::endl;
+				throw ServerManager::ParsingException();
+			}
+			if (code < 100 || code > 599) // @TODO check exacts known codes ?
+			{
+				std::cerr << "Error: error_page code value need to be between 100 and 599" << std::endl;
+				throw ServerManager::ParsingException();
+			}
+			path = var->getAttributes()[1];
+			this->error_pages[code] = path;
+		}
+	}
+}
+
+void Server::parseRoutes(fp::Module &mod)
+{
+	// @TODO
+}
+
 Server::Server(fp::Module &mod)
 {
 	this->parsePort(mod);
 	this->parseMaxBodySize(mod);
-	this->parseErrorPages(mod);
 	this->parseRoot(mod);
 	this->parseIndex(mod);
 	this->parseMethods(mod);
 	this->parseServerNames(mod);
+	this->parseErrorPages(mod);
 	this->parseRoutes(mod);
 }
 
