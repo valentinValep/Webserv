@@ -58,11 +58,11 @@ all: $(NAME)
 
 clean:
 	rm -rf $(BUILD_DIR)
-	if [ -d $(LIBS_DIR)fileParser/ ]; then make -C $(LIBS_DIR)fileParser clean; fi
+	if [ -d $(LIBS_DIR)fileParser/ ] && [ -f $(LIBS_DIR)fileParser/Makefile ]; then make -C $(LIBS_DIR)fileParser clean; else rm -rf $(LIBS_DIR)fileParser; fi
 
 fclean: clean
 	rm -f $(NAME) $(TEST_NAME)
-	if [ -d $(LIBS_DIR)fileParser/ ]; then make -C $(LIBS_DIR)fileParser fclean; fi
+	if [ -d $(LIBS_DIR)fileParser/ ] && [ -f $(LIBS_DIR)fileParser/Makefile ]; then make -C $(LIBS_DIR)fileParser fclean; else rm -rf $(LIBS_DIR)fileParser; fi
 
 re: fclean all
 
