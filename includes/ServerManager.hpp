@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/02 15:09:02 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/08 19:26:40 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,17 +28,23 @@
 # include <algorithm>
 
 class ServerManager {
-public:
-	ServerManager(std::string config_file);
-	void start();
-
-protected:
+private:
 	int server_fd;
 	struct sockaddr_in address;
 	std::vector<Server> servers;
 
 	void setupNetwork();
 	void handleClientRequest(int clientSocket);
+	void parseConfigFile(std::string config_file);
+public:
+	ServerManager(std::string config_file);
+	void start();
+
+	class ParsingException : public std::exception {
+		virtual const char* what() const throw() {
+			return "Parsing error";
+		}
+	};
 };
 
 #endif

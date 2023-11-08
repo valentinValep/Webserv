@@ -8,28 +8,38 @@ CXXFLAGS := -Wall -Werror -Wextra -std=c++98 -MMD -g3
 SOURCES_DIR := src/
 BUILD_DIR := build/
 INCLUDES_DIR := includes/
+LIBS_DIR := lib/
 
 OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)ServerManager.o \
 	$(BUILD_DIR)ServerResponse.o \
 	$(BUILD_DIR)ClientRequest.o \
 	$(BUILD_DIR)Route.o \
+	$(BUILD_DIR)utils.o \
 
 MAIN_OBJ := $(BUILD_DIR)main.o
 
 TEST_OBJ := $(BUILD_DIR)tests/test.o
 
-INCLUDES := -I$(INCLUDES_DIR)
+INCLUDES := -I$(INCLUDES_DIR) \
+			-I$(LIBS_DIR)fileParser/includes
+
+LIBS := $(LIBS_DIR)fileParser/libfp.a
+
+LIBS_FLAGS := -L$(LIBS_DIR)fileParser -lfp
 
 DEPS := ${OBJ:.o=.d} ${MAIN_OBJ:.o=.d} ${TEST_OBJ:.o=.d}
 
 #############################################################################
 
-$(NAME): $(OBJ) $(MAIN_OBJ)
-	$(CXX) $(OBJ) $(MAIN_OBJ) -o $(NAME)
+$(NAME): $(OBJ) $(MAIN_OBJ) $(LIBS)
+	$(CXX) $(OBJ) $(MAIN_OBJ) -o $(NAME) $(LIBS_FLAGS)
 
-$(TEST_NAME): $(OBJ) $(TEST_OBJ)
+$(TEST_NAME): $(OBJ) $(TEST_OBJ) $(LIBS)
 	$(CXX) $(OBJ) $(TEST_OBJ) -o $(TEST_NAME)
+
+$(LIBS_DIR)fileParser/libfp.a:
+	make -C $(LIBS_DIR)fileParser
 
 test: $(TEST_NAME)
 	./$(TEST_NAME)
@@ -45,9 +55,11 @@ all: $(NAME)
 
 clean:
 	rm -rf $(BUILD_DIR)
+	make -C $(LIBS_DIR)fileParser clean
 
 fclean: clean
 	rm -f $(NAME) $(TEST_NAME)
+	make -C $(LIBS_DIR)fileParser fclean
 
 re: fclean all
 

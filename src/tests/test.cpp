@@ -8,7 +8,7 @@ int	main(void)
 	(void)ret;
 
 	if (fail)
-		std::cout << fail << " tests failed ❌" << std::endl;
+		std::cout << fail << " tests failed ❌: (" << fail << "errors)" << std::endl;
 	else
 		std::cout << "All tests passed ✅" << std::endl;
 	return (0);

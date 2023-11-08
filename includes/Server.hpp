@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/02 16:44:10 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/08 19:29:25 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define SERVER_HPP
 
 # include "Route.hpp"
+# include "FileParser.hpp"
 # include <iostream>
 # include <string>
 # include <vector>
@@ -34,9 +35,19 @@ class Server {
 		std::map<int, std::string> error_pages;
 		std::map<std::string, Route> routes; // optional if methods
 		std::vector<std::string> server_names; // optional
+
+		void		parsePort(fp::Module &mod);
+		void		parseMaxBodySize(fp::Module &mod);
+		void		parseErrorPages(fp::Module &mod);
+		void		parseRoot(fp::Module &mod);
+		void		parseIndex(fp::Module &mod);
+		void		parseMethods(fp::Module &mod);
+		void		parseServerNames(fp::Module &mod);
+		void		parseRoutes(fp::Module &mod);
 	public:
 		// Constructor & Destructor
 		Server();
+		Server(fp::Module &mod);
 		~Server();
 
 		// Getters

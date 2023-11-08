@@ -6,19 +6,15 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/02 15:13:08 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/08 19:00:26 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerManager.hpp"
+#include "FileParser.hpp"
 
 ServerManager::ServerManager(std::string configFilePath) {
-	// @TODO parse config file
-	(void)configFilePath;
-	Server current;
-
-
-	this->servers.push_back(current);
+	parseConfigFile(configFilePath);
 }
 
 void ServerManager::setupNetwork() {
@@ -62,6 +58,58 @@ void ServerManager::handleClientRequest(int clientSocket) {
 	ServerResponse serverResponse;
 	serverResponse.process(request, clientSocket);
 
+}
+
+void	configParser(fp::FileParser &parser)
+{
+	// Requirement
+	parser.require("/server");
+	parser.require("/server/listen");
+	parser.require("/server/root");
+	parser.require("/server/index");
+	parser.require("/server/allow_methods");
+	parser.require("/server/error_page"); // @TODO require error_page code (404, 500, etc)
+
+	// White list
+	parser.whitelist("/server/server_name");
+	parser.whitelist("/server/client_max_body_size");
+	parser.whitelist("/server/autoindex");
+
+	parser.whitelist("/server/location/allow_methods");
+	parser.whitelist("/server/location/root");
+	parser.whitelist("/server/location/index");
+	parser.whitelist("/server/location/autoindex");
+	parser.whitelist("/server/location/extention");
+	parser.whitelist("/server/location/cgi_path");
+	parser.whitelist("/server/location/upload_path");
+	parser.whitelist("/server/location/return");
+
+	parser.banVariableValue();
+	parser.forceModuleName();
+}
+
+void	ServerManager::parseConfigFile(std::string config_file)
+try {
+	fp::FileParser parser(config_file);
+	fp::Module *mod;
+
+	configParser(parser);
+	mod = parser.parse();
+
+	for (std::vector<fp::Object *>::const_iterator it = mod->getObjects().begin(); it != mod->getObjects().end(); it++)
+	{
+		this->servers.push_back(Server(*dynamic_cast<fp::Module *>(*it)));
+	}
+}
+catch(const fp::FileParser::FileParserException& e)
+{
+	std::cerr << e.what() << '\n';
+	throw ServerManager::ParsingException();
+}
+catch(const fp::FileParser::FileParserSyntaxException& e)
+{
+	std::cerr << e.what() << '\n';
+	throw ServerManager::ParsingException();
 }
 
 
