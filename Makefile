@@ -56,13 +56,13 @@ $(BUILD_DIR)%.o: $(SOURCES_DIR)%.cpp | $(BUILD_DIR) $(LIBS_DIR)fileParser/
 
 all: $(NAME)
 
-clean: $(LIBS_DIR)fileParser/Makefile
+clean:
 	rm -rf $(BUILD_DIR)
-	make -C $(LIBS_DIR)fileParser clean
+	if [ -d $(LIBS_DIR)fileParser/ ]; then make -C $(LIBS_DIR)fileParser clean; fi
 
-fclean: clean $(LIBS_DIR)fileParser/Makefile
+fclean: clean
 	rm -f $(NAME) $(TEST_NAME)
-	make -C $(LIBS_DIR)fileParser fclean
+	if [ -d $(LIBS_DIR)fileParser/ ]; then make -C $(LIBS_DIR)fileParser fclean; fi
 
 re: fclean all
 
