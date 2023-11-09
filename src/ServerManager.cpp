@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/09 16:38:20 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/09 17:18:42 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,19 +161,23 @@ void ServerManager::start() {
 					}
 					std::cout << "Accept return" << clientSocket << std::endl;
 					fds[nfds].fd = clientSocket;
-					fds[nfds].events = POLLIN | POLLOUT;
+					fds[nfds].events = POLLIN;
 					nfds++;
 				}
 				else if (fds[i].revents & POLLIN)
 				{
 					std::cout << "Handling" << std::endl;
 					handleClientRequest(fds[i].fd);
+					fds[i].events = POLLOUT;
 				}
 				else if (fds[i].revents & POLLOUT)
 				{
+					std::cout << "Responding" << std::endl;
 					ServerResponse serverResponse;
 					serverResponse.process(request, fds[i].fd);
+					fds[i].events = POLLIN;
 					// close(fds[i].fd);
+					// --nfds;
 				}
 			}
 		}
