@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/08 19:26:40 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/09 16:33:03 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <string>
 # include <vector>
 # include <sys/socket.h>
+# include <sys/poll.h>
 # include <netinet/in.h>
 # include <unistd.h>
 # include <cstdlib>
@@ -30,6 +31,7 @@
 class ServerManager {
 private:
 	int server_fd;
+	ClientRequest request;
 	struct sockaddr_in address;
 	std::vector<Server> servers;
 
