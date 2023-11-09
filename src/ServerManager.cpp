@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/09 16:38:20 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/09 18:33:45 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,11 +126,11 @@ void ServerManager::start() {
 	int nfds = 1;
 	int current_size;
 	struct pollfd fds[MAX_CONNECTION];
-	
+
 	fds[0].fd = this->server_fd;
 	fds[0].events = POLLIN;
 	while (1) {
-		printf("\n+++++++ Waiting for new connection ++++++++\n\n");
+		//printf("\n+++++++ Waiting for new connection ++++++++\n\n");
 
 		ret = poll(fds, nfds, 0);
 
@@ -141,13 +141,14 @@ void ServerManager::start() {
 		}
 		else if (ret == 0)
 		{
-			std::cout << "Still waiting" << std::endl;
+			//std::cout << "Still waiting" << std::endl;
 		}
 		else
 		{
 			current_size = nfds;
 			for (int i = 0; i < current_size; i++)
 			{
+				std::cout << "fds[" << i << "].revents = " << fds[i].revents << std::endl;
 				if (fds[i].revents & POLLIN && fds[i].fd == server_fd)
 				{
 					std::cout << "New conn" << std::endl;
@@ -161,22 +162,24 @@ void ServerManager::start() {
 					}
 					std::cout << "Accept return" << clientSocket << std::endl;
 					fds[nfds].fd = clientSocket;
-					fds[nfds].events = POLLIN | POLLOUT;
+					fds[nfds].events = POLLIN;
 					nfds++;
 				}
 				else if (fds[i].revents & POLLIN)
 				{
 					std::cout << "Handling" << std::endl;
 					handleClientRequest(fds[i].fd);
+					fds[i].events = POLLOUT;
 				}
 				else if (fds[i].revents & POLLOUT)
 				{
 					ServerResponse serverResponse;
 					serverResponse.process(request, fds[i].fd);
+					fds[i].events = POLLIN;
 					// close(fds[i].fd);
 				}
 			}
 		}
-		sleep(1);
+		//sleep(1);
 	}
 }
