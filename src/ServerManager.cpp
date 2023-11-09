@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/09 17:18:42 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/09 19:41:56 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,11 +126,11 @@ void ServerManager::start() {
 	int nfds = 1;
 	int current_size;
 	struct pollfd fds[MAX_CONNECTION];
-	
+
 	fds[0].fd = this->server_fd;
 	fds[0].events = POLLIN;
 	while (1) {
-		printf("\n+++++++ Waiting for new connection ++++++++\n\n");
+		//printf("\n+++++++ Waiting for new connection ++++++++\n\n");
 
 		ret = poll(fds, nfds, 0);
 
@@ -141,7 +141,7 @@ void ServerManager::start() {
 		}
 		else if (ret == 0)
 		{
-			std::cout << "Still waiting" << std::endl;
+			//std::cout << "Still waiting" << std::endl;
 		}
 		else
 		{
@@ -179,8 +179,12 @@ void ServerManager::start() {
 					// close(fds[i].fd);
 					// --nfds;
 				}
+				else
+				{
+					std::cout << "fds[i].revents: " << fds[i].revents << std::endl;
+				}
 			}
 		}
-		sleep(1);
+		//sleep(1);
 	}
 }
