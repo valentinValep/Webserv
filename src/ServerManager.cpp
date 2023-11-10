@@ -3,20 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/09 19:41:56 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/10 11:52:30 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerManager.hpp"
 #include "FileParser.hpp"
 
-ServerManager::ServerManager(std::string configFilePath) : request(" ") {
+#define MAX_CONNECTION 3
+#define CR std::cout << std::endl;
+
+
+ServerManager::ServerManager(std::string configFilePath) : request(" "), fds(1) {
 	parseConfigFile(configFilePath);
 }
-
 
 void ServerManager::handleClientRequest(int clientSocket) {
 	std::vector<char> buffer(10000, '\0');
@@ -31,7 +34,7 @@ void ServerManager::handleClientRequest(int clientSocket) {
 	std::string request(buffer.data(), bytesRead);
 
 	ClientRequest clientRequest(request);
-	clientRequest.print();
+	// clientRequest.print();
 	this->request = clientRequest;
 }
 
@@ -117,7 +120,34 @@ void ServerManager::setupNetwork() {
 	}
 }
 
-#define MAX_CONNECTION 10
+int ServerManager::acceptNewConnexion(int server_fd, int &nfds) {
+
+	std::cout << "New connexion" << std::endl;
+	int clientSocket = 0;
+	struct sockaddr_in clientAddress;
+	socklen_t clientAddressLength = sizeof(clientAddress);
+
+	clientSocket = accept(server_fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
+	if (clientSocket < 0)
+		return (EXIT_FAILURE);
+
+	if (nfds >= MAX_CONNECTION) {
+		//@TODO more sophisticated system to track whos the oldest???
+		std::vector<struct pollfd>::iterator oldest_connexion = fds.begin() + 1; // Iterator to the second element
+		close(oldest_connexion->fd);
+		oldest_connexion->fd = clientSocket;
+		oldest_connexion->events = POLLIN;
+	} 
+	else {
+		struct pollfd new_conn;
+		new_conn.fd = clientSocket;
+		new_conn.events = POLLIN;
+		fds.push_back(new_conn);
+		nfds++;
+	}
+	std::cout << "Accept return [" << clientSocket << "]" << std::endl;
+	return (EXIT_SUCCESS);
+};
 
 void ServerManager::start() {
 	setupNetwork();
@@ -125,14 +155,12 @@ void ServerManager::start() {
 	int ret;
 	int nfds = 1;
 	int current_size;
-	struct pollfd fds[MAX_CONNECTION];
 
 	fds[0].fd = this->server_fd;
 	fds[0].events = POLLIN;
 	while (1) {
-		//printf("\n+++++++ Waiting for new connection ++++++++\n\n");
 
-		ret = poll(fds, nfds, 0);
+		ret = poll(&fds.front(), nfds, 0);
 
 		if (ret == -1)
 		{
@@ -150,38 +178,27 @@ void ServerManager::start() {
 			{
 				if (fds[i].revents & POLLIN && fds[i].fd == server_fd)
 				{
-					std::cout << "New conn" << std::endl;
-					int clientSocket;
-					struct sockaddr_in clientAddress;
-					socklen_t clientAddressLength = sizeof(clientAddress);
-
-					if ((clientSocket = accept(server_fd, (struct sockaddr*)&clientAddress, &clientAddressLength)) < 0) {
-						perror("In accept");
-						exit(EXIT_FAILURE);
-					}
-					std::cout << "Accept return" << clientSocket << std::endl;
-					fds[nfds].fd = clientSocket;
-					fds[nfds].events = POLLIN;
-					nfds++;
+					acceptNewConnexion(server_fd, nfds);
 				}
 				else if (fds[i].revents & POLLIN)
 				{
-					std::cout << "Handling" << std::endl;
+					CR;
+					std::cout << "Handling on [" << fds[i].fd << "]" << std::endl;
+					close(fds[5].fd);
 					handleClientRequest(fds[i].fd);
 					fds[i].events = POLLOUT;
 				}
 				else if (fds[i].revents & POLLOUT)
 				{
-					std::cout << "Responding" << std::endl;
+					CR;
+					std::cout << "Responding on [" << fds[i].fd << "]" << std::endl;
 					ServerResponse serverResponse;
 					serverResponse.process(request, fds[i].fd);
 					fds[i].events = POLLIN;
-					// close(fds[i].fd);
-					// --nfds;
 				}
 				else
 				{
-					std::cout << "fds[i].revents: " << fds[i].revents << std::endl;
+					// std::cout << "fds[i].revents: " << fds[i].revents << std::endl;
 				}
 			}
 		}
