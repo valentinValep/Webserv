@@ -6,14 +6,14 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/10 11:52:30 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/10 13:24:47 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerManager.hpp"
 #include "FileParser.hpp"
 
-#define MAX_CONNECTION 3
+#define MAX_CONNECTION 10
 #define CR std::cout << std::endl;
 
 
@@ -90,6 +90,27 @@ catch(const fp::FileParser::FileParserSyntaxException& e)
 	throw ServerManager::ParsingException();
 }
 
+
+void ServerManager::printActiveSockets() {
+	const int width = 20;
+	std::cout << std::left << std::setw(width) << "Socket FD" 
+			  << std::left << std::setw(width) << "Last Activity" << std::endl;
+	std::cout << std::string(40, '-') << std::endl; // Print a separator line
+
+	for (std::vector<SocketInfo>::const_iterator it = activeSockets.begin(); 
+		 it != activeSockets.end(); ++it) {
+		char buffer[30];
+		std::time_t lastActivity = static_cast<time_t>(it->lastActivity);
+		std::tm *tm_info = std::localtime(&lastActivity);
+		std::strftime(buffer, 30, "%Y-%m-%d %H:%M:%S", tm_info);
+
+		std::cout << std::left << std::setw(width) << it->socket
+				  << std::left << std::setw(width) << buffer << std::endl;
+	}
+	CR;
+}
+
+
 void ServerManager::setupNetwork() {
 	int opt = 1;
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
@@ -132,21 +153,58 @@ int ServerManager::acceptNewConnexion(int server_fd, int &nfds) {
 		return (EXIT_FAILURE);
 
 	if (nfds >= MAX_CONNECTION) {
-		//@TODO more sophisticated system to track whos the oldest???
-		std::vector<struct pollfd>::iterator oldest_connexion = fds.begin() + 1; // Iterator to the second element
+		//@TODO more sophisticated system to track whos the oldest / use active sockets???
+		std::vector<struct pollfd>::iterator oldest_connexion = fds.begin() + 1;
 		close(oldest_connexion->fd);
 		oldest_connexion->fd = clientSocket;
 		oldest_connexion->events = POLLIN;
 	} 
 	else {
-		struct pollfd new_conn;
-		new_conn.fd = clientSocket;
-		new_conn.events = POLLIN;
-		fds.push_back(new_conn);
+		struct pollfd new_connexion;
+		new_connexion.fd = clientSocket;
+		new_connexion.events = POLLIN;
+		fds.push_back(new_connexion);
+
+		SocketInfo newSocketInfo = {clientSocket, time(NULL)};
+		activeSockets.push_back(newSocketInfo);
+
 		nfds++;
 	}
 	std::cout << "Accept return [" << clientSocket << "]" << std::endl;
 	return (EXIT_SUCCESS);
+};
+
+void ServerManager::closeInactiveSockets() {
+	time_t currentTime = time(NULL);
+
+	std::vector<SocketInfo>::iterator it = activeSockets.begin();
+	while (it != activeSockets.end()) {
+		if (currentTime - it->lastActivity > 120) {
+			std::cout << "Closed inactive socket [" << it->socket << "]" << std::endl;
+			close(it->socket);
+
+			for (size_t i = 0; i < fds.size(); ++i) {
+				if (fds[i].fd == it->socket) {
+					fds.erase(fds.begin() + i);
+					break;
+				}
+			}
+			it = activeSockets.erase(it);
+		} else {
+			++it;
+		}
+	}
+}
+
+void	ServerManager::updateSocketActivity(int socket) {
+	time_t currentTime = time(NULL);
+
+	for (std::vector<SocketInfo>::iterator it = activeSockets.begin(); it != activeSockets.end(); ++it) {
+		if (it->socket == socket) {
+			it->lastActivity = currentTime;
+			break;
+		}
+	}
 };
 
 void ServerManager::start() {
@@ -159,7 +217,6 @@ void ServerManager::start() {
 	fds[0].fd = this->server_fd;
 	fds[0].events = POLLIN;
 	while (1) {
-
 		ret = poll(&fds.front(), nfds, 0);
 
 		if (ret == -1)
@@ -184,8 +241,8 @@ void ServerManager::start() {
 				{
 					CR;
 					std::cout << "Handling on [" << fds[i].fd << "]" << std::endl;
-					close(fds[5].fd);
 					handleClientRequest(fds[i].fd);
+					updateSocketActivity(fds[i].fd);
 					fds[i].events = POLLOUT;
 				}
 				else if (fds[i].revents & POLLOUT)
@@ -195,11 +252,10 @@ void ServerManager::start() {
 					ServerResponse serverResponse;
 					serverResponse.process(request, fds[i].fd);
 					fds[i].events = POLLIN;
+					updateSocketActivity(fds[i].fd);
 				}
-				else
-				{
-					// std::cout << "fds[i].revents: " << fds[i].revents << std::endl;
-				}
+				closeInactiveSockets();
+				// printActiveSockets();
 			}
 		}
 		//sleep(1);
