@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/10 13:24:47 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/10 14:18:39 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,28 +174,6 @@ int ServerManager::acceptNewConnexion(int server_fd, int &nfds) {
 	return (EXIT_SUCCESS);
 };
 
-void ServerManager::closeInactiveSockets() {
-	time_t currentTime = time(NULL);
-
-	std::vector<SocketInfo>::iterator it = activeSockets.begin();
-	while (it != activeSockets.end()) {
-		if (currentTime - it->lastActivity > 120) {
-			std::cout << "Closed inactive socket [" << it->socket << "]" << std::endl;
-			close(it->socket);
-
-			for (size_t i = 0; i < fds.size(); ++i) {
-				if (fds[i].fd == it->socket) {
-					fds.erase(fds.begin() + i);
-					break;
-				}
-			}
-			it = activeSockets.erase(it);
-		} else {
-			++it;
-		}
-	}
-}
-
 void	ServerManager::updateSocketActivity(int socket) {
 	time_t currentTime = time(NULL);
 
@@ -206,6 +184,47 @@ void	ServerManager::updateSocketActivity(int socket) {
 		}
 	}
 };
+
+void ServerManager::detectInactiveSockets() {
+	time_t currentTime = time(NULL);
+
+	for (std::vector<SocketInfo>::iterator it = activeSockets.begin(); it != activeSockets.end(); ++it) {
+		if (currentTime - it->lastActivity > 120) {
+			std::cout << "Inactive socket detected [" << it->socket << "]" << std::endl;
+			it->socket = -1;
+			for (std::vector<struct pollfd>::iterator fd_it = fds.begin(); fd_it != fds.end(); ++fd_it) {
+				if (fd_it->fd == it->socket) {
+					fd_it->fd = -1;
+					break;
+				}
+			}
+		}
+	}
+}
+
+void ServerManager::cleanFdsAndActiveSockets(int &nfds) {
+	std::vector<struct pollfd> cleanFds;
+	std::vector<SocketInfo> cleanSockets;
+
+	for (std::vector<struct pollfd>::iterator it = fds.begin(); it != fds.end(); ++it) {
+		if (it->fd != -1) {
+			cleanFds.push_back(*it);
+		}
+	}
+	for (std::vector<SocketInfo>::iterator it = activeSockets.begin(); it != activeSockets.end(); ++it) {
+		if (it->socket != -1) {
+			cleanSockets.push_back(*it);
+		} else {
+			close(it->socket);
+		}
+	}
+
+	fds = cleanFds;
+	activeSockets = cleanSockets;
+	nfds = fds.size();
+}
+
+
 
 void ServerManager::start() {
 	setupNetwork();
@@ -254,7 +273,8 @@ void ServerManager::start() {
 					fds[i].events = POLLIN;
 					updateSocketActivity(fds[i].fd);
 				}
-				closeInactiveSockets();
+				detectInactiveSockets();
+				cleanFdsAndActiveSockets(nfds);
 				// printActiveSockets();
 			}
 		}

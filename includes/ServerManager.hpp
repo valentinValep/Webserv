@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/10 13:21:43 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/10 14:17:34 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,8 @@ private:
 
 	void	setupNetwork();
 	void	printActiveSockets();
-	void	closeInactiveSockets();
+	void	detectInactiveSockets();
+	void	cleanFdsAndActiveSockets(int &nfds);
 	void	updateSocketActivity(int socket);
 	void	handleClientRequest(int clientSocket);
 	void	parseConfigFile(std::string config_file);
