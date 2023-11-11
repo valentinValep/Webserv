@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/09 16:33:03 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/10 14:17:34 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,15 @@
 # include <fstream>
 # include <iostream>
 # include <algorithm>
+# include <fcntl.h>
+# include <iomanip>
+# include <ctime>
+
+
+struct SocketInfo {
+	int socket;
+	time_t lastActivity;
+};
 
 class ServerManager {
 private:
@@ -34,10 +43,18 @@ private:
 	ClientRequest request;
 	struct sockaddr_in address;
 	std::vector<Server> servers;
+	std::vector<struct pollfd> fds;
+	std::vector<SocketInfo> activeSockets; // does not contain server_fd
 
-	void setupNetwork();
-	void handleClientRequest(int clientSocket);
-	void parseConfigFile(std::string config_file);
+	void	setupNetwork();
+	void	printActiveSockets();
+	void	detectInactiveSockets();
+	void	cleanFdsAndActiveSockets(int &nfds);
+	void	updateSocketActivity(int socket);
+	void	handleClientRequest(int clientSocket);
+	void	parseConfigFile(std::string config_file);
+	int		acceptNewConnexion(int server_fd, int &nfds);
+
 public:
 	ServerManager(std::string config_file);
 	void start();
