@@ -7,7 +7,7 @@
 
 - [ ] The read loop, implement a loop to read from the socket in chunks (e.g., in a buffer of 1024 bytes). After each read: (i) append the data to a request buffer, (ii) check if the buffer contains the end of the request (e.g., an empty line for headers, the end of the content based on Content-Length, the last chunk in chunked encoding, etc.) (iii) If the end of the request is detected, process the request (iv) If not, continue reading from the socket)
 
-- [ ] Once received fully, parse it, process it, and compose the reponse. Then set flag to POLLOUT and send once ready
+- [ ] Store the above buffer and loop until received fully (end token reached). Then parse the request, process it (GET, DELETE, POST), and compose the reponse. Then set flag to POLLOUT and send once ready
 
 
 <h2> BASICS </h2>
