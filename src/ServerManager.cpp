@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/10 14:18:39 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/11 11:27:26 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,10 +31,19 @@ void ServerManager::handleClientRequest(int clientSocket) {
 		return;
 	}
 
+	if (bytesRead == 0) {
+		std::cout << "connection closed by client [" <<  clientSocket << "]" << std::endl;
+		close(clientSocket);
+		clientSocket = -1;
+		return;
+	}
+	
+	std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
+	std::cout << buffer.data(); // this prints the client request
+	std::cout << "\n======================================================" << std::endl;
+	
 	std::string request(buffer.data(), bytesRead);
-
 	ClientRequest clientRequest(request);
-	// clientRequest.print();
 	this->request = clientRequest;
 }
 
@@ -143,7 +152,6 @@ void ServerManager::setupNetwork() {
 
 int ServerManager::acceptNewConnexion(int server_fd, int &nfds) {
 
-	std::cout << "New connexion" << std::endl;
 	int clientSocket = 0;
 	struct sockaddr_in clientAddress;
 	socklen_t clientAddressLength = sizeof(clientAddress);
@@ -155,6 +163,9 @@ int ServerManager::acceptNewConnexion(int server_fd, int &nfds) {
 	if (nfds >= MAX_CONNECTION) {
 		//@TODO more sophisticated system to track whos the oldest / use active sockets???
 		std::vector<struct pollfd>::iterator oldest_connexion = fds.begin() + 1;
+		CR;
+		std::cout << "warning : max number of connections reached" << std::endl;
+		std::cout << "closing fd [" << oldest_connexion->fd << "]" << std::endl;
 		close(oldest_connexion->fd);
 		oldest_connexion->fd = clientSocket;
 		oldest_connexion->events = POLLIN;
@@ -170,7 +181,7 @@ int ServerManager::acceptNewConnexion(int server_fd, int &nfds) {
 
 		nfds++;
 	}
-	std::cout << "Accept return [" << clientSocket << "]" << std::endl;
+	std::cout << "New connexion on fd [" << clientSocket << "]" << std::endl;
 	return (EXIT_SUCCESS);
 };
 
@@ -205,6 +216,7 @@ void ServerManager::detectInactiveSockets() {
 void ServerManager::cleanFdsAndActiveSockets(int &nfds) {
 	std::vector<struct pollfd> cleanFds;
 	std::vector<SocketInfo> cleanSockets;
+	bool cleaned = false;
 
 	for (std::vector<struct pollfd>::iterator it = fds.begin(); it != fds.end(); ++it) {
 		if (it->fd != -1) {
@@ -216,12 +228,15 @@ void ServerManager::cleanFdsAndActiveSockets(int &nfds) {
 			cleanSockets.push_back(*it);
 		} else {
 			close(it->socket);
+			cleaned = true;
 		}
 	}
 
 	fds = cleanFds;
 	activeSockets = cleanSockets;
 	nfds = fds.size();
+	if (cleaned == true)
+		printActiveSockets();
 }
 
 
@@ -242,10 +257,6 @@ void ServerManager::start() {
 		{
 			perror("In poll");
 			exit(EXIT_FAILURE);
-		}
-		else if (ret == 0)
-		{
-			//std::cout << "Still waiting" << std::endl;
 		}
 		else
 		{
@@ -275,9 +286,7 @@ void ServerManager::start() {
 				}
 				detectInactiveSockets();
 				cleanFdsAndActiveSockets(nfds);
-				// printActiveSockets();
 			}
 		}
-		//sleep(1);
 	}
 }
