@@ -106,6 +106,7 @@ The server can simultaneously maintain its connection with the client  while it 
 
 <details><summary><h4>USEFUL RESSOURCES</h4></summary>
 
+* [Maxime's](https://github.com/maxime-42/webserv/tree/main/srcs) Webserv 
 * [Lecture on Asynchronous I/O](https://www.youtube.com/watch?v=tAGF0T2cXRA)
 * [Webserv TUTORIAL](https://42seoul.gitbook.io/webserv/) so goood for a braod understanding of the main topics
 * [HTML, an Overview](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview)
