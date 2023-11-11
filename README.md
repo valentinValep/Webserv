@@ -1,33 +1,14 @@
 # Webserv
 
-<h2> STEP BY STEP (WIP) </h2>
 
-<details><summary><h3>STEP 1 : configuration file</h3></summary>
-Our executable is meant to run as follows : `./webserv [configuration file]`.
+<h2>TO DO</h2>
 
-So this means you can start by creating a default configuration file, if there is no argument after the executable then the programme uses it. The requirements on what is to be found in the conf file is in the third part of the subject. A configuration file is used to customize the behavior of a server without requiring changes to the underlying code.
+- [ ] Handle more than one server (based on config file, set up as many server_fd and corresponding pollfds or client sockets as there are servers)
 
-In our case, we must include : 
-* the port the server will listen to
-* the server name (domain name)
-* default / customised error pages
-* the maximum size of the data sent by the client
-* which HTTP methods are allowed per route (GET, POST etc)
-* redirection request (e.g from /old-page to /new-page)
-* define directory/file location for some requested ressources
-* you can specify that some file extensions be interpreted as scripts and executed as separate programs rather than just serving as static files (CGI Scripts)
+- [ ] The read loop, implement a loop to read from the socket in chunks (e.g., in a buffer of 1024 bytes). After each read: (i) append the data to a request buffer, (ii) check if the buffer contains the end of the request (e.g., an empty line for headers, the end of the content based on Content-Length, the last chunk in chunked encoding, etc.) (iii) If the end of the request is detected, process the request (iv) If not, continue reading from the socket)
 
-In essence, these concepts collectively define how your web server routes requests, handles different HTTP methods, interacts with CGI scripts, and manages configuration and default files. They are key components in building a fully functional and configurable web server. This is the first item that must be parsed and stored.  
+- [ ] Once received fully, parse it, process it, and compose the reponse. Then set flag to POLLOUT and send once ready
 
-
-</details>
-
-<details><summary><h3>IDEAS</h3></summary>
-STEP 2 : set up the socket / network and set status to listening
-STEP 3 : receive client request, parse it
-STEP 4 : send approriate response
-
-</details>
 
 <h2> BASICS </h2>
 
@@ -125,6 +106,7 @@ The server can simultaneously maintain its connection with the client  while it 
 
 <details><summary><h4>USEFUL RESSOURCES</h4></summary>
 
+* [Lecture on Asynchronous I/O](https://www.youtube.com/watch?v=tAGF0T2cXRA)
 * [Webserv TUTORIAL](https://42seoul.gitbook.io/webserv/) so goood for a braod understanding of the main topics
 * [HTML, an Overview](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview)
 * [HTML, an other Overview](https://feel5ny.github.io/2019/08/03/HTTP_001/)
@@ -154,12 +136,6 @@ Images and other resources: Enhance the visual elements of the website.
 
 There is no server-side processing or database interaction involved. All the content is pre-defined and stored as files, and the web server simply serves these files to the client upon request.    
 </details>
-
-
-<h2>TO DO</h2>
-
-- [ ] Error handling, add try catch blocks everywhere and send out with correct exit code and send to default error pages
-- [ ] 
 
 <h2> TESTS / OTHER </h2>
 
