@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/13 16:41:57 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/13 17:35:22 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,44 +14,28 @@
 #include "FileParser.hpp"
 
 #define MAX_CONNECTION 10
+#define NO_EVENT 0
 #define CR std::cout << std::endl;
 
 
-ServerManager::ServerManager(std::string configFilePath) : request(" "), fds(1) {
+/************************************************************
+ *					CONSTRUCTOR								*
+ ************************************************************/
+
+ServerManager::ServerManager(std::string configFilePath) : nfds(0), request(" "), fds(1) {
 	parseConfigFile(configFilePath);
-}
-
-void ServerManager::handleClientRequest(int clientSocket) {
-	std::vector<char> buffer(10000, '\0');
-	ssize_t bytesRead = read(clientSocket, buffer.data(), 10000);
-
-	if (bytesRead < 0) {
-		perror("In read");
-		close(clientSocket);
-		return;
-	}
-
-	if (bytesRead == 0) {
-		std::cout << "connection closed by client [" <<  clientSocket << "]" << std::endl;
-		close(clientSocket);
-		clientSocket = -1;
-		return;
-	}
-
-	std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
-	//std::cout << buffer.data(); // this prints the client request
-	for (int i = 0; i < bytesRead; i++)
+	if (setupNetwork() == EXIT_SUCCESS)
 	{
-		if (buffer[i] == '\r')
-			std::cout << "\\r";
-		std::cout << buffer[i];
+		std::cout << "Set up complete of " << servers.size() << " servers." << std::endl;
+		printServersSockets();
+		start();
 	}
-	std::cout << "\n======================================================" << std::endl;
-
-	std::string request(buffer.data(), bytesRead);
-	ClientRequest clientRequest(request);
-	this->request = clientRequest;
 }
+
+
+/************************************************************
+ *						PARSER								*
+ ************************************************************/
 
 void	configParser(fp::FileParser &parser)
 {
@@ -105,195 +89,222 @@ catch(const fp::FileParser::FileParserSyntaxException& e)
 	throw ServerManager::ParsingException();
 }
 
+/************************************************************
+ *						LAUNCHER							*
+ ************************************************************/
 
-void ServerManager::printActiveSockets() {
-	const int width = 20;
-	std::cout << std::left << std::setw(width) << "Socket FD"
-			  << std::left << std::setw(width) << "Last Activity" << std::endl;
-	std::cout << std::string(40, '-') << std::endl; // Print a separator line
+void ServerManager::start() {
+	
+	int ret;
 
-	for (std::vector<SocketInfo>::const_iterator it = activeSockets.begin();
-		 it != activeSockets.end(); ++it) {
-		char buffer[30];
-		std::time_t lastActivity = static_cast<time_t>(it->lastActivity);
-		std::tm *tm_info = std::localtime(&lastActivity);
-		std::strftime(buffer, 30, "%Y-%m-%d %H:%M:%S", tm_info);
-
-		std::cout << std::left << std::setw(width) << it->socket
-				  << std::left << std::setw(width) << buffer << std::endl;
+	while (1) {
+		ret = poll(&fds.front(), nfds, 0);
+		if (ret == -1)
+		{
+			perror("In poll");
+			exit(EXIT_FAILURE);
+		}
+		for (int index = 0; index < nfds; index++)
+		{
+			if (fds[index].revents == NO_EVENT)
+				continue;
+			handleEvent(index);
+		}
 	}
-	CR;
+};
+
+void ServerManager::updateFds(size_t len, std::vector<SocketInfo>& clientSockets){
+	for (size_t i = len; i < clientSockets.size(); i++)
+	{
+		fds[nfds].fd =clientSockets[i].socket;
+		fds[nfds].events = POLLIN;
+		fds[nfds].revents = NO_EVENT;
+		nfds++;
+	}
+};
+
+void ServerManager::handleEvent(size_t i)
+{
+	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
+	{
+		Server &currentServer = *it;
+		std::vector<SocketInfo>& clientSockets = currentServer.getClientSockets();
+		// size_t len = clientSockets.size();
+		
+		if (fds[i].fd == currentServer.server_fd)
+		{
+			// currentServer.acceptNewConnections();
+			// updateFds(len, clientSockets);
+			acceptNewConnexion(fds[i].fd);
+		}
+		
+		bool foundSocket = false;
+		for (size_t k = 0; k < clientSockets.size(); k++) {
+			if (clientSockets[k].socket == fds[i].fd) {
+				foundSocket = true;
+				break;
+			}
+		}
+		if (foundSocket && (fds[i].revents & POLLIN)) {
+			std::cout << "Handling on [" << fds[i].fd << "]" << std::endl;
+			handleClientRequest(fds[i].fd);
+			fds[i].events = POLLOUT;
+		}
+		if (foundSocket && (fds[i].revents & POLLOUT)) {
+			std::cout << "Responding on [" << fds[i].fd << "]" << std::endl;
+			ServerResponse serverResponse;
+			serverResponse.process(request, fds[i].fd);
+			fds[i].events = POLLIN;
+		}
+		updateSocketActivity(fds[i].fd);
+		// detectInactiveSockets();
+		// cleanFdsAndActiveSockets(nfds);
+	}
 }
 
 
-void ServerManager::setupNetwork() {
-	int opt = 1;
-	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-		perror("In socket");
-		exit(EXIT_FAILURE);
+/************************************************************
+ *						METHODS								*
+ ************************************************************/
+
+int ServerManager::setupNetwork() {
+	for (size_t i = 0; i < servers.size(); i++)
+	{
+		struct sockaddr_in address;
+		memset(address.sin_zero, '\0', sizeof address.sin_zero);
+		address = this->servers[i].address;
+		
+		int opt = 1;
+		int serverSocket = 0;
+		if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+			perror("In socket");
+			exit(EXIT_FAILURE);
+		}
+
+		// @TODO change SOL_SOCKET by TCP protocol (man setsockopt) ? check return < 0 ?
+		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+			perror("setsockopt");
+			exit(EXIT_FAILURE);
+		}
+
+		if (bind(serverSocket, (struct sockaddr*)&address, sizeof(address)) < 0) {
+			perror("In bind");
+			exit(EXIT_FAILURE);
+		}
+
+		if (listen(serverSocket, 10) < 0) {
+			perror("In listen");
+			exit(EXIT_FAILURE);
+		}
+
+		struct pollfd new_server_fd;
+		new_server_fd.fd = serverSocket;
+		new_server_fd.events = POLLIN;
+		fds.push_back(new_server_fd);
+		servers[i].server_fd = serverSocket;
+		nfds++;
 	}
-
-	// @TODO change SOL_SOCKET by TCP protocol (man setsockopt) ? check return < 0 ?
-	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
-		perror("setsockopt");
-		exit(EXIT_FAILURE);
-	}
-
-	this->address.sin_family = AF_INET;
-	this->address.sin_addr.s_addr = INADDR_ANY;
-	this->address.sin_port = htons(this->servers[0].getPort());
-
-	memset(this->address.sin_zero, '\0', sizeof this->address.sin_zero);
-
-	if (bind(server_fd, (struct sockaddr*)&this->address, sizeof(this->address)) < 0) {
-		std::cout << "errno: " << errno << std::endl;
-		perror("In bind");
-		exit(EXIT_FAILURE);
-	}
-
-	if (listen(server_fd, 10) < 0) {
-		perror("In listen");
-		exit(EXIT_FAILURE);
-	}
+	return (EXIT_SUCCESS);
 }
 
-int ServerManager::acceptNewConnexion(int server_fd, int &nfds) {
+int ServerManager::acceptNewConnexion(int server_fd) {
 
 	int clientSocket = 0;
 	struct sockaddr_in clientAddress;
 	socklen_t clientAddressLength = sizeof(clientAddress);
 
 	clientSocket = accept(server_fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
+	
 	if (clientSocket < 0)
 		return (EXIT_FAILURE);
 
-	if (nfds >= MAX_CONNECTION) {
-		//@TODO more sophisticated system to track whos the oldest / use active sockets???
-		std::vector<struct pollfd>::iterator oldest_connexion = fds.begin() + 1;
-		CR;
-		std::cout << "warning : max number of connections reached" << std::endl;
-		std::cout << "closing fd [" << oldest_connexion->fd << "]" << std::endl;
-		close(oldest_connexion->fd);
-		oldest_connexion->fd = clientSocket;
-		oldest_connexion->events = POLLIN;
-	}
-	else {
-		struct pollfd new_connexion;
-		new_connexion.fd = clientSocket;
-		new_connexion.events = POLLIN;
-		fds.push_back(new_connexion);
+	for (size_t i = 0; i < servers.size(); ++i) {
+		if (servers[i].server_fd == server_fd) {
+			if (servers[i].getClientSockets().size() >= MAX_CONNECTION) {
+				std::cout << "warning: max number of connections reached for server on fd [" << server_fd << "]" << std::endl;
+				close(clientSocket);
+				return (EXIT_FAILURE);
+			} else {
+				servers[i].addClientSocket(clientSocket);
 
-		SocketInfo newSocketInfo = {clientSocket, time(NULL)};
-		activeSockets.push_back(newSocketInfo);
+				struct pollfd new_connexion;
+				new_connexion.fd = clientSocket;
+				new_connexion.events = POLLIN;
+				fds.push_back(new_connexion);
 
-		nfds++;
+				nfds++;
+			}
+
+			break;
+		std::cout << "New connexion on fd [" << clientSocket << "]" << std::endl;
+		return (EXIT_SUCCESS);
+		}
 	}
-	std::cout << "New connexion on fd [" << clientSocket << "]" << std::endl;
-	return (EXIT_SUCCESS);
+	return (EXIT_FAILURE);
 };
+
+/************************************************************
+ *						READ / WRITE						*
+ ************************************************************/
+
+void ServerManager::handleClientRequest(int clientSocket) {
+	std::vector<char> buffer(10000, '\0');
+	ssize_t bytesRead = read(clientSocket, buffer.data(), 10000);
+
+	if (bytesRead < 0) {
+		perror("In read");
+		close(clientSocket);
+		return;
+	}
+
+	if (bytesRead == 0) {
+		std::cout << "connection closed by client [" <<  clientSocket << "]" << std::endl;
+		close(clientSocket);
+		clientSocket = -1;
+		return;
+	}
+
+	std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
+	for (int i = 0; i < bytesRead; i++)
+	{
+		if (buffer[i] == '\r')
+			std::cout << "\\r";
+		std::cout << buffer[i];
+	}
+
+	std::string request(buffer.data(), bytesRead);
+	ClientRequest clientRequest(request);
+	this->request = clientRequest;
+}
 
 void	ServerManager::updateSocketActivity(int socket) {
-	time_t currentTime = time(NULL);
-
-	for (std::vector<SocketInfo>::iterator it = activeSockets.begin(); it != activeSockets.end(); ++it) {
-		if (it->socket == socket) {
-			it->lastActivity = currentTime;
-			break;
-		}
-	}
-};
-
-void ServerManager::detectInactiveSockets() {
-	time_t currentTime = time(NULL);
-
-	for (std::vector<SocketInfo>::iterator it = activeSockets.begin(); it != activeSockets.end(); ++it) {
-		if (currentTime - it->lastActivity > 120) {
-			std::cout << "Inactive socket detected [" << it->socket << "]" << std::endl;
-			it->socket = -1;
-			for (std::vector<struct pollfd>::iterator fd_it = fds.begin(); fd_it != fds.end(); ++fd_it) {
-				if (fd_it->fd == it->socket) {
-					fd_it->fd = -1;
-					break;
-				}
+	for (size_t i = 0; i < servers.size(); i++) {
+		std::vector<SocketInfo>& clientSockets = servers[i].getClientSockets();
+		for (std::vector<SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
+			if (it->socket == socket) {
+				servers[i].updateClientSocketActivity(socket);
+				return;
 			}
 		}
 	}
 }
 
-void ServerManager::cleanFdsAndActiveSockets(int &nfds) {
-	std::vector<struct pollfd> cleanFds;
-	std::vector<SocketInfo> cleanSockets;
-	bool cleaned = false;
+/************************************************************
+ *						PRINT DEBUG							*
+ ************************************************************/
 
-	for (std::vector<struct pollfd>::iterator it = fds.begin(); it != fds.end(); ++it) {
-		if (it->fd != -1) {
-			cleanFds.push_back(*it);
-		}
+void ServerManager::printAllServersActiveSockets() {
+	for (size_t i = 0; i < servers.size(); ++i) {
+		std::cout << "================ SERVER " << i + 1 << " =================\n";
+		servers[i].printActiveSockets();
+		std::cout << std::endl;
 	}
-	for (std::vector<SocketInfo>::iterator it = activeSockets.begin(); it != activeSockets.end(); ++it) {
-		if (it->socket != -1) {
-			cleanSockets.push_back(*it);
-		} else {
-			close(it->socket);
-			cleaned = true;
-		}
-	}
-
-	fds = cleanFds;
-	activeSockets = cleanSockets;
-	nfds = fds.size();
-	if (cleaned == true)
-		printActiveSockets();
 }
 
-
-
-void ServerManager::start() {
-	setupNetwork();
-
-	int ret;
-	int nfds = 1;
-	int current_size;
-
-	fds[0].fd = this->server_fd;
-	fds[0].events = POLLIN;
-	while (1) {
-		ret = poll(&fds.front(), nfds, 0);
-
-		if (ret == -1)
-		{
-			perror("In poll");
-			exit(EXIT_FAILURE);
-		}
-		else
-		{
-			current_size = nfds;
-			for (int i = 0; i < current_size; i++)
-			{
-				if (fds[i].revents & POLLIN && fds[i].fd == server_fd)
-				{
-					acceptNewConnexion(server_fd, nfds);
-				}
-				else if (fds[i].revents & POLLIN)
-				{
-					CR;
-					std::cout << "Handling on [" << fds[i].fd << "]" << std::endl;
-					handleClientRequest(fds[i].fd);
-					updateSocketActivity(fds[i].fd);
-					fds[i].events = POLLOUT;
-				}
-				else if (fds[i].revents & POLLOUT)
-				{
-					CR;
-					std::cout << "Responding on [" << fds[i].fd << "]" << std::endl;
-					ServerResponse serverResponse;
-					serverResponse.process(request, fds[i].fd);
-					fds[i].events = POLLIN;
-					updateSocketActivity(fds[i].fd);
-				}
-				detectInactiveSockets();
-				cleanFdsAndActiveSockets(nfds);
-			}
-		}
+void ServerManager::printServersSockets() {
+	for (size_t i = 0; i < servers.size(); ++i) {
+		std::cout << "================ SERVER " << i + 1 << " =================\n";
+		servers[i].printListeningSocket();
+		std::cout << std::endl;
 	}
 }

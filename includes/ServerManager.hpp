@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 12:27:15 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/13 17:21:43 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,28 +35,24 @@
 # define POST 2
 # define DELETE 4
 
-struct SocketInfo {
-	int socket;
-	time_t lastActivity;
-};
 
 class ServerManager {
 private:
-	int server_fd;
+	int nfds;
 	ClientRequest request;
-	struct sockaddr_in address;
+	// struct sockaddr_in address;
 	std::vector<Server> servers;
 	std::vector<struct pollfd> fds;
-	std::vector<SocketInfo> activeSockets; // does not contain server_fd
 
-	void	setupNetwork();
-	void	printActiveSockets();
-	void	detectInactiveSockets();
-	void	cleanFdsAndActiveSockets(int &nfds);
+	int		setupNetwork();
+	void	updateFds(size_t len, std::vector<SocketInfo>& clientSockets);
+	void	handleEvent(size_t index);
 	void	updateSocketActivity(int socket);
 	void	handleClientRequest(int clientSocket);
 	void	parseConfigFile(std::string config_file);
-	int		acceptNewConnexion(int server_fd, int &nfds);
+	int		acceptNewConnexion(int server_fd);
+	void	printServersSockets();
+	void	printAllServersActiveSockets();
 
 public:
 	ServerManager(std::string config_file);

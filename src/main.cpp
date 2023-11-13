@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:41:09 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/08 18:44:46 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/13 16:33:28 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ try {
 		return 1;
 	}
 	ServerManager webServe(argc == 2 ? argv[1] : "config/default.conf");
-	webServe.start();
 	return 0;
 }
 catch (ServerManager::ParsingException &e) {

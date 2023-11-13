@@ -3,16 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 16:50:40 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/13 17:34:34 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 #include "ServerManager.hpp"
 #include "utils.hpp"
+
+/************************************************************
+ *					CONSTRUCTORS/DESTRUCTOR					*
+ ************************************************************/
 
 // @TODO remove default values
 Server::Server(): autoindex(true), port(8080), methods(GET | POST | DELETE), max_body_size(1000000), root("./"), index("index.html")
@@ -30,7 +34,40 @@ Server::Server(): autoindex(true), port(8080), methods(GET | POST | DELETE), max
 
 	server_names.push_back("localhost");
 	server_names.push_back("norminet");
+
+	memset(address.sin_zero, '\0', sizeof address.sin_zero);
+		
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr = INADDR_ANY;
+	address.sin_port = htons(getPort());
 }
+
+// @TODO remove some default values (for each necessary)
+Server::Server(fp::Module &mod): autoindex(true), port(80), methods(GET | POST | DELETE), max_body_size(1000000), root("./"), index("index.html")
+{
+	this->parseAutoindex(mod);
+	this->parsePort(mod);
+	this->parseMaxBodySize(mod);
+	this->parseRoot(mod);
+	this->parseIndex(mod);
+	// @TODO if methos is not defined, check if routes are defined and if all these routes have methods
+	this->parseMethods(mod);
+	this->parseServerNames(mod);
+	this->parseErrorPages(mod);
+	this->parseRoutes(mod);
+
+	memset(address.sin_zero, '\0', sizeof address.sin_zero);
+		
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr = INADDR_ANY;
+	address.sin_port = htons(getPort());
+}
+
+Server::~Server(){};
+
+/************************************************************
+ *							PARSERS							*
+ ************************************************************/
 
 void Server::parseAutoindex(fp::Module &mod)
 {
@@ -220,23 +257,9 @@ void Server::parseRoutes(fp::Module &mod)
 	}
 }
 
-// @TODO remove some default values (for each necessary)
-Server::Server(fp::Module &mod): autoindex(true), port(80), methods(GET | POST | DELETE), max_body_size(1000000), root("./"), index("index.html")
-{
-	this->parseAutoindex(mod);
-	this->parsePort(mod);
-	this->parseMaxBodySize(mod);
-	this->parseRoot(mod);
-	this->parseIndex(mod);
-	// @TODO if methos is not defined, check if routes are defined and if all these routes have methods
-	this->parseMethods(mod);
-	this->parseServerNames(mod);
-	this->parseErrorPages(mod);
-	this->parseRoutes(mod);
-}
-
-Server::~Server()
-{}
+/************************************************************
+ *							GETTERS							*
+ ************************************************************/
 
 int Server::getPort() const
 {
@@ -276,4 +299,88 @@ std::map<std::string, Route> Server::getRoutes() const
 std::vector<std::string> Server::getServerNames() const
 {
 	return this->server_names;
+}
+
+std::vector<SocketInfo>& Server::getClientSockets() {
+	return clientSockets;
+}
+
+/************************************************************
+ *				CLIENT SOCKET HANDLERS						*
+ ************************************************************/
+
+void Server::acceptNewConnections()
+{
+	int newClient = 0;
+	int addrlen = sizeof(address);
+	while (newClient != -1)
+	{
+		newClient = accept(server_fd, (sockaddr *)&address, (socklen_t*)&addrlen);
+		if (newClient < 0)
+		{
+ 			newClient = -1;
+		}
+		else
+		{
+			addClientSocket(newClient);
+		}
+	}
+}
+
+void Server::addClientSocket(int socket) {
+	SocketInfo newSocketInfo = {socket, time(NULL)};
+	clientSockets.push_back(newSocketInfo);
+}
+
+void	Server::updateClientSocketActivity(int socket) {
+	time_t currentTime = time(NULL);
+
+	for (std::vector<SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
+		if (it->socket == socket) {
+			it->lastActivity = currentTime;
+			break;
+		}
+	}
+};
+
+void Server::detectInactiveClientSockets() {
+	time_t currentTime = time(NULL);
+
+	for (std::vector<SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
+		if (currentTime - it->lastActivity > 120) {
+			std::cout << "Inactive socket detected [" << it->socket << "]" << std::endl;
+			it->socket = -1;
+			}
+		}
+}
+
+
+/************************************************************
+ *					PRINT FUNCTIONS							*
+ ************************************************************/
+
+void Server::printActiveSockets() {
+	const int width = 20;
+	std::cout << std::left << std::setw(width) << "Socket FD"
+			  << std::left << std::setw(width) << "Last Activity" << std::endl;
+	std::cout << std::string(40, '-') << std::endl; // Print a separator line
+
+	for (std::vector<SocketInfo>::const_iterator it = clientSockets.begin();
+		 it != clientSockets.end(); ++it) {
+		char buffer[30];
+		std::time_t lastActivity = static_cast<time_t>(it->lastActivity);
+		std::tm *tm_info = std::localtime(&lastActivity);
+		std::strftime(buffer, 30, "%Y-%m-%d %H:%M:%S", tm_info);
+
+		std::cout << std::left << std::setw(width) << it->socket
+				  << std::left << std::setw(width) << buffer << std::endl;
+	}
+}
+
+void Server::printListeningSocket() {
+	const int width = 20;
+	std::cout << std::left << std::setw(width) << "Listening FD";
+	std::cout << std::left << std::setw(width) << server_fd << std::endl;
+	std::cout << std::left << std::setw(width) << "Listening Port";
+	std::cout << std::left << std::setw(width) << port << std::endl;
 }
