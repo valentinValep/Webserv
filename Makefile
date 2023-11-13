@@ -36,7 +36,7 @@ $(NAME): $(OBJ) $(MAIN_OBJ) $(LIBS)
 	$(CXX) $(OBJ) $(MAIN_OBJ) -o $(NAME) $(LIBS_FLAGS)
 
 $(TEST_NAME): $(OBJ) $(TEST_OBJ) $(LIBS)
-	$(CXX) $(OBJ) $(TEST_OBJ) -o $(TEST_NAME)
+	$(CXX) $(OBJ) $(TEST_OBJ) -o $(TEST_NAME) $(LIBS_FLAGS)
 
 $(LIBS_DIR)fileParser/libfp.a:
 	make -C $(LIBS_DIR)fileParser
