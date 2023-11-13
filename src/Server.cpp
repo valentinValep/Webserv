@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 12:37:53 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/13 16:50:40 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,9 +167,9 @@ void Server::parseServerNames(fp::Module &mod)
 
 void Server::parseErrorPages(fp::Module &mod)
 {
+	// @TODO write an error for some necessary error pages (404, 500, etc)
 	for (std::vector<fp::Object *>::const_iterator it = mod.getObjects().begin(); it != mod.getObjects().end(); it++)
 	{
-		// error_page 400 error/400.html
 		if ((*it)->getName() == "error_page")
 		{
 			fp::Variable	*var;

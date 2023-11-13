@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/13 13:23:09 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/13 16:41:57 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,13 +139,14 @@ void ServerManager::setupNetwork() {
 		exit(EXIT_FAILURE);
 	}
 
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(this->servers[0].getPort());
+	this->address.sin_family = AF_INET;
+	this->address.sin_addr.s_addr = INADDR_ANY;
+	this->address.sin_port = htons(this->servers[0].getPort());
 
-	memset(address.sin_zero, '\0', sizeof address.sin_zero);
+	memset(this->address.sin_zero, '\0', sizeof this->address.sin_zero);
 
-	if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+	if (bind(server_fd, (struct sockaddr*)&this->address, sizeof(this->address)) < 0) {
+		std::cout << "errno: " << errno << std::endl;
 		perror("In bind");
 		exit(EXIT_FAILURE);
 	}
