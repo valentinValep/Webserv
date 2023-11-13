@@ -3,18 +3,35 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/09 16:59:16 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/13 20:48:16 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientRequest.hpp"
 
-ClientRequest::ClientRequest(const std::string& request) {
-	// Parse the request
-	std::istringstream iss(request);
+//ClientRequest::ClientRequest(const std::string& request) {
+//	// Parse the request
+//	std::istringstream iss(request);
+//	iss >> method >> path >> protocol;
+
+//	// Read headers
+//	std::string line;
+//	while (std::getline(iss, line) && line != "\r") {
+//		headers.push_back(line);
+//	}
+
+//	// Read body
+//	std::getline(iss, body, '\0');
+//}
+
+ClientRequest::ClientRequest() {}
+
+void ClientRequest::parse()
+{
+	std::istringstream iss(this->raw_data);
 	iss >> method >> path >> protocol;
 
 	// Read headers

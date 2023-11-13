@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 17:15:47 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/13 20:02:09 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,6 @@
 # include <map>
 # include <netinet/in.h>
 
-struct SocketInfo {
-	int socket;
-	time_t lastActivity;
-};
 class Server {
 	private:
 		// Attributes
@@ -65,20 +61,10 @@ class Server {
 		std::map<int, std::string> getErrorPages() const;
 		std::map<std::string, Route> getRoutes() const;
 		std::vector<std::string> getServerNames() const;
-		std::vector<SocketInfo>& getClientSockets();
 
-		void		acceptNewConnections();
-		void		addClientSocket(int socket);
-		void		removeClientSocket(int socket);
-		void		updateClientSocketActivity(int socket);
-		void		detectInactiveClientSockets();
-		void		printActiveSockets();
-		void		printListeningSocket();
-
-		//@TODO put in private
-		int server_fd;
-		struct sockaddr_in address;
-		std::vector<SocketInfo> clientSockets;
+		//void		updateClientSocketActivity(int socket);
+		//void		detectInactiveClientSockets();
+		//void		printActiveSockets();
 };
 
 #endif

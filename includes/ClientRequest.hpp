@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/01 15:39:21 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/13 20:45:45 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,11 @@ public:
 	std::string protocol;
 	std::vector<std::string> headers;
 	std::string body;
+	std::string raw_data;
 
-	ClientRequest(const std::string& request);
-	void print() const;
-	
+	ClientRequest();
+	void	parse();
+	void	print() const;
 };
 
 #endif

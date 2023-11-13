@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 17:34:34 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/13 20:01:55 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,6 @@ Server::Server(): autoindex(true), port(8080), methods(GET | POST | DELETE), max
 
 	server_names.push_back("localhost");
 	server_names.push_back("norminet");
-
-	memset(address.sin_zero, '\0', sizeof address.sin_zero);
-		
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(getPort());
 }
 
 // @TODO remove some default values (for each necessary)
@@ -55,12 +49,6 @@ Server::Server(fp::Module &mod): autoindex(true), port(80), methods(GET | POST |
 	this->parseServerNames(mod);
 	this->parseErrorPages(mod);
 	this->parseRoutes(mod);
-
-	memset(address.sin_zero, '\0', sizeof address.sin_zero);
-		
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(getPort());
 }
 
 Server::~Server(){};
@@ -301,86 +289,51 @@ std::vector<std::string> Server::getServerNames() const
 	return this->server_names;
 }
 
-std::vector<SocketInfo>& Server::getClientSockets() {
-	return clientSockets;
-}
-
 /************************************************************
  *				CLIENT SOCKET HANDLERS						*
  ************************************************************/
 
-void Server::acceptNewConnections()
-{
-	int newClient = 0;
-	int addrlen = sizeof(address);
-	while (newClient != -1)
-	{
-		newClient = accept(server_fd, (sockaddr *)&address, (socklen_t*)&addrlen);
-		if (newClient < 0)
-		{
- 			newClient = -1;
-		}
-		else
-		{
-			addClientSocket(newClient);
-		}
-	}
-}
+//void	Server::updateClientSocketActivity(int socket) {
+//	time_t currentTime = time(NULL);
 
-void Server::addClientSocket(int socket) {
-	SocketInfo newSocketInfo = {socket, time(NULL)};
-	clientSockets.push_back(newSocketInfo);
-}
+//	for (std::vector<SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
+//		if (it->socket == socket) {
+//			it->lastActivity = currentTime;
+//			break;
+//		}
+//	}
+//};
 
-void	Server::updateClientSocketActivity(int socket) {
-	time_t currentTime = time(NULL);
+//void Server::detectInactiveClientSockets() {
+//	time_t currentTime = time(NULL);
 
-	for (std::vector<SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
-		if (it->socket == socket) {
-			it->lastActivity = currentTime;
-			break;
-		}
-	}
-};
-
-void Server::detectInactiveClientSockets() {
-	time_t currentTime = time(NULL);
-
-	for (std::vector<SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
-		if (currentTime - it->lastActivity > 120) {
-			std::cout << "Inactive socket detected [" << it->socket << "]" << std::endl;
-			it->socket = -1;
-			}
-		}
-}
+//	for (std::vector<SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
+//		if (currentTime - it->lastActivity > 120) {
+//			std::cout << "Inactive socket detected [" << it->socket << "]" << std::endl;
+//			it->socket = -1;
+//			}
+//		}
+//}
 
 
 /************************************************************
  *					PRINT FUNCTIONS							*
  ************************************************************/
 
-void Server::printActiveSockets() {
-	const int width = 20;
-	std::cout << std::left << std::setw(width) << "Socket FD"
-			  << std::left << std::setw(width) << "Last Activity" << std::endl;
-	std::cout << std::string(40, '-') << std::endl; // Print a separator line
+//void Server::printActiveSockets() {
+//	const int width = 20;
+//	std::cout << std::left << std::setw(width) << "Socket FD"
+//			  << std::left << std::setw(width) << "Last Activity" << std::endl;
+//	std::cout << std::string(40, '-') << std::endl; // Print a separator line
 
-	for (std::vector<SocketInfo>::const_iterator it = clientSockets.begin();
-		 it != clientSockets.end(); ++it) {
-		char buffer[30];
-		std::time_t lastActivity = static_cast<time_t>(it->lastActivity);
-		std::tm *tm_info = std::localtime(&lastActivity);
-		std::strftime(buffer, 30, "%Y-%m-%d %H:%M:%S", tm_info);
+//	for (std::vector<SocketInfo>::const_iterator it = clientSockets.begin();
+//		 it != clientSockets.end(); ++it) {
+//		char buffer[30];
+//		std::time_t lastActivity = static_cast<time_t>(it->lastActivity);
+//		std::tm *tm_info = std::localtime(&lastActivity);
+//		std::strftime(buffer, 30, "%Y-%m-%d %H:%M:%S", tm_info);
 
-		std::cout << std::left << std::setw(width) << it->socket
-				  << std::left << std::setw(width) << buffer << std::endl;
-	}
-}
-
-void Server::printListeningSocket() {
-	const int width = 20;
-	std::cout << std::left << std::setw(width) << "Listening FD";
-	std::cout << std::left << std::setw(width) << server_fd << std::endl;
-	std::cout << std::left << std::setw(width) << "Listening Port";
-	std::cout << std::left << std::setw(width) << port << std::endl;
-}
+//		std::cout << std::left << std::setw(width) << it->socket
+//				  << std::left << std::setw(width) << buffer << std::endl;
+//	}
+//}
