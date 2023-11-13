@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 12:10:02 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/13 12:37:53 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "utils.hpp"
 
 // @TODO remove default values
-Server::Server(): port(8080), methods(GET | POST | DELETE), max_body_size(1000000), root("./"), index("index.html")
+Server::Server(): autoindex(true), port(8080), methods(GET | POST | DELETE), max_body_size(1000000), root("./"), index("index.html")
 {
 	error_pages[400] = "error/400.html";
 	error_pages[403] = "error/403.html";
@@ -30,6 +30,29 @@ Server::Server(): port(8080), methods(GET | POST | DELETE), max_body_size(100000
 
 	server_names.push_back("localhost");
 	server_names.push_back("norminet");
+}
+
+void Server::parseAutoindex(fp::Module &mod)
+{
+	fp::Variable	*var;
+
+	var = mod.getVariable("autoindex");
+	if (!var)
+		return ;
+	if (var->getAttributes().size() != 1)
+	{
+		std::cerr << "Error: autoindex need one value" << std::endl;
+		throw ServerManager::ParsingException();
+	}
+	if (var->getAttributes()[0] == "on")
+		this->autoindex = true;
+	else if (var->getAttributes()[0] == "off")
+		this->autoindex = false;
+	else
+	{
+		std::cerr << "Error: autoindex value need to be on or off" << std::endl;
+		throw ServerManager::ParsingException();
+	}
 }
 
 void Server::parsePort(fp::Module &mod)
@@ -128,8 +151,13 @@ void Server::parseServerNames(fp::Module &mod)
 	fp::Variable	*var;
 
 	var = mod.getVariable("server_name");
-	if (!var || var->getAttributes().size() == 0)
+	if (!var)
 		return ;
+	if (var->getAttributes().size() == 0)
+	{
+		std::cerr << "Error: server_name need at least one value" << std::endl;
+		throw ServerManager::ParsingException();
+	}
 	this->server_names.clear();
 	for (std::vector<std::string>::const_iterator it = var->getAttributes().begin(); it != var->getAttributes().end(); it++)
 	{
@@ -172,16 +200,35 @@ void Server::parseErrorPages(fp::Module &mod)
 
 void Server::parseRoutes(fp::Module &mod)
 {
-	(void)mod;
-	// @TODO
+	for (std::vector<fp::Object *>::const_iterator it = mod.getObjects().begin(); it != mod.getObjects().end(); it++)
+	{
+		// location / {
+		if ((*it)->getName() == "location")
+		{
+			fp::Module	*mod;
+			std::string	path;
+
+			mod = dynamic_cast<fp::Module *>(*it);
+			if (!mod || mod->getAttributes().size() != 1)
+			{
+				std::cerr << "Error: location need a path" << std::endl;
+				throw ServerManager::ParsingException();
+			}
+			path = mod->getAttributes()[0];
+			this->routes[path] = Route(*mod);
+		}
+	}
 }
 
-Server::Server(fp::Module &mod)
+// @TODO remove some default values (for each necessary)
+Server::Server(fp::Module &mod): autoindex(true), port(80), methods(GET | POST | DELETE), max_body_size(1000000), root("./"), index("index.html")
 {
+	this->parseAutoindex(mod);
 	this->parsePort(mod);
 	this->parseMaxBodySize(mod);
 	this->parseRoot(mod);
 	this->parseIndex(mod);
+	// @TODO if methos is not defined, check if routes are defined and if all these routes have methods
 	this->parseMethods(mod);
 	this->parseServerNames(mod);
 	this->parseErrorPages(mod);

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/02 16:46:08 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/13 13:37:16 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,13 @@
 # define ROUTE_HPP
 
 # include "Route.hpp"
+# include "FileParser.hpp"
 # include <iostream>
 # include <string>
 # include <vector>
 
-# define GET 1
-# define POST 2
-# define DELETE 4
-
-# define ACCEPTED_CGI ["php"] // @TODO choose the right one
+# define ACCEPTED_CGI_TABSIZE 1
+# define ACCEPTED_CGI (std::string [ACCEPTED_CGI_TABSIZE]){".php"} // @TODO choose the right one
 
 class Route {
 	private:
@@ -38,9 +36,18 @@ class Route {
 		std::string	upload_path;
 
 		// @TODO Define a directory or a file from where the file should be searched (for example, if url /kapouet is rooted to /tmp/www, url /kapouet/pouic/toto/pouet is /tmp/www/pouic/toto/pouet).
+		void	parseMethods(fp::Module &mod);
+		void	parseRoot(fp::Module &mod);
+		void	parseIndex(fp::Module &mod);
+		void	parseAutoindex(fp::Module &mod);
+		void	parseCgiExtension(fp::Module &mod);
+		void	parseCgiPath(fp::Module &mod);
+		void	parseUploadPath(fp::Module &mod);
+		void	parseRedirect(fp::Module &mod);
 	public:
 		// Constructor & Destructor
 		Route();
+		Route(fp::Module &mod);
 		~Route();
 
 		// Getters

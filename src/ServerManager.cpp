@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/11 11:27:26 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/13 13:23:09 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,11 +37,17 @@ void ServerManager::handleClientRequest(int clientSocket) {
 		clientSocket = -1;
 		return;
 	}
-	
+
 	std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
-	std::cout << buffer.data(); // this prints the client request
+	//std::cout << buffer.data(); // this prints the client request
+	for (int i = 0; i < bytesRead; i++)
+	{
+		if (buffer[i] == '\r')
+			std::cout << "\\r";
+		std::cout << buffer[i];
+	}
 	std::cout << "\n======================================================" << std::endl;
-	
+
 	std::string request(buffer.data(), bytesRead);
 	ClientRequest clientRequest(request);
 	this->request = clientRequest;
@@ -66,7 +72,7 @@ void	configParser(fp::FileParser &parser)
 	parser.whitelist("/server/location/root");
 	parser.whitelist("/server/location/index");
 	parser.whitelist("/server/location/autoindex");
-	parser.whitelist("/server/location/extention");
+	parser.whitelist("/server/location/extension");
 	parser.whitelist("/server/location/cgi_path");
 	parser.whitelist("/server/location/upload_path");
 	parser.whitelist("/server/location/return");
@@ -102,11 +108,11 @@ catch(const fp::FileParser::FileParserSyntaxException& e)
 
 void ServerManager::printActiveSockets() {
 	const int width = 20;
-	std::cout << std::left << std::setw(width) << "Socket FD" 
+	std::cout << std::left << std::setw(width) << "Socket FD"
 			  << std::left << std::setw(width) << "Last Activity" << std::endl;
 	std::cout << std::string(40, '-') << std::endl; // Print a separator line
 
-	for (std::vector<SocketInfo>::const_iterator it = activeSockets.begin(); 
+	for (std::vector<SocketInfo>::const_iterator it = activeSockets.begin();
 		 it != activeSockets.end(); ++it) {
 		char buffer[30];
 		std::time_t lastActivity = static_cast<time_t>(it->lastActivity);
@@ -169,7 +175,7 @@ int ServerManager::acceptNewConnexion(int server_fd, int &nfds) {
 		close(oldest_connexion->fd);
 		oldest_connexion->fd = clientSocket;
 		oldest_connexion->events = POLLIN;
-	} 
+	}
 	else {
 		struct pollfd new_connexion;
 		new_connexion.fd = clientSocket;
