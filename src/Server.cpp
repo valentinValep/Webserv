@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 20:01:55 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 19:23:53 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,6 +287,11 @@ std::map<std::string, Route> Server::getRoutes() const
 std::vector<std::string> Server::getServerNames() const
 {
 	return this->server_names;
+}
+
+bool Server::hasServerName(const std::string &serverName) const
+{
+	return (std::find(this->server_names.begin(), this->server_names.end(), serverName) != this->server_names.end());
 }
 
 /************************************************************

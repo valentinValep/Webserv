@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 20:02:09 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 19:20:05 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,8 @@ class Server {
 		std::map<int, std::string> getErrorPages() const;
 		std::map<std::string, Route> getRoutes() const;
 		std::vector<std::string> getServerNames() const;
+
+		bool					hasServerName(const std::string& serverName) const;
 
 		//void		updateClientSocketActivity(int socket);
 		//void		detectInactiveClientSockets();
