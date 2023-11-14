@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 13:45:55 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 19:33:45 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ class ServerResponse {
 
 		void process(const ClientRequest& request, int clientSocket);
 		std::string readFileContent(const std::string& filePath);
-		void sendHttpResponse(int clientSocket, const std::string& content);
+		void sendHttpResponse(int clientSocket, const std::string& content, const std::string& contentType);
 		void sendHttpResponseCSS(int clientSocket, const std::string& content);
 };
 

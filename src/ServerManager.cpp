@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/14 16:57:41 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 19:43:29 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,7 +160,7 @@ void ServerManager::start()
 			//std::cout << "Checking [" << this->fds[index].fd << "] == " << this->fds[index].revents << std::endl;
 			if (this->fds[index].revents == NO_EVENT)
 				continue;
-			std::cout << "Event on [" << this->fds[index].fd << "]" << std::endl;
+			//std::cout << "Event on [" << this->fds[index].fd << "]" << std::endl;
 			handleEvent(this->fds[index]);
 		}
 	}
@@ -304,12 +304,11 @@ void ServerManager::storeHeaderClientRequest(char *buffer, int bytesRead, Client
 	{
 		std::cout << "end of header found.\n";
 		request.setState(ClientRequest::HEADER_FULLY_RECEIVED);
-		request.setHeaderInfos();
 
-		std::cout << "HEADER : " << request.raw_data << std::endl;
-		std::cout << "HEADER LENGTH : " << request.raw_data.length() << std::endl;
+		//std::cout << "HEADER : " << request.raw_data << std::endl;
+		//std::cout << "HEADER LENGTH : " << request.raw_data.length() << std::endl;
 
-		request.parse();
+		request.parseHeader(this->servers);
 		request.setBodyState();
 		request.raw_data = "";
 	}
@@ -321,8 +320,7 @@ void ServerManager::storeBodyClientRequest(char *buffer, int bytesRead, ClientRe
 	request.raw_data += std::string(buffer, bytesRead);
 	request.setBodyState();
 	if (request.state == ClientRequest::REQUEST_FULLY_RECEIVED) {
-		request.setBodyInfos();
-		//@TODO parse body
+		request.parseBody();
 		request.raw_data = "";
 	}
 	else
