@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/09 17:06:44 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/14 13:45:55 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVERRESPONSE_HPP
 # define SERVERRESPONSE_HPP
 
+# include "ClientRequest.hpp"
 # include <string>
 # include <vector>
 # include <sys/socket.h>
@@ -24,12 +25,11 @@
 # include <fstream>
 # include <iostream>
 # include <algorithm>
-# include "ClientRequest.hpp"
 
 class ServerResponse {
 	public:
 		ServerResponse();
-		
+
 		void process(const ClientRequest& request, int clientSocket);
 		std::string readFileContent(const std::string& filePath);
 		void sendHttpResponse(int clientSocket, const std::string& content);

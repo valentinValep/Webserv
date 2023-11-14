@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/14 14:01:42 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/14 15:09:19 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,8 @@ ServerManager::ServerManager(std::string configFilePath): nfds(0), fds()
 	{
 		std::cout << "Set up complete of " << this->servers.size() << " servers." << std::endl;
 		std::cout << "Listening at: " << std::endl;
-		for (std::map<int, int>::iterator it = this->listeningSockets.begin(); it != this->listeningSockets.end(); it++)
-			std::cout << "Fd: " << it->first << " on port " << it->second << std::endl;
+		for (std::set<int>::iterator it = this->listeningSockets.begin(); it != this->listeningSockets.end(); it++)
+			std::cout << "Fd: " << *it << std::endl;
 		this->start();
 	}
 }
@@ -94,11 +94,14 @@ catch(const fp::FileParser::FileParserSyntaxException& e)
 }
 
 int ServerManager::setupNetwork() {
+	std::set<int>		listeningPorts;
 	struct sockaddr_in	address;
 	int					serverSocket = 0;
 
 	for (std::vector<Server>::iterator it = this->servers.begin(); it != this->servers.end(); it++)
 	{
+		if (listeningPorts.find(it->getPort()) != listeningPorts.end())
+			continue;
 		memset(address.sin_zero, '\0', sizeof address.sin_zero);
 		address.sin_family = AF_INET;
 		address.sin_addr.s_addr = INADDR_ANY;
@@ -130,7 +133,8 @@ int ServerManager::setupNetwork() {
 		new_server_fd.fd = serverSocket;
 		new_server_fd.events = POLLIN;
 		this->fds.push_back(new_server_fd); // @TODO compound literal
-		this->listeningSockets[serverSocket] = it->getPort();
+		this->listeningSockets.insert(serverSocket);
+		listeningPorts.insert(it->getPort());
 		this->nfds++;
 	}
 	return (EXIT_SUCCESS);
@@ -288,7 +292,7 @@ void ServerManager::storeHeaderClientRequest(char *buffer, int bytesRead, Client
 
 		std::cout << "HEADER : " << request.raw_data << std::endl;
 		std::cout << "HEADER LENGTH : " << request.raw_data.length() << std::endl;
-		
+
 		request.parse();
 		request.raw_data = "";
 		std::cout << "end of body found.\n";

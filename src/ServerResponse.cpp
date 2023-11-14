@@ -6,17 +6,18 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 20:51:03 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 13:46:25 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerResponse.hpp"
+#include "ServerManager.hpp"
 #include <sstream>
 
 ServerResponse::ServerResponse(){};
 
 void ServerResponse::process(const ClientRequest& request, int clientSocket) {
-	if (request.method == "GET") {
+	if (request.method == GET) {
 		std::string content;
 		if (request.path == "/style.css")
 		{
@@ -28,10 +29,10 @@ void ServerResponse::process(const ClientRequest& request, int clientSocket) {
 			content = readFileContent("src/index.html");
 			sendHttpResponse(clientSocket, content);
 		}
-	} else if (request.method == "POST") {
+	} else if (request.method == POST) {
 		// Handle POST request
 		// Generate appropriate response
-	} else if (request.method == "DELETE") {
+	} else if (request.method == DELETE) {
 		// Handle DELETE request
 		// Generate appropriate response
 	}

@@ -6,11 +6,12 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 14:22:42 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 14:50:39 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientRequest.hpp"
+#include "ServerManager.hpp"
 
 /************************************************************
  *						CONSTRUCTORS						*
@@ -41,17 +42,30 @@ void	ClientRequest::setHeaderInfos(std::string _header, int _headerLen) {
 
 void ClientRequest::parse()
 {
+	std::string method;
+
 	std::istringstream iss(this->raw_data);
-	iss >> method >> path >> protocol;
+	iss >> method >> this->path >> this->protocol;
+	if (method == "GET")
+		this->method = GET;
+	else if (method == "POST")
+		this->method = POST;
+	else if (method == "DELETE")
+		this->method = DELETE;
+	else
+	{
+		this->errorCode = 400;
+		return;
+	}
 
 	// Read headers
 	std::string line;
 	while (std::getline(iss, line) && line != "\r") {
-		headers.push_back(line);
+		this->headers.push_back(line);
 	}
 
 	// Read body
-	std::getline(iss, body, '\0');
+	std::getline(iss, this->body, '\0');
 }
 
 

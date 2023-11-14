@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 14:24:45 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 14:33:39 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,15 +29,16 @@ public:
 		REQUEST_FULLY_RECEIVED,
 	};
 
-	std::string method;
+	int			errorCode; // if 0, no error
+	int			_clientSocket;
+	Server		*server;
+	int			method;
 	std::string path;
 	std::string protocol;
 	std::vector<std::string> headers;
 	std::string body;
 	std::string raw_data;
-	State 		state;
-	int			_clientSocket;
-	Server		*server;
+	State		state;
 
 	//headerstuff
 	std::string	header;

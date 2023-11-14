@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 13:50:48 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/14 15:08:59 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <string>
 # include <vector>
 # include <map>
+# include <set>
 # include <sys/socket.h>
 # include <sys/poll.h>
 # include <netinet/in.h>
@@ -49,10 +50,10 @@ private:
 	// struct sockaddr_in address;
 	std::vector<Server> 		servers;
 	std::vector<struct pollfd>	fds;
-	std::map<int, int>			listeningSockets; // socket_fd -> port
+	std::set<int>				listeningSockets;
 	std::map<int, SocketInfo>	clientSockets; // socket_fd -> clientRequest
 	char 						buffer[BUFFER_SIZE];
-	
+
 	int		setupNetwork();
 	void	updateFds(size_t len, std::vector<SocketInfo>& clientSockets);
 	void	handleEvent(pollfd &pollfd);
