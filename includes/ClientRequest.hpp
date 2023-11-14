@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 14:24:45 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 16:28:44 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,13 +35,17 @@ public:
 	std::vector<std::string> headers;
 	std::string body;
 	std::string raw_data;
-	State 		state;
 	int			_clientSocket;
 	Server		*server;
+	State 		state;
 
 	//headerstuff
 	std::string	header;
 	int			headerLen;
+
+	//bodystuff
+	std::string _body;
+	int			_bodyLen;
 
 	ClientRequest();
 	ClientRequest(int fd);
@@ -50,7 +54,9 @@ public:
 	void	print() const;
 
 	void	setState(State newState);
-	void	setHeaderInfos(std::string _header, int _headerLen);
+	void	setHeaderInfos();
+	void	setBodyInfos();
+	void	setBodyState();
 };
 
 #endif

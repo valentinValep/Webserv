@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 14:22:42 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 16:08:58 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@
  *						CONSTRUCTORS						*
  ************************************************************/
 
-ClientRequest::ClientRequest(): _clientSocket(0), server(NULL) {}
+ClientRequest::ClientRequest(): _clientSocket(0), server(NULL), state(HEADER_NOT_FULLY_RECEIVED) {}
 
-ClientRequest::ClientRequest(int fd) : _clientSocket(fd), server(NULL) {}
+ClientRequest::ClientRequest(int fd) : _clientSocket(fd), server(NULL), state(HEADER_NOT_FULLY_RECEIVED) {}
 
 
 /************************************************************
@@ -30,10 +30,39 @@ void ClientRequest::setState(State newState)
 	state = newState;
 }
 
-void	ClientRequest::setHeaderInfos(std::string _header, int _headerLen) {
-	header = _header;
-	headerLen = _headerLen;
+void	ClientRequest::setHeaderInfos() {
+	header = raw_data;
+	headerLen = raw_data.length();
 };
+
+void	ClientRequest::setBodyInfos() {
+	_body = raw_data;
+	_bodyLen = raw_data.length();
+};
+
+void ClientRequest::setBodyState() {
+	if (method == "GET" || method == "HEAD" || method == "DELETE") {
+		state = REQUEST_FULLY_RECEIVED;
+		return;
+	}
+
+	bool hasBody = false;
+	for (std::vector<std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
+		if (it->find("Content-Length:") != std::string::npos || 
+			it->find("Transfer-Encoding:") != std::string::npos) {
+			std::cout << "Body delimiter found" << std::endl;
+			hasBody = true;
+			break;
+		}
+	}
+
+	if (hasBody) {
+		state = BODY_NOT_FULLY_RECEIVED;
+	} else {
+		state = REQUEST_FULLY_RECEIVED;
+	}
+}
+
 
 /************************************************************
  *						PARSE								*

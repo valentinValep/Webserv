@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 13:50:48 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/14 15:35:27 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@
 # define GET 1
 # define POST 2
 # define DELETE 4
-# define BUFFER_SIZE 10000
+# define BUFFER_SIZE 100000
 
 
 struct SocketInfo {
@@ -66,6 +66,7 @@ private:
 	int		handleClientRequest(ClientRequest &request);
 	int		readClientRequest(ClientRequest &request);
 	void	storeHeaderClientRequest(char *buffer, int bytesRead, ClientRequest &request);
+	void	storeBodyClientRequest(char *buffer, int bytesRead, ClientRequest &request);
 
 public:
 	ServerManager(std::string config_file);
