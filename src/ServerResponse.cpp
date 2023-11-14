@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 13:46:25 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 16:33:18 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,18 +17,28 @@
 ServerResponse::ServerResponse(){};
 
 void ServerResponse::process(const ClientRequest& request, int clientSocket) {
+	if (request.errorCode)
+	{
+		;//	respond error
+		break ;
+	}
 	if (request.method == GET) {
 		std::string content;
-		if (request.path == "/style.css")
+		if (request.path == "/")
 		{
-			content = readFileContent("src/style.css");
+			content = readFileContent(request.server->getIndex());
 			sendHttpResponseCSS(clientSocket, content);
 		}
-		else
-		{
-			content = readFileContent("src/index.html");
-			sendHttpResponse(clientSocket, content);
-		}
+//		if (request.path == "/style.css")
+//		{
+//			content = readFileContent("src/style.css");
+//			sendHttpResponseCSS(clientSocket, content);
+//		}
+//		else
+//		{
+//			content = readFileContent("src/index.html");
+//			sendHttpResponse(clientSocket, content);
+//		}
 	} else if (request.method == POST) {
 		// Handle POST request
 		// Generate appropriate response
