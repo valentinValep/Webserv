@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/14 15:09:19 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 16:57:41 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,9 +177,14 @@ void ServerManager::handleEvent(pollfd &pollfd)
 	}
 	if (pollfd.revents & POLLIN)
 	{
+		int ret = 0;
 		std::cout << "Handling on [" << pollfd.fd << "]" << std::endl;
-		handleClientRequest(this->clientSockets[pollfd.fd].request);
-		pollfd.events = POLLOUT;
+		ret = handleClientRequest(this->clientSockets[pollfd.fd].request);
+		if (!ret && this->clientSockets[pollfd.fd].request.state == ClientRequest::REQUEST_FULLY_RECEIVED)
+		{
+			pollfd.events = POLLOUT;
+			this->clientSockets[pollfd.fd].request.state = ClientRequest::HEADER_NOT_FULLY_RECEIVED;
+		}
 	}
 	if (pollfd.revents & POLLOUT)
 	{
@@ -195,7 +200,7 @@ void ServerManager::handleEvent(pollfd &pollfd)
 
 
 /************************************************************
- *						METHODS								*
+ *						NETWORK STUFF						*
  ************************************************************/
 
 void ServerManager::cleanFdsAndActiveSockets() {
@@ -209,6 +214,16 @@ void ServerManager::cleanFdsAndActiveSockets() {
 		}
 		else
 			++it;
+	}
+
+	for (std::map<int, SocketInfo>::iterator it = this->clientSockets.begin(); it != this->clientSockets.end();) {
+		if (it->second.request._clientSocket == -1) {
+			std::map<int, SocketInfo>::iterator toErase = it;
+			++it;
+			this->clientSockets.erase(toErase);
+		} else {
+			++it;
+		}
 	}
 }
 
@@ -243,15 +258,22 @@ int ServerManager::acceptNewConnexion(int server_fd) {
 };
 
 /************************************************************
- *						READ						*
+ *						REQUEST STUFF						*
  ************************************************************/
 
 int ServerManager::handleClientRequest(ClientRequest &request) {
+
 	ssize_t bytesRead = 0;
 	bytesRead = readClientRequest(request);
-	if (bytesRead > 0)
+
+	if (bytesRead > 0 && request.state == ClientRequest::HEADER_NOT_FULLY_RECEIVED)
 	{
 		storeHeaderClientRequest(buffer, bytesRead, request);
+		return (EXIT_SUCCESS);
+	}
+	if (bytesRead > 0 && request.state == ClientRequest::BODY_NOT_FULLY_RECEIVED)
+	{
+		storeBodyClientRequest(buffer, bytesRead, request);
 		return (EXIT_SUCCESS);
 	}
 	return (EXIT_FAILURE);
@@ -260,26 +282,19 @@ int ServerManager::handleClientRequest(ClientRequest &request) {
 int ServerManager::readClientRequest(ClientRequest &request) {
 	ssize_t bytesRead = recv(request._clientSocket, buffer, BUFFER_SIZE, 0);
 
-	if (bytesRead < 0) {
-		perror("In read");
-		close(request._clientSocket);
-		return (bytesRead);
-	}
-
-	if (bytesRead == 0) {
-		std::cout << "connection closed by client [" <<  request._clientSocket << "]" << std::endl;
-		close(request._clientSocket);
+	if (bytesRead <= 0) {
+		// @TODO better handling of error here
+		if (bytesRead < 0)
+			perror("In read");
+		if (bytesRead == 0)
+			std::cout << "connection closed by client [" <<  request._clientSocket << "]" << std::endl;
 		request._clientSocket = -1;
+		close(request._clientSocket);
 		return (bytesRead);
 	}
-
-	// std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
-	// for (int i = 0; i < bytesRead; i++)
-	// {
-	// 	if (buffer[i] == '\r')
-	// 		std::cout << "\\r";
-	// 	std::cout << buffer[i];
-	// }
+	std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
+	for (int i = 0; i < bytesRead; i++)
+		std::cout << buffer[i];
 	return (bytesRead);
 }
 
@@ -287,18 +302,31 @@ void ServerManager::storeHeaderClientRequest(char *buffer, int bytesRead, Client
 	request.raw_data += std::string(buffer, bytesRead);
 	if (containsEmptyLine(request.raw_data))
 	{
+		std::cout << "end of header found.\n";
 		request.setState(ClientRequest::HEADER_FULLY_RECEIVED);
-		request.setHeaderInfos(request.raw_data, request.raw_data.length());
+		request.setHeaderInfos();
 
 		std::cout << "HEADER : " << request.raw_data << std::endl;
 		std::cout << "HEADER LENGTH : " << request.raw_data.length() << std::endl;
 
 		request.parse();
+		request.setBodyState();
 		request.raw_data = "";
-		std::cout << "end of body found.\n";
 	}
 	else
 		request.setState(ClientRequest::HEADER_NOT_FULLY_RECEIVED);
+}
+
+void ServerManager::storeBodyClientRequest(char *buffer, int bytesRead, ClientRequest &request) {
+	request.raw_data += std::string(buffer, bytesRead);
+	request.setBodyState();
+	if (request.state == ClientRequest::REQUEST_FULLY_RECEIVED) {
+		request.setBodyInfos();
+		//@TODO parse body
+		request.raw_data = "";
+	}
+	else
+		request.setState(ClientRequest::BODY_NOT_FULLY_RECEIVED);
 }
 
 /************************************************************
