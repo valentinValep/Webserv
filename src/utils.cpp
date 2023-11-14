@@ -2,6 +2,10 @@
 #include <cstdlib>
 #include <cstring>
 
+bool containsEmptyLine(const std::string& data) {
+	return (data.find("\r\n\r\n") != std::string::npos);
+}
+
 int	detect_int_overflow(const char *input)
 {
 	size_t	sign = 0;

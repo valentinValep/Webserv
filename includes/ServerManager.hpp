@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 20:42:02 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 13:50:48 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,8 @@
 # define GET 1
 # define POST 2
 # define DELETE 4
+# define BUFFER_SIZE 10000
+
 
 struct SocketInfo {
 	ClientRequest request;
@@ -49,17 +51,21 @@ private:
 	std::vector<struct pollfd>	fds;
 	std::map<int, int>			listeningSockets; // socket_fd -> port
 	std::map<int, SocketInfo>	clientSockets; // socket_fd -> clientRequest
-
+	char 						buffer[BUFFER_SIZE];
+	
 	int		setupNetwork();
 	void	updateFds(size_t len, std::vector<SocketInfo>& clientSockets);
 	void	handleEvent(pollfd &pollfd);
 	void	updateSocketActivity(int socket);
-	void	handleClientRequest(int &clientSocket, ClientRequest &request);
 	void	parseConfigFile(std::string config_file);
 	void	printActiveSockets();
 	int		acceptNewConnexion(int server_fd)
 		__attribute__((warn_unused_result)); // @TODO
 	void	cleanFdsAndActiveSockets();
+
+	int		handleClientRequest(ClientRequest &request);
+	int		readClientRequest(ClientRequest &request);
+	void	storeHeaderClientRequest(char *buffer, int bytesRead, ClientRequest &request);
 
 public:
 	ServerManager(std::string config_file);

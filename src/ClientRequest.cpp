@@ -3,31 +3,41 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 11:56:37 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 14:03:41 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientRequest.hpp"
 
-//ClientRequest::ClientRequest(const std::string& request) {
-//	// Parse the request
-//	std::istringstream iss(request);
-//	iss >> method >> path >> protocol;
-
-//	// Read headers
-//	std::string line;
-//	while (std::getline(iss, line) && line != "\r") {
-//		headers.push_back(line);
-//	}
-
-//	// Read body
-//	std::getline(iss, body, '\0');
-//}
+/************************************************************
+ *						CONSTRUCTORS						*
+ ************************************************************/
 
 ClientRequest::ClientRequest(): clientSocket(0), server(NULL) {}
+
+ClientRequest::ClientRequest(int fd) : _clientSocket(fd) {}
+
+
+/************************************************************
+ *						SETTERS								*
+ ************************************************************/
+
+void ClientRequest::setState(State newState)
+{
+	state = newState;
+}
+
+void	ClientRequest::setHeaderInfos(std::string _header, int _headerLen) {
+	header = _header;
+	headerLen = _headerLen;	
+};
+
+/************************************************************
+ *						PARSE								*
+ ************************************************************/
 
 void ClientRequest::parse()
 {
@@ -43,6 +53,11 @@ void ClientRequest::parse()
 	// Read body
 	std::getline(iss, body, '\0');
 }
+
+
+/************************************************************
+ *						PRINT								*
+ ************************************************************/
 
 void ClientRequest::print() const {
 	std::cout << "Method: " << method << std::endl;

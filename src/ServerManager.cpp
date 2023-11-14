@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/13 21:04:08 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 14:01:42 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerManager.hpp"
 #include "FileParser.hpp"
+#include "utils.hpp"
 
 #define MAX_CONNECTION 10
 #define NO_EVENT 0
@@ -161,18 +162,6 @@ void ServerManager::start()
 	}
 };
 
-// Don't understand
-//void ServerManager::updateFds(size_t len, std::vector<SocketInfo>& clientSockets)
-//{
-//	for (size_t i = len; i < clientSockets.size(); i++)
-//	{
-//		this->fds[this->nfds].fd = clientSockets[i].socket;
-//		this->fds[this->nfds].events = POLLIN;
-//		this->fds[this->nfds].revents = NO_EVENT;
-//		this->nfds++;
-//	}
-//};
-
 void ServerManager::handleEvent(pollfd &pollfd)
 {
 	if (listeningSockets.find(pollfd.fd) != listeningSockets.end())
@@ -185,7 +174,7 @@ void ServerManager::handleEvent(pollfd &pollfd)
 	if (pollfd.revents & POLLIN)
 	{
 		std::cout << "Handling on [" << pollfd.fd << "]" << std::endl;
-		handleClientRequest(pollfd.fd, this->clientSockets[pollfd.fd].request);
+		handleClientRequest(this->clientSockets[pollfd.fd].request);
 		pollfd.events = POLLOUT;
 	}
 	if (pollfd.revents & POLLOUT)
@@ -212,7 +201,7 @@ void ServerManager::cleanFdsAndActiveSockets() {
 		{
 			it = this->fds.erase(it);
 			this->nfds--;
-			// @TODO remove from clientSockets
+			// @TODO remove from clientSockets && detect inactive sockets otherwise no fd ever gets cleaned except one that closed
 		}
 		else
 			++it;
@@ -241,7 +230,7 @@ int ServerManager::acceptNewConnexion(int server_fd) {
 		close(clientSocket);
 		return (EXIT_FAILURE);
 	}
-	this->clientSockets[clientSocket] = (SocketInfo){ClientRequest(), time(NULL)};
+	this->clientSockets[clientSocket] = (SocketInfo){ClientRequest(clientSocket), time(NULL)};
 	this->fds.push_back((struct pollfd){clientSocket, POLLIN, NO_EVENT});
 	this->nfds++;
 
@@ -250,59 +239,75 @@ int ServerManager::acceptNewConnexion(int server_fd) {
 };
 
 /************************************************************
- *						READ / WRITE						*
+ *						READ						*
  ************************************************************/
 
-void ServerManager::handleClientRequest(int &clientSocket, ClientRequest &request) {
-	std::vector<char> buffer(10000, '\0');
-	// @TODO read while body not complete
-	// @TODO use recv() instead of read()
-	ssize_t bytesRead = read(clientSocket, buffer.data(), 10000);
+int ServerManager::handleClientRequest(ClientRequest &request) {
+	ssize_t bytesRead = 0;
+	bytesRead = readClientRequest(request);
+	if (bytesRead > 0)
+	{
+		storeHeaderClientRequest(buffer, bytesRead, request);
+		return (EXIT_SUCCESS);
+	}
+	return (EXIT_FAILURE);
+}
+
+int ServerManager::readClientRequest(ClientRequest &request) {
+	ssize_t bytesRead = recv(request._clientSocket, buffer, BUFFER_SIZE, 0);
 
 	if (bytesRead < 0) {
 		perror("In read");
-		close(clientSocket);
-		return;
+		close(request._clientSocket);
+		return (bytesRead);
 	}
 
 	if (bytesRead == 0) {
-		std::cout << "connection closed by client [" <<  clientSocket << "]" << std::endl;
-		close(clientSocket);
-		clientSocket = -1;
-		return;
+		std::cout << "connection closed by client [" <<  request._clientSocket << "]" << std::endl;
+		close(request._clientSocket);
+		request._clientSocket = -1;
+		return (bytesRead);
 	}
 
-	std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
-	for (int i = 0; i < bytesRead; i++)
-	{
-		if (buffer[i] == '\r')
-			std::cout << "\\r";
-		std::cout << buffer[i];
-	}
-	request.raw_data += std::string(buffer.data(), bytesRead);
-	request.parse();
-	request.raw_data = "";
+	// std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
+	// for (int i = 0; i < bytesRead; i++)
+	// {
+	// 	if (buffer[i] == '\r')
+	// 		std::cout << "\\r";
+	// 	std::cout << buffer[i];
+	// }
+	return (bytesRead);
 }
 
-void	ServerManager::updateSocketActivity(int socket) {
-	//for (size_t i = 0; i < this->servers.size(); i++) {
-	//	std::vector<SocketInfo>& clientSockets = this->servers[i].getClientSockets();
-	//	for (std::vector<SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
-	//		if (it->socket == socket) {
-	//			this->servers[i].updateClientSocketActivity(socket);
-	//			return;
-	//		}
-	//	}
-	//}
-	clientSockets[socket].lastActivity = time(NULL);
+void ServerManager::storeHeaderClientRequest(char *buffer, int bytesRead, ClientRequest &request) {
+	request.raw_data += std::string(buffer, bytesRead);
+	if (containsEmptyLine(request.raw_data))
+	{
+		request.setState(ClientRequest::HEADER_FULLY_RECEIVED);
+		request.setHeaderInfos(request.raw_data, request.raw_data.length());
+
+		std::cout << "HEADER : " << request.raw_data << std::endl;
+		std::cout << "HEADER LENGTH : " << request.raw_data.length() << std::endl;
+		
+		request.parse();
+		request.raw_data = "";
+		std::cout << "end of body found.\n";
+	}
+	else
+		request.setState(ClientRequest::HEADER_NOT_FULLY_RECEIVED);
 }
 
 /************************************************************
- *						PRINT DEBUG							*
+ *							DEBUG							*
  ************************************************************/
 
 void ServerManager::printActiveSockets() {
 	for (std::map<int, SocketInfo>::iterator it = this->clientSockets.begin(); it != this->clientSockets.end(); ++it) {
 		std::cout << "Socket: " << it->first << " last activity: " << it->second.lastActivity << std::endl;
 	}
+}
+
+void	ServerManager::updateSocketActivity(int socket) {
+
+	clientSockets[socket].lastActivity = time(NULL);
 }
