@@ -3,11 +3,6 @@
 
 <h2>TO DO</h2>
 
-Handle more than one server :
-
-- [ ] Ask @valentin to slightly amend his parsing so that one port = one server so if one server has x port it becomes x servers
-- [ ] Rework the architecture so that we have 1. pollfd storing ALL server(s)+client(s) fds and then a list of client per server
-
 The read stuff : 
 
 - [ ] The read loop, implement a loop to read from the socket in chunks (e.g., in a buffer of 1024 bytes). After each read: (i) append the data to a request buffer, (ii) check if the buffer contains the end of the request (e.g., an empty line for headers, the end of the content based on Content-Length, the last chunk in chunked encoding, etc.) (iii) If the end of the request is detected, process the request (iv) If not, continue reading from the socket)
