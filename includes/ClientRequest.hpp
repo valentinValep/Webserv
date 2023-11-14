@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 20:45:45 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 11:52:47 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@
 
 class ClientRequest {
 public:
+	int			clientSocket;
+	Server		*server;
 	std::string method;
 	std::string path;
 	std::string protocol;
