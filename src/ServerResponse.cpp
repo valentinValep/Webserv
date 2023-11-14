@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 16:33:18 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/14 19:34:29 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,19 @@ void ServerResponse::process(const ClientRequest& request, int clientSocket) {
 	if (request.errorCode)
 	{
 		;//	respond error
-		break ;
+		return;
 	}
 	if (request.method == GET) {
 		std::string content;
 		if (request.path == "/")
 		{
-			content = readFileContent(request.server->getIndex());
-			sendHttpResponseCSS(clientSocket, content);
+			content = readFileContent("src/" + request.server->getIndex());
+			sendHttpResponse(clientSocket, content, "text/html");
+		}
+		else
+		{
+			content = readFileContent("src/" + request.path);
+			sendHttpResponse(clientSocket, content, "text/" + request.path.substr(request.path.find_last_of(".") + 1));
 		}
 //		if (request.path == "/style.css")
 //		{
@@ -52,27 +57,17 @@ void ServerResponse::process(const ClientRequest& request, int clientSocket) {
 std::string ServerResponse::readFileContent(const std::string& filePath) {
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
 	if (!file.is_open()) {
-		perror("In opening file");
-		exit(EXIT_FAILURE);
+		perror("In opening file"); // @TODO return 404
+		//exit(EXIT_FAILURE);
 	}
 	return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 }
 
-void ServerResponse::sendHttpResponse(int clientSocket, const std::string& content) {
+void ServerResponse::sendHttpResponse(int clientSocket, const std::string& content, const std::string& contentType) {
 	std::stringstream httpHeaders;
 	httpHeaders << "HTTP/1.1 200 OK\r\n" <<
 				"Content-Length: " << content.size() << "\r\n" <<
-				"Content-Type: text/html\r\n" <<
-				"\r\n";
-	std::string httpResponse = httpHeaders.str() + content;
-	write(clientSocket, httpResponse.c_str(), httpResponse.size());
-}
-
-void ServerResponse::sendHttpResponseCSS(int clientSocket, const std::string& content) {
-	std::stringstream httpHeaders;
-	httpHeaders << "HTTP/1.1 200 OK\r\n" <<
-				"Content-Length: " << content.size() << "\r\n" <<
-				"Content-Type: text/css\r\n" <<
+				"Content-Type: " << contentType << "\r\n" <<
 				"\r\n";
 	std::string httpResponse = httpHeaders.str() + content;
 	write(clientSocket, httpResponse.c_str(), httpResponse.size());
