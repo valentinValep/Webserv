@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 19:34:29 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 19:36:39 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ std::string ServerResponse::readFileContent(const std::string& filePath) {
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
 	if (!file.is_open()) {
 		perror("In opening file"); // @TODO return 404
-		//exit(EXIT_FAILURE);
+		//exit(EXIT_FAILURE); // @TODO return 404
 	}
 	return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 }
