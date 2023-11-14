@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 20:48:16 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/14 11:56:37 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 //	std::getline(iss, body, '\0');
 //}
 
-ClientRequest::ClientRequest() {}
+ClientRequest::ClientRequest(): clientSocket(0), server(NULL) {}
 
 void ClientRequest::parse()
 {
