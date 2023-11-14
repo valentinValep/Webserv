@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 14:03:41 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/14 14:22:42 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@
  *						CONSTRUCTORS						*
  ************************************************************/
 
-ClientRequest::ClientRequest(): clientSocket(0), server(NULL) {}
+ClientRequest::ClientRequest(): _clientSocket(0), server(NULL) {}
 
-ClientRequest::ClientRequest(int fd) : _clientSocket(fd) {}
+ClientRequest::ClientRequest(int fd) : _clientSocket(fd), server(NULL) {}
 
 
 /************************************************************
@@ -32,7 +32,7 @@ void ClientRequest::setState(State newState)
 
 void	ClientRequest::setHeaderInfos(std::string _header, int _headerLen) {
 	header = _header;
-	headerLen = _headerLen;	
+	headerLen = _headerLen;
 };
 
 /************************************************************

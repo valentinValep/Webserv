@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 14:03:30 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/14 14:24:45 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,14 @@
 
 class ClientRequest {
 public:
+	enum State {
+		HEADER_FULLY_RECEIVED,
+		HEADER_NOT_FULLY_RECEIVED,
+		BODY_FULLY_RECEIVED,
+		BODY_NOT_FULLY_RECEIVED,
+		REQUEST_FULLY_RECEIVED,
+	};
+
 	std::string method;
 	std::string path;
 	std::string protocol;
@@ -29,11 +37,12 @@ public:
 	std::string raw_data;
 	State 		state;
 	int			_clientSocket;
-	
+	Server		*server;
+
 	//headerstuff
 	std::string	header;
 	int			headerLen;
-	
+
 	ClientRequest();
 	ClientRequest(int fd);
 
