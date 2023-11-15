@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 16:56:18 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 14:58:33 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@
 # define DELETE 4
 # define BUFFER_SIZE 100000
 
+# define HTTP_PROTOCOL "HTTP/1.1"
 
 struct SocketInfo {
 	ClientRequest request;

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 19:23:53 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 14:16:53 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,6 +249,11 @@ void Server::parseRoutes(fp::Module &mod)
  *							GETTERS							*
  ************************************************************/
 
+bool Server::getAutoindex() const
+{
+	return this->autoindex;
+}
+
 int Server::getPort() const
 {
 	return this->port;
@@ -279,9 +284,15 @@ std::map<int, std::string> Server::getErrorPages() const
 	return this->error_pages;
 }
 
-std::map<std::string, Route> Server::getRoutes() const
+const Route	*Server::getRoute(const std::string &name) const
 {
-	return this->routes;
+	for (int i = name.length(); i >= 0; i--)
+	{
+		std::map<std::string, Route>::const_iterator it = this->routes.find(name.substr(0, i));
+		if (it != this->routes.end())
+			return &it->second;
+	}
+	return NULL;
 }
 
 std::vector<std::string> Server::getServerNames() const

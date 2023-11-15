@@ -6,48 +6,109 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 19:36:39 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 15:03:53 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerResponse.hpp"
 #include "ServerManager.hpp"
+#include "Route.hpp"
 #include <sstream>
 
-ServerResponse::ServerResponse(){};
+ServerResponse::ServerResponse(): _autoindex(false), _error_code(0), _method(0), _redirect_type(0)
+{}
 
-void ServerResponse::process(const ClientRequest& request, int clientSocket) {
-	if (request.errorCode)
+void ServerResponse::prepare(const ClientRequest &request)
+{
+	const Route	*route = request.server->getRoute(request.getPath());
+
+	// ## Request ##
+	// Client socket
+	this->_client_socket = request.getClientSocket();
+	// Error pages
+	this->_error_pages = request.server->getErrorPages();
+	if (request.getErrorCode())
+	{
+		this->_error_code = request.getErrorCode();
+		return ;
+	}
+	// Method
+	if (route && route->hasMethods())
+		this->_method = route->getMethods() & request.getMethod();
+	else
+		this->_method = request.server->getMethods() & request.getMethod();
+	if (!this->_method)
+	{
+		this->_error_code = 405;
+		return ;
+	}
+	if (request.protocol != HTTP_PROTOCOL)
+	{
+		this->_error_code = 505;
+		return ;
+	}
+	this->_path = request.getPath();
+	this->_headers = request.getHeaders();
+
+	// ## Server ##
+	// Autoindex
+	if (route && route->hasAutoindex())
+		this->_autoindex = route->getAutoindex();
+	else
+		this->_autoindex = request.server->getAutoindex();
+	// Root
+	if (route && route->hasRoot())
+		this->_root = route->getRoot();
+	else
+		this->_root = request.server->getRoot();
+	// Index
+	if (route && route->hasIndex())
+		this->_index = route->getIndex();
+	else
+		this->_index = request.server->getIndex();
+	if (route)
+	{
+		// Redirect
+		if (route->hasRedirect())
+		{
+			this->_redirect_type = route->getRedirectType();
+			this->_redirect = route->getRedirect();
+		}
+		// CGI
+		if (route->hasCgi())
+		{
+			this->_cgi_extension = route->getCgiExtension();
+			this->_cgi_path = route->getCgiPath();
+		}
+		// Upload
+		if (route->hasUpload())
+			this->_upload_path = route->getUploadPath();
+	}
+}
+
+void ServerResponse::process()
+{
+	if (this->_error_code)
 	{
 		;//	respond error
 		return;
 	}
-	if (request.method == GET) {
+	if (this->_method == GET) {
 		std::string content;
-		if (request.path == "/")
+		if (this->_path == "/")
 		{
-			content = readFileContent("src/" + request.server->getIndex());
-			sendHttpResponse(clientSocket, content, "text/html");
+			content = readFileContent("src/" + this->_index);
+			sendHttpResponse(this->_client_socket, content, "text/html");
 		}
 		else
 		{
-			content = readFileContent("src/" + request.path);
-			sendHttpResponse(clientSocket, content, "text/" + request.path.substr(request.path.find_last_of(".") + 1));
+			content = readFileContent("src/" + this->_path);
+			sendHttpResponse(this->_client_socket, content, "text/" + this->_path.substr(this->_path.find_last_of(".") + 1));
 		}
-//		if (request.path == "/style.css")
-//		{
-//			content = readFileContent("src/style.css");
-//			sendHttpResponseCSS(clientSocket, content);
-//		}
-//		else
-//		{
-//			content = readFileContent("src/index.html");
-//			sendHttpResponse(clientSocket, content);
-//		}
-	} else if (request.method == POST) {
+	} else if (this->_method == POST) {
 		// Handle POST request
 		// Generate appropriate response
-	} else if (request.method == DELETE) {
+	} else if (this->_method == DELETE) {
 		// Handle DELETE request
 		// Generate appropriate response
 	}

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 13:35:54 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 15:11:35 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,10 @@
 #include <string>
 
 // @TODO remove default values
-Route::Route(): autoindex(true), methods(), redirect_type(), redirect(), index(""), root(""), cgi_extension(""), cgi_path(""), upload_path("")
+Route::Route(): autoindex(true), methods(), redirect_type(), redirect(), index(""), root(""), cgi_extension(""), cgi_path(""), upload_path(""), _autoindex_set(false), _methods_set(false), _redirect_set(false), _index_set(false), _root_set(false), _cgi_set(false), _upload_set(false)
 {}
 
-Route::Route(fp::Module &mod): autoindex(true), methods(), redirect_type(), redirect(), index(""), root(""), cgi_extension(""), cgi_path(""), upload_path("")
+Route::Route(fp::Module &mod): autoindex(true), methods(), redirect_type(), redirect(), index(""), root(""), cgi_extension(""), cgi_path(""), upload_path(""), _autoindex_set(false), _methods_set(false), _redirect_set(false), _index_set(false), _root_set(false), _cgi_set(false), _upload_set(false)
 {
 	this->parseMethods(mod);
 	this->parseRoot(mod);
@@ -27,12 +27,6 @@ Route::Route(fp::Module &mod): autoindex(true), methods(), redirect_type(), redi
 	this->parseAutoindex(mod);
 	this->parseCgiExtension(mod);
 	this->parseCgiPath(mod);
-	if ((!this->cgi_extension.empty() && this->cgi_path.empty())
-		|| (this->cgi_extension.empty() && !this->cgi_path.empty()))
-	{
-		std::cerr << "Error: cgi_extension and cgi_path need to be both set" << std::endl;
-		throw ServerManager::ParsingException();
-	}
 	this->parseUploadPath(mod);
 	this->parseRedirect(mod);
 }
@@ -85,6 +79,41 @@ std::string Route::getUploadPath() const
 	return this->upload_path;
 }
 
+bool Route::hasAutoindex() const
+{
+	return this->_autoindex_set;
+}
+
+bool Route::hasMethods() const
+{
+	return this->_methods_set;
+}
+
+bool Route::hasRedirect() const
+{
+	return this->_redirect_set;
+}
+
+bool Route::hasIndex() const
+{
+	return this->_index_set;
+}
+
+bool Route::hasRoot() const
+{
+	return this->_root_set;
+}
+
+bool Route::hasCgi() const
+{
+	return this->_cgi_set;
+}
+
+bool Route::hasUpload() const
+{
+	return this->_upload_set;
+}
+
 void Route::parseMethods(fp::Module &mod)
 {
 	fp::Variable	*var;
@@ -97,6 +126,7 @@ void Route::parseMethods(fp::Module &mod)
 		std::cerr << "Error: allow_methods values need to be GET, POST and/or DELETE" << std::endl;
 		throw ServerManager::ParsingException();
 	}
+	this->_methods_set = true;
 	this->methods = 0;
 	for (std::vector<std::string>::const_iterator it = var->getAttributes().begin(); it != var->getAttributes().end(); it++)
 	{
@@ -126,6 +156,7 @@ void Route::parseRoot(fp::Module &mod)
 		std::cerr << "Error: root need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
+	this->_root_set = true;
 	this->root = var->getAttributes()[0];
 }
 
@@ -141,6 +172,7 @@ void Route::parseIndex(fp::Module &mod)
 		std::cerr << "Error: index need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
+	this->_index_set = true;
 	this->index = var->getAttributes()[0];
 }
 
@@ -156,6 +188,7 @@ void Route::parseAutoindex(fp::Module &mod)
 		std::cerr << "Error: autoindex need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
+	this->_autoindex_set = true;
 	if (var->getAttributes()[0] == "on")
 		this->autoindex = true;
 	else if (var->getAttributes()[0] == "off")
@@ -179,6 +212,7 @@ void Route::parseCgiExtension(fp::Module &mod)
 		std::cerr << "Error: extension need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
+	this->_cgi_set = true;
 	this->cgi_extension = var->getAttributes()[0];
 	for (int i = 0; i < ACCEPTED_CGI_TABSIZE; i++)
 	{
@@ -203,6 +237,11 @@ void Route::parseCgiPath(fp::Module &mod)
 	var = mod.getVariable("cgi_path");
 	if (!var)
 		return ;
+	if (!this->hasCgi())
+	{
+		std::cerr << "Error: cgi_extension and cgi_path need to be both set" << std::endl;
+		throw ServerManager::ParsingException();
+	}
 	if (var->getAttributes().size() != 1)
 	{
 		std::cerr << "Error: cgi_path need one value" << std::endl;
@@ -223,6 +262,7 @@ void Route::parseUploadPath(fp::Module &mod)
 		std::cerr << "Error: upload_path need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
+	this->_upload_set = true;
 	this->upload_path = var->getAttributes()[0];
 }
 
@@ -243,6 +283,7 @@ void Route::parseRedirect(fp::Module &mod)
 		std::cerr << "Error: return first value need to be 301 or 302" << std::endl;
 		throw ServerManager::ParsingException();
 	}
+	this->_redirect_set = true;
 	this->redirect_type = var->getAttributes()[0] == "301" ? 301 : 302;
 	this->redirect = var->getAttributes()[1];
 }

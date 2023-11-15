@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 19:20:05 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 14:16:46 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,15 +35,15 @@ class Server {
 		std::vector<std::string> server_names; // optional
 
 		// Parsers
-		void		parseAutoindex(fp::Module &mod);
-		void		parsePort(fp::Module &mod);
-		void		parseMaxBodySize(fp::Module &mod);
-		void		parseRoot(fp::Module &mod);
-		void		parseIndex(fp::Module &mod);
-		void		parseMethods(fp::Module &mod);
-		void		parseServerNames(fp::Module &mod);
-		void		parseErrorPages(fp::Module &mod);
-		void		parseRoutes(fp::Module &mod);
+		void	parseAutoindex(fp::Module &mod);
+		void	parsePort(fp::Module &mod);
+		void	parseMaxBodySize(fp::Module &mod);
+		void	parseRoot(fp::Module &mod);
+		void	parseIndex(fp::Module &mod);
+		void	parseMethods(fp::Module &mod);
+		void	parseServerNames(fp::Module &mod);
+		void	parseErrorPages(fp::Module &mod);
+		void	parseRoutes(fp::Module &mod);
 
 
 	public:
@@ -53,20 +53,21 @@ class Server {
 		~Server();
 
 		// Getters
-		int getPort() const;
-		int getMethods() const;
-		long getMaxBodySize() const;
-		std::string getRoot() const;
-		std::string getIndex() const;
-		std::map<int, std::string> getErrorPages() const;
-		std::map<std::string, Route> getRoutes() const;
-		std::vector<std::string> getServerNames() const;
+		bool							getAutoindex() const;
+		int								getPort() const;
+		int								getMethods() const;
+		long							getMaxBodySize() const;
+		std::string						getRoot() const;
+		std::string						getIndex() const;
+		std::map<int, std::string>		getErrorPages() const;
+		std::vector<std::string>		getServerNames() const;
 
-		bool					hasServerName(const std::string& serverName) const;
+		const Route						*getRoute(const std::string &path) const;
+		bool							hasServerName(const std::string& serverName) const;
 
-		//void		updateClientSocketActivity(int socket);
-		//void		detectInactiveClientSockets();
-		//void		printActiveSockets();
+		//void							updateClientSocketActivity(int socket);
+		//void							detectInactiveClientSockets();
+		//void							printActiveSockets();
 };
 
 #endif

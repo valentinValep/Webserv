@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 19:33:45 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 15:03:50 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,19 +21,34 @@
 # include <unistd.h>
 # include <cstdlib>
 # include <cstring>
-# include <cstring>
 # include <fstream>
 # include <iostream>
 # include <algorithm>
 
 class ServerResponse {
+	private:
+		bool								_autoindex;
+		int									_error_code;
+		int									_method;
+		int									_client_socket;
+		std::string							_path;
+		std::map<std::string, std::string>	_headers;
+		std::string							_root;
+		std::string							_index;
+		std::map<int, std::string>			_error_pages;
+		int									_redirect_type;
+		std::string							_redirect;
+		std::string							_cgi_extension;
+		std::string							_cgi_path;
+		std::string							_upload_path;
 	public:
 		ServerResponse();
 
-		void process(const ClientRequest& request, int clientSocket);
-		std::string readFileContent(const std::string& filePath);
-		void sendHttpResponse(int clientSocket, const std::string& content, const std::string& contentType);
-		void sendHttpResponseCSS(int clientSocket, const std::string& content);
+		void		prepare(const ClientRequest& request);
+		void		process();
+		std::string	readFileContent(const std::string& filePath);
+		void		sendHttpResponse(int clientSocket, const std::string& content, const std::string& contentType);
+		void		sendHttpResponseCSS(int clientSocket, const std::string& content);
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 19:55:29 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 15:01:47 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,7 @@ void ClientRequest::parseHeader(std::vector<Server> &servers)
 void ClientRequest::parseBody()
 {
 	// @TODO check if it's valid
+	// @TODO check if it's not too big (max_body_size)
 	this->body = this->raw_data;
 }
 
@@ -156,6 +157,40 @@ void ClientRequest::findServer(std::vector<Server> &servers)
 	return;
 }
 
+int ClientRequest::getErrorCode() const
+{
+	return (this->errorCode);
+}
+
+int ClientRequest::getMethod() const
+{
+	return (this->method);
+}
+
+std::string ClientRequest::getProtocol() const
+{
+	return (this->protocol);
+}
+
+std::map<std::string,std::string> ClientRequest::getHeaders() const
+{
+	return (this->headers);
+}
+
+std::string ClientRequest::getPath() const
+{
+	return (this->path);
+}
+
+Server *ClientRequest::getServer() const
+{
+	return (this->server);
+}
+
+int ClientRequest::getClientSocket() const
+{
+	return (this->_clientSocket);
+}
 
 /************************************************************
  *						PRINT								*

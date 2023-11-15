@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/14 19:43:29 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 11:56:34 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,7 +190,8 @@ void ServerManager::handleEvent(pollfd &pollfd)
 	{
 		std::cout << "Responding on [" << pollfd.fd << "]" << std::endl;
 		ServerResponse serverResponse;
-		serverResponse.process(this->clientSockets[pollfd.fd].request, pollfd.fd); // @TODO static method ?
+		serverResponse.prepare(this->clientSockets[pollfd.fd].request);
+		serverResponse.process();
 		pollfd.events = POLLIN;
 	}
 	updateSocketActivity(pollfd.fd);

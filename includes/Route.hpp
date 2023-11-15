@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/13 13:37:16 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 14:33:50 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,15 @@ class Route {
 		std::string	cgi_extension; // one to implement
 		std::string	cgi_path; // if cgi_extension
 		std::string	upload_path;
+		// @TODO if there is a redirect can we have a cgi ? Same with upload ?
+
+		bool		_autoindex_set;
+		bool		_methods_set;
+		bool		_redirect_set;
+		bool		_index_set;
+		bool		_root_set;
+		bool		_cgi_set;
+		bool		_upload_set;
 
 		// @TODO Define a directory or a file from where the file should be searched (for example, if url /kapouet is rooted to /tmp/www, url /kapouet/pouic/toto/pouet is /tmp/www/pouic/toto/pouet).
 		void	parseMethods(fp::Module &mod);
@@ -51,15 +60,23 @@ class Route {
 		~Route();
 
 		// Getters
-		bool getAutoindex() const;
-		int getMethods() const;
-		int getRedirectType() const;
-		std::string getRedirect() const;
-		std::string getIndex() const;
-		std::string getRoot() const;
-		std::string getCgiExtension() const;
-		std::string getCgiPath() const;
-		std::string getUploadPath() const;
+		bool		getAutoindex() const;
+		int			getMethods() const;
+		int			getRedirectType() const;
+		std::string	getRedirect() const;
+		std::string	getIndex() const;
+		std::string	getRoot() const;
+		std::string	getCgiExtension() const;
+		std::string	getCgiPath() const;
+		std::string	getUploadPath() const;
+
+		bool		hasAutoindex() const;
+		bool		hasMethods() const;
+		bool		hasRedirect() const;
+		bool		hasIndex() const;
+		bool		hasRoot() const;
+		bool		hasCgi() const;
+		bool		hasUpload() const;
 };
 
 #endif
