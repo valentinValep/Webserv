@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 15:11:31 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 16:32:39 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ public:
 		REQUEST_FULLY_RECEIVED,
 	};
 
+	in_port_t							_port;
 	int									errorCode; // if 0, no error
 	int									_clientSocket;
 	Server								*server;
@@ -41,7 +42,7 @@ public:
 	std::string							raw_data;
 
 	ClientRequest();
-	ClientRequest(int fd);
+	ClientRequest(int fd, in_port_t port);
 
 	void	parseHeader(std::vector<Server> &servers);
 	void	parseBody();

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 15:01:47 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 19:18:26 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@
  *						CONSTRUCTORS						*
  ************************************************************/
 
-ClientRequest::ClientRequest(): errorCode(0), _clientSocket(0), server(NULL), method(0), state(HEADER_NOT_FULLY_RECEIVED) {}
+ClientRequest::ClientRequest(): _port(0), errorCode(0), _clientSocket(0), server(NULL), method(0), state(HEADER_NOT_FULLY_RECEIVED) {}
 
-ClientRequest::ClientRequest(int fd) : errorCode(0), _clientSocket(fd), server(NULL), method(0), state(HEADER_NOT_FULLY_RECEIVED) {}
+ClientRequest::ClientRequest(int fd, in_port_t port): _port(port), errorCode(0), _clientSocket(fd), server(NULL), method(0), state(HEADER_NOT_FULLY_RECEIVED) {}
 
 
 /************************************************************
@@ -49,7 +49,7 @@ void ClientRequest::setBodyState() {
  *						PARSE								*
  ************************************************************/
 
-// @TODO rename
+// @TODO refactor parsing of the request
 void ClientRequest::parseHeader(std::vector<Server> &servers)
 {
 	std::string			method;
@@ -57,6 +57,21 @@ void ClientRequest::parseHeader(std::vector<Server> &servers)
 	std::istringstream	lines;
 	std::istringstream	iss(this->raw_data);
 
+	// @TODO move again in findServer ?
+	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
+	{
+		if (it->getPort() == this->_port)
+		{
+			this->server = &(*it);
+			break;
+		}
+	}
+	if (!this->server)
+	{
+		std::cerr << "Error: no server found for port " << this->_port << std::endl;
+		this->errorCode = 400; // @TODO think about it (impossible ?)
+		return;
+	}
 	std::getline(iss, line);
 	lines.str(line);
 	lines >> method >> this->path >> this->protocol;
@@ -124,7 +139,7 @@ void ClientRequest::findServer(std::vector<Server> &servers)
 	else
 	{
 		host_name = this->headers["Host"].substr(0, pos);
-		port_str = this->headers["Host"].substr(pos + 1); // 0 < x < 65534
+		port_str = this->headers["Host"].substr(pos + 1); // 0 < x < 65534 (short max value)
 		std::istringstream iss(port_str);
 		iss >> port_str;
 		if (port_str.empty() || port_str.length() > 5)
@@ -133,6 +148,11 @@ void ClientRequest::findServer(std::vector<Server> &servers)
 			return;
 		}
 		port = atoi(port_str.c_str());
+	}
+	if (port != this->_port)
+	{
+		this->errorCode = 400;
+		return;
 	}
 	//std::cout << "host_name: '" << host_name << "'" << std::endl;
 	//std::cout << "port: '" << port << "'" << std::endl;
@@ -144,15 +164,6 @@ void ClientRequest::findServer(std::vector<Server> &servers)
 			return;
 		}
 	}
-	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
-	{
-		if (it->getPort() == port)
-		{
-			this->server = &(*it);
-			return;
-		}
-	}
-	this->errorCode = 404; // @TODO think about it
 	// @TODO check there is no body
 	return;
 }

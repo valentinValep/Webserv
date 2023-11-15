@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 15:03:53 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 19:22:20 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,12 @@ ServerResponse::ServerResponse(): _autoindex(false), _error_code(0), _method(0),
 
 void ServerResponse::prepare(const ClientRequest &request)
 {
+	if (!request.server)
+	{
+		this->_error_code = 500;
+		return ;
+	}
+
 	const Route	*route = request.server->getRoute(request.getPath());
 
 	// ## Request ##

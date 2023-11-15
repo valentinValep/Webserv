@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 15:13:59 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 17:02:14 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ private:
 	// struct sockaddr_in address;
 	std::vector<Server> 		servers;
 	std::vector<struct pollfd>	fds;
-	std::set<int>				listeningSockets;
+	std::map<int, int>			listeningSockets; // socket_fd -> port
 	std::map<int, SocketInfo>	clientSockets; // socket_fd -> clientRequest
 	char 						buffer[BUFFER_SIZE];
 

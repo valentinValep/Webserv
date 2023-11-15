@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 15:03:50 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 18:05:11 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,11 @@ class ServerResponse {
 		std::string							_root;
 		std::string							_index;
 		std::map<int, std::string>			_error_pages;
-		int									_redirect_type;
-		std::string							_redirect;
-		std::string							_cgi_extension;
-		std::string							_cgi_path;
-		std::string							_upload_path;
+		int									_redirect_type; // @TODO learn about it
+		std::string							_redirect; // @TODO learn about it
+		std::string							_cgi_extension; // @TODO learn about it
+		std::string							_cgi_path; // @TODO learn about it
+		std::string							_upload_path; // @TODO learn about it
 	public:
 		ServerResponse();
 

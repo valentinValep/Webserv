@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/15 15:14:04 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 19:17:03 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 #define NO_EVENT 0
 #define CR std::cout << std::endl;
 
+#define SCSTR( x ) static_cast< std::ostringstream & >( \
+		( std::ostringstream() << std::dec << x ) ).str().c_str()
 
 /************************************************************
  *					CONSTRUCTOR								*
@@ -29,9 +31,8 @@ ServerManager::ServerManager(std::string configFilePath): nfds(0), fds()
 	if (setupNetwork() == EXIT_SUCCESS)
 	{
 		std::cout << "Set up complete of " << this->servers.size() << " servers." << std::endl;
-		std::cout << "Listening at: " << std::endl;
-		for (std::set<int>::iterator it = this->listeningSockets.begin(); it != this->listeningSockets.end(); it++)
-			std::cout << "Fd: " << *it << std::endl;
+		for (std::map<int, int>::iterator it = this->listeningSockets.begin(); it != this->listeningSockets.end(); it++)
+			std::cout << "Listening socket [" << it->first << "] on port " << it->second << std::endl;
 		this->start();
 	}
 }
@@ -108,24 +109,24 @@ int ServerManager::setupNetwork() {
 		address.sin_port = htons(it->getPort());
 
 		if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-			perror("In socket");
+			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In socket"));
 			exit(EXIT_FAILURE);
 		}
 
 		int opt = 1;
 		// @TODO change SOL_SOCKET by TCP protocol (man setsockopt) ? check return < 0 ?
 		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int))) {
-			perror("setsockopt");
+			perror(SCSTR(__FILE__ << ":" << __LINE__ << "setsockopt"));
 			exit(EXIT_FAILURE);
 		}
 
 		if (bind(serverSocket, (struct sockaddr*)&address, sizeof(address)) < 0) {
-			perror("In bind");
+			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In bind"));
 			exit(EXIT_FAILURE);
 		}
 
 		if (listen(serverSocket, 10) < 0) {
-			perror("In listen");
+			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In listen"));
 			exit(EXIT_FAILURE);
 		}
 
@@ -133,7 +134,7 @@ int ServerManager::setupNetwork() {
 		new_server_fd.fd = serverSocket;
 		new_server_fd.events = POLLIN;
 		this->fds.push_back(new_server_fd); // @TODO compound literal
-		this->listeningSockets.insert(serverSocket);
+		this->listeningSockets[serverSocket] = it->getPort();
 		listeningPorts.insert(it->getPort());
 		this->nfds++;
 	}
@@ -146,13 +147,14 @@ int ServerManager::setupNetwork() {
 
 void ServerManager::start()
 {
-	int ret;
+	int	ret;
 
 	while (1) {
+		//std::cout << "Polling on " << this->nfds << " fds" << std::endl;
 		ret = poll(&this->fds.front(), this->nfds, 5000);
 		if (ret == -1)
 		{
-			perror("In poll");
+			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In poll"));
 			exit(EXIT_FAILURE);
 		}
 		for (int index = 0; index < this->nfds; index++)
@@ -179,7 +181,7 @@ void ServerManager::handleEvent(pollfd &pollfd)
 	{
 		int ret = 0;
 		std::cout << "Handling on [" << pollfd.fd << "]" << std::endl;
-		ret = handleClientRequest(this->clientSockets[pollfd.fd].request);
+		ret = this->handleClientRequest(this->clientSockets[pollfd.fd].request);
 		if (!ret && this->clientSockets[pollfd.fd].request.state == ClientRequest::REQUEST_FULLY_RECEIVED)
 		{
 			pollfd.events = POLLOUT;
@@ -196,7 +198,7 @@ void ServerManager::handleEvent(pollfd &pollfd)
 	}
 	updateSocketActivity(pollfd.fd);
 	// detectInactiveSockets();
-	cleanFdsAndActiveSockets();
+	cleanFdsAndActiveSockets(); // @TODO move in the main loop ?
 }
 
 
@@ -240,7 +242,9 @@ int ServerManager::acceptNewConnexion(int server_fd) {
 	// @TODO check Linux specific errno
 	if (clientSocket < 0)
 	{
-		perror("In accept");
+		std::cout << "server_fd: " << server_fd << std::endl;
+		perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In accept"));
+		exit(EXIT_FAILURE);
 		return (EXIT_FAILURE);
 	}
 
@@ -250,7 +254,7 @@ int ServerManager::acceptNewConnexion(int server_fd) {
 		close(clientSocket);
 		return (EXIT_FAILURE);
 	}
-	this->clientSockets[clientSocket] = (SocketInfo){ClientRequest(clientSocket), time(NULL)};
+	this->clientSockets[clientSocket] = (SocketInfo){ClientRequest(clientSocket, this->listeningSockets[server_fd]), time(NULL)};
 	this->fds.push_back((struct pollfd){clientSocket, POLLIN, NO_EVENT});
 	this->nfds++;
 
@@ -263,7 +267,6 @@ int ServerManager::acceptNewConnexion(int server_fd) {
  ************************************************************/
 
 int ServerManager::handleClientRequest(ClientRequest &request) {
-
 	ssize_t bytesRead = 0;
 	bytesRead = readClientRequest(request);
 
@@ -286,7 +289,7 @@ int ServerManager::readClientRequest(ClientRequest &request) {
 	if (bytesRead <= 0) {
 		// @TODO better handling of error here
 		if (bytesRead < 0)
-			perror("In read");
+			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In read"));
 		if (bytesRead == 0)
 			std::cout << "connection closed by client [" <<  request._clientSocket << "]" << std::endl;
 		setInvalidFd(request);
