@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 14:58:33 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 15:13:59 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ private:
 	int		readClientRequest(ClientRequest &request);
 	void	storeHeaderClientRequest(char *buffer, int bytesRead, ClientRequest &request);
 	void	storeBodyClientRequest(char *buffer, int bytesRead, ClientRequest &request);
+	void	setInvalidFd(ClientRequest &request);
 
 public:
 	ServerManager(std::string config_file);

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/15 11:56:34 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 15:14:04 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -289,7 +289,7 @@ int ServerManager::readClientRequest(ClientRequest &request) {
 			perror("In read");
 		if (bytesRead == 0)
 			std::cout << "connection closed by client [" <<  request._clientSocket << "]" << std::endl;
-		request._clientSocket = -1;
+		setInvalidFd(request);
 		close(request._clientSocket);
 		return (bytesRead);
 	}
@@ -331,6 +331,16 @@ void ServerManager::storeBodyClientRequest(char *buffer, int bytesRead, ClientRe
 /************************************************************
  *							DEBUG							*
  ************************************************************/
+
+void ServerManager::setInvalidFd(ClientRequest &request) {
+	for (size_t i = 0; i < this->fds.size(); i++) {
+			if (this->fds[i].fd == request._clientSocket) {
+				this->fds[i].fd = -1;
+				break;
+			}
+		}
+		request._clientSocket = -1;
+}
 
 void ServerManager::printActiveSockets() {
 	for (std::map<int, SocketInfo>::iterator it = this->clientSockets.begin(); it != this->clientSockets.end(); ++it) {
