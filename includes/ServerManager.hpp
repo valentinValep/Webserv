@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/14 16:56:18 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/15 11:53:54 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ private:
 	int		readClientRequest(ClientRequest &request);
 	void	storeHeaderClientRequest(char *buffer, int bytesRead, ClientRequest &request);
 	void	storeBodyClientRequest(char *buffer, int bytesRead, ClientRequest &request);
+	void	setInvalidFd(ClientRequest &request);
 
 public:
 	ServerManager(std::string config_file);
