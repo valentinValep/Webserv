@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 20:46:00 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/16 16:40:14 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 # include <fstream>
 # include <iostream>
 # include <algorithm>
+# include <sys/stat.h>
+# include <unistd.h>
 
 class ServerResponse {
 	private:
