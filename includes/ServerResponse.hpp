@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 20:46:00 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/16 14:21:34 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,10 +47,11 @@ class ServerResponse {
 		ServerResponse();
 
 		void		prepare(const ClientRequest& request);
-		void		process();
+		void		process(ClientRequest& request);
 		std::string	readFileContent(const std::string& filePath);
 		void		sendHttpResponse(int clientSocket, const std::string& content, const std::string& contentType);
 		void		sendHttpResponseCSS(int clientSocket, const std::string& content);
+		void		sendCGIResponse(int clientSocket, const std::string& content, const std::string& contentType);
 };
 
 #endif

@@ -202,6 +202,23 @@ int ClientRequest::getClientSocket() const
 {
 	return (this->_clientSocket);
 }
+bool ClientRequest::isCgiRequest() const {
+	if (path.find("/cgi-bin/") == 0) {
+		return (true);
+	}
+
+	const char* cgiExtensions[] = {".cgi", ".pl", ".py"};
+	const size_t numExtensions = sizeof(cgiExtensions) / sizeof(cgiExtensions[0]);
+
+	for (size_t i = 0; i < numExtensions; ++i) {
+		std::string ext = cgiExtensions[i];
+		if (path.size() >= ext.size() && path.compare(path.size() - ext.size(), ext.size(), ext) == 0) {
+			return (true);
+		}
+	}
+	return (false);
+}
+
 
 /************************************************************
  *						PRINT								*

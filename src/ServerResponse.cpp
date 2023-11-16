@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 21:46:23 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/16 14:29:33 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerResponse.hpp"
 #include "ServerManager.hpp"
+#include "CgiRequest.hpp"
 #include "Route.hpp"
 #include <sstream>
 
@@ -25,7 +26,6 @@ void ServerResponse::prepare(const ClientRequest &request)
 		this->_error_code = 500;
 		return ;
 	}
-
 	const Route	*route = request.server->getRoute(request.getPath());
 
 	// ## Request ##
@@ -167,7 +167,7 @@ void ServerResponse::prepare(const ClientRequest &request)
 //	return (generic_page);
 //}
 
-void ServerResponse::process()
+void ServerResponse::process(ClientRequest& request)
 {
 	std::string content;
 	if (this->_error_code)
@@ -178,6 +178,15 @@ void ServerResponse::process()
 //			content = _getGenericErrorPage();
 //		sendHttpResponse(this->_client_socket, content, "text/html");	//	@TODO	send proper status code
 //		return;
+	}
+	if (request.isCgiRequest())
+	{
+		std::cout << "CGI FOUND" << std::endl;
+		CgiRequest cgiRequest(request);
+		std::cout << " THE REPONSE IS " << std::endl;
+		cgiRequest.printResponse();
+		content = cgiRequest.getResponse();
+		sendCGIResponse(this->_client_socket, content, "text/html");
 	}
 	if (this->_method == GET) {
 		if (this->_path == "/")
@@ -200,6 +209,7 @@ void ServerResponse::process()
 	//ADD ERROR HANDLING HERE
 }
 
+
 std::string ServerResponse::readFileContent(const std::string& filePath) {
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
 	if (!file.is_open()) {
@@ -217,4 +227,14 @@ void ServerResponse::sendHttpResponse(int clientSocket, const std::string& conte
 				"\r\n";
 	std::string httpResponse = httpHeaders.str() + content;
 	write(clientSocket, httpResponse.c_str(), httpResponse.size());
+}
+
+void ServerResponse::sendCGIResponse(int clientSocket, const std::string& content, const std::string& contentType) {
+	std::stringstream cgiHeaders;
+	cgiHeaders << "HTTP/1.1 200 OK\r\n" <<
+				"Content-Length: " << content.size() << "\r\n" <<
+				"Content-Type: " << contentType << "\r\n" <<
+				"\r\n";
+	std::string cgiResponse = cgiHeaders.str() + content;
+	write(clientSocket, cgiResponse.c_str(), cgiResponse.size());
 }

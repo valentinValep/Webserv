@@ -14,6 +14,7 @@ OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)ServerManager.o \
 	$(BUILD_DIR)ServerResponse.o \
 	$(BUILD_DIR)ClientRequest.o \
+	$(BUILD_DIR)CgiRequest.o \
 	$(BUILD_DIR)Route.o \
 	$(BUILD_DIR)utils.o \
 
