@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/16 20:04:48 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/17 11:51:09 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,7 @@ void ServerManager::handleEvent(pollfd &pollfd)
 	}
 	if (pollfd.revents & POLLIN)
 	{
-		std::cout << "Handling on [" << pollfd.fd << "]" << std::endl;
+		std::cout << "📩 Handling on [" << pollfd.fd << "]" << std::endl;
 		this->handleClientRequest(this->clientSockets[pollfd.fd].request);
 		if (this->clientSockets[pollfd.fd].request.isFullyReceived()
 			|| this->clientSockets[pollfd.fd].request.isError())
@@ -188,7 +188,7 @@ void ServerManager::handleEvent(pollfd &pollfd)
 	}
 	if (pollfd.revents & POLLOUT)
 	{
-		std::cout << "Responding on [" << pollfd.fd << "]" << std::endl;
+		std::cout << "📮 Responding on [" << pollfd.fd << "]" << std::endl;
 		ServerResponse serverResponse;
 		serverResponse.prepare(this->clientSockets[pollfd.fd].request);
 		this->clientSockets[pollfd.fd].request.reset();
@@ -257,7 +257,7 @@ int ServerManager::acceptNewConnexion(int server_fd) {
 	this->fds.push_back((struct pollfd){clientSocket, POLLIN, NO_EVENT});
 	this->nfds++;
 
-	std::cout << "New connexion on fd [" << clientSocket << "]" << std::endl;
+	std::cout << "✅ New connexion on fd [" << clientSocket << "]" << std::endl;
 	return (EXIT_SUCCESS);
 };
 
@@ -281,7 +281,7 @@ int	ServerManager::readClientRequest(ClientRequest &request) {
 		if (bytesRead < 0)
 			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In read"));
 		if (bytesRead == 0)
-			std::cout << "connection closed by client [" <<  request.getClientSocket() << "]" << std::endl;
+			std::cout << "❌ connection closed by client [" <<  request.getClientSocket() << "]" << std::endl;
 		setInvalidFd(request);
 		close(request.getClientSocket());
 		return (bytesRead);

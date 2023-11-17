@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/16 20:06:09 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/17 11:34:10 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,10 +79,13 @@ void ClientRequest::parseMethodLine(const std::string line)
 {
 	std::string			method;
 	std::istringstream	lines;
+	std::string			end;
 
+	//std::cout << "ClientRequest: parseMethodLine: line: '" << line << "'" << std::endl;
 	lines.str(line);
-	lines >> method >> this->_path >> this->_protocol;
-	if (method.empty() || this->_path.empty() || this->_protocol.empty() || !lines.eof())
+	lines >> method >> this->_path >> this->_protocol >> end;
+	if (method.empty() || this->_path.empty() || this->_protocol.empty()
+		|| !end.empty() || lines.bad() || !lines.eof())
 		return this->setError(400);
 	if (method == "GET")
 		this->_method = GET;
@@ -107,7 +110,6 @@ void	ClientRequest::parseHeaderLine(const std::string line)
 {
 	if (line == "\r")
 	{
-		std::cout << "end of header found.\n";
 		if (this->needBody())
 			this->_state = RECEIVING_BODY;
 		else
@@ -240,7 +242,7 @@ void ClientRequest::reset()
 
 void ClientRequest::operator<<(const std::string &data)
 {
-	std::cout << "ClientRequest: operator<<: _raw_data: '" << this->_raw_data.str() << "'" << std::endl;
+	//std::cout << "ClientRequest: operator<<: _raw_data: '" << this->_raw_data.str() << "'" << std::endl;
 	this->_raw_data << data;
 }
 
