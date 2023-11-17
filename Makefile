@@ -5,6 +5,8 @@ CXX := c++
 
 CXXFLAGS := -Wall -Werror -Wextra -std=c++98 -MMD -g3
 
+MAKE := make
+
 SOURCES_DIR := src/
 BUILD_DIR := build/
 INCLUDES_DIR := includes/
@@ -64,7 +66,8 @@ fclean: clean
 	rm -f $(NAME) $(TEST_NAME)
 	if [ -d $(LIBS_DIR)fileParser/ ] && [ -f $(LIBS_DIR)fileParser/Makefile ]; then make -C $(LIBS_DIR)fileParser fclean; else rm -rf $(LIBS_DIR)fileParser; fi
 
-re: fclean all
+re: fclean
+	$(MAKE) all
 
 .PHONY: all clean fclean re test
 

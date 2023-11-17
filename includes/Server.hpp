@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 18:10:38 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/16 14:23:59 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ class Server {
 		std::string root;
 		std::string index;
 		std::map<int, std::string> error_pages; // @TODO check every page exists with access (if no warning) but recheck when sending respond
-		std::map<std::string, Route> routes; // optional if methods
+		std::map<std::string, Route> routes; // optional if methods // @TODO check start with '/'
 		std::vector<std::string> server_names; // optional
 
 		// Parsers

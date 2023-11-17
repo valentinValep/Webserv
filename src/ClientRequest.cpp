@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 19:18:26 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/16 20:06:09 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,185 +17,53 @@
  *						CONSTRUCTORS						*
  ************************************************************/
 
-ClientRequest::ClientRequest(): _port(0), errorCode(0), _clientSocket(0), server(NULL), method(0), state(HEADER_NOT_FULLY_RECEIVED) {}
+ClientRequest::ClientRequest(): _port(0), _errorCode(0), _clientSocket(0), _method(0),_server(NULL),  _state(RECEIVING_METHOD) {}
 
-ClientRequest::ClientRequest(int fd, in_port_t port): _port(port), errorCode(0), _clientSocket(fd), server(NULL), method(0), state(HEADER_NOT_FULLY_RECEIVED) {}
-
-
-/************************************************************
- *						SETTERS								*
- ************************************************************/
-
-void ClientRequest::setState(State newState)
-{
-	state = newState;
-}
-
-void ClientRequest::setBodyState() {
-	if (this->method == GET || this->method == DELETE) {
-		state = REQUEST_FULLY_RECEIVED;
-		return;
-	}
-
-	if (this->headers.find("Content-Length") == this->headers.end()
-		&& this->headers.find("Transfer-Encoding") == this->headers.end())
-		state = REQUEST_FULLY_RECEIVED;
-	else
-		state = BODY_NOT_FULLY_RECEIVED;
-}
+ClientRequest::ClientRequest(int fd, in_port_t port): _port(port), _errorCode(0), _clientSocket(fd), _method(0),_server(NULL), _state(RECEIVING_METHOD) {}
 
 
 /************************************************************
- *						PARSE								*
+ *					GETTERS & SETTERS						*
  ************************************************************/
 
-// @TODO refactor parsing of the request
-void ClientRequest::parseHeader(std::vector<Server> &servers)
+bool ClientRequest::isFullyReceived() const
 {
-	std::string			method;
-	std::string			line;
-	std::istringstream	lines;
-	std::istringstream	iss(this->raw_data);
-
-	// @TODO move again in findServer ?
-	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
-	{
-		if (it->getPort() == this->_port)
-		{
-			this->server = &(*it);
-			break;
-		}
-	}
-	if (!this->server)
-	{
-		std::cerr << "Error: no server found for port " << this->_port << std::endl;
-		this->errorCode = 400; // @TODO think about it (impossible ?)
-		return;
-	}
-	std::getline(iss, line);
-	lines.str(line);
-	lines >> method >> this->path >> this->protocol;
-	if (method.empty() || this->path.empty() || this->protocol.empty())
-	{
-		this->errorCode = 400;
-		return;
-	}
-	if (method == "GET")
-		this->method = GET;
-	else if (method == "POST")
-		this->method = POST;
-	else if (method == "DELETE")
-		this->method = DELETE;
-	else
-	{
-		this->errorCode = 405;
-		return;
-	}
-
-	// Read headers
-	while (std::getline(iss, line) && line != "\r")
-	{
-		if (line.find(":") == std::string::npos)
-		{
-			this->errorCode = 400;
-			return;
-		}
-		this->headers[line.substr(0, line.find(":"))] = line.substr(line.find(":") + 2);
-	}
-
-	this->findServer(servers);
-	if (this->errorCode != 0)
-		return;
-
-	// Read body
-	this->body = iss.rdbuf()->str();
+	return (this->_state == REQUEST_FULLY_RECEIVED);
 }
 
-void ClientRequest::parseBody()
+bool ClientRequest::isError() const
 {
-	// @TODO check if it's valid
-	// @TODO check if it's not too big (max_body_size)
-	this->body = this->raw_data;
-}
-
-void ClientRequest::findServer(std::vector<Server> &servers)
-{
-	std::string			port_str;
-	std::string			host_name;
-	int					port;
-	size_t				pos;
-
-	if (this->headers.find("Host") == this->headers.end())
-	{
-		this->errorCode = 400;
-		return;
-	}
-	pos = this->headers["Host"].find(":");
-	if (pos == std::string::npos)
-	{
-		host_name = this->headers["Host"];
-		port = 80;
-	}
-	else
-	{
-		host_name = this->headers["Host"].substr(0, pos);
-		port_str = this->headers["Host"].substr(pos + 1); // 0 < x < 65534 (short max value)
-		std::istringstream iss(port_str);
-		iss >> port_str;
-		if (port_str.empty() || port_str.length() > 5)
-		{
-			this->errorCode = 400;
-			return;
-		}
-		port = atoi(port_str.c_str());
-	}
-	if (port != this->_port)
-	{
-		this->errorCode = 400;
-		return;
-	}
-	//std::cout << "host_name: '" << host_name << "'" << std::endl;
-	//std::cout << "port: '" << port << "'" << std::endl;
-	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
-	{
-		if (it->hasServerName(host_name) && it->getPort() == port)
-		{
-			this->server = &(*it);
-			return;
-		}
-	}
-	// @TODO check there is no body
-	return;
+	return (this->_state == ERROR);
 }
 
 int ClientRequest::getErrorCode() const
 {
-	return (this->errorCode);
+	return (this->_errorCode);
 }
 
 int ClientRequest::getMethod() const
 {
-	return (this->method);
+	return (this->_method);
 }
 
 std::string ClientRequest::getProtocol() const
 {
-	return (this->protocol);
+	return (this->_protocol);
 }
 
 std::map<std::string,std::string> ClientRequest::getHeaders() const
 {
-	return (this->headers);
+	return (this->_headers);
 }
 
 std::string ClientRequest::getPath() const
 {
-	return (this->path);
+	return (this->_path);
 }
 
 Server *ClientRequest::getServer() const
 {
-	return (this->server);
+	return (this->_server);
 }
 
 int ClientRequest::getClientSocket() const
@@ -204,19 +72,208 @@ int ClientRequest::getClientSocket() const
 }
 
 /************************************************************
+ *						PARSE								*
+ ************************************************************/
+
+void ClientRequest::parseMethodLine(const std::string line)
+{
+	std::string			method;
+	std::istringstream	lines;
+
+	lines.str(line);
+	lines >> method >> this->_path >> this->_protocol;
+	if (method.empty() || this->_path.empty() || this->_protocol.empty() || !lines.eof())
+		return this->setError(400);
+	if (method == "GET")
+		this->_method = GET;
+	else if (method == "POST")
+		this->_method = POST;
+	else if (method == "DELETE")
+		this->_method = DELETE;
+	else
+		return this->setError(405);
+	this->_state = RECEIVING_HEADER;
+}
+
+bool	ClientRequest::needBody() const
+{
+	return (this->_method != GET && this->_method != DELETE
+		&& (this->_headers.find("Content-Length") != this->_headers.end()
+		|| this->_headers.find("Transfer-Encoding") != this->_headers.end()));
+}
+
+// @TODO refactor parsing of the request
+void	ClientRequest::parseHeaderLine(const std::string line)
+{
+	if (line == "\r")
+	{
+		std::cout << "end of header found.\n";
+		if (this->needBody())
+			this->_state = RECEIVING_BODY;
+		else
+			this->_state = REQUEST_FULLY_RECEIVED;
+		return;
+	}
+	if (line.find(":") == std::string::npos)
+		return this->setError(400);
+	this->_headers[line.substr(0, line.find(":"))] = line.substr(line.find(":") + 2);
+
+}
+
+void ClientRequest::parseBodyLine(const std::string line)
+{
+	// @TODO check if it's valid
+	// @TODO check if it's not too big (max_body_size)
+	this->_body += line + "\n";
+	this->_state = REQUEST_FULLY_RECEIVED;// @TODO
+}
+
+void	ClientRequest::parse(std::vector<Server> &servers)
+{
+	std::string	line;
+
+	if (!this->_server)
+		this->findFirstServer(servers);
+	while (std::getline(this->_raw_data, line))
+	{
+		if (line.empty())
+			return this->setError(400);
+		if (line[line.size() - 1] != '\r')
+		{
+			if (this->_raw_data.eof())
+				this->_raw_data << line;
+			else
+				this->setError(400);
+			return;
+		}
+		if (this->_state == RECEIVING_METHOD)
+			this->parseMethodLine(line);
+		else if (this->_state == RECEIVING_HEADER)
+		{
+			this->parseHeaderLine(line);
+			if (this->_state != RECEIVING_HEADER)
+				this->findFinalServer(servers);
+		}
+		else if (this->_state == RECEIVING_BODY)
+			this->parseBodyLine(line);
+		else
+			return;
+	}
+}
+
+void ClientRequest::findFirstServer(std::vector<Server> &servers)
+{
+	// @TODO move again in findFinalServer ?
+	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
+	{
+		if (it->getPort() == this->_port)
+		{
+			this->_server = &(*it);
+			break;
+		}
+	}
+	if (!this->_server)
+		return this->setError(5);
+}
+
+void ClientRequest::findFinalServer(std::vector<Server> &servers)
+{
+	std::string			port_str;
+	std::string			host_name;
+	int					port;
+	size_t				pos;
+
+	if (this->_headers.find("Host") == this->_headers.end())
+		return this->setError(400);
+	pos = this->_headers["Host"].find(":");
+	if (pos == std::string::npos)
+	{
+		host_name = this->_headers["Host"];
+		port = 80;
+	}
+	else
+	{
+		host_name = this->_headers["Host"].substr(0, pos);
+		port_str = this->_headers["Host"].substr(pos + 1); // 0 < x < 65534 (short max value)
+		std::istringstream iss(port_str);
+		iss >> port_str;
+		if (port_str.empty() || port_str.length() > 5)
+			return this->setError(400);
+		port = atoi(port_str.c_str());
+	}
+	if (port != this->_port)
+		return this->setError(400);
+	//std::cout << "host_name: '" << host_name << "'" << std::endl;
+	//std::cout << "port: '" << port << "'" << std::endl;
+	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
+	{
+		if (it->hasServerName(host_name) && it->getPort() == port)
+		{
+			this->_server = &(*it);
+			return;
+		}
+	}
+	// @TODO check there is no body
+	return;
+}
+
+std::string ClientRequest::getHeader(const std::string & key) const
+{
+	std::map<std::string, std::string>::const_iterator it = this->_headers.find(key);
+	if (it == this->_headers.end())
+		return ("");
+	return (it->second);
+}
+
+void ClientRequest::reset()
+{
+	this->_errorCode = 0;
+	this->_method = 0;
+	this->_state = RECEIVING_METHOD;
+	this->_path.clear();
+	this->_protocol.clear();
+	this->_headers.clear();
+	this->_body.clear();
+	this->_raw_data.clear();
+	this->_raw_data.str("");
+}
+
+void ClientRequest::operator<<(const std::string &data)
+{
+	std::cout << "ClientRequest: operator<<: _raw_data: '" << this->_raw_data.str() << "'" << std::endl;
+	this->_raw_data << data;
+}
+
+/************************************************************
  *						PRINT								*
  ************************************************************/
 
+void ClientRequest::setError(int errorCode)
+{
+	this->_errorCode = errorCode;
+	this->_state = ERROR;
+}
+
 void ClientRequest::print() const {
-	std::cout << "Method: " << (method == GET ? "GET" : method == POST ? "POST" : "DELETE") << std::endl;
-	std::cout << "Path: " << path << std::endl;
-	std::cout << "Protocol: " << protocol << std::endl;
+	if (this->_state == ERROR) {
+		std::cout << "ClientRequest: Error: " << this->_errorCode << std::endl;
+		return;
+	}
+	if (this->_state != REQUEST_FULLY_RECEIVED) {
+		std::cout << "ClientRequest: Error: request not fully received" << std::endl;
+		return;
+	}
+	std::cout << "Method: " << (this->_method == GET ? "GET" : this->_method == POST ? "POST"
+																					 : "DELETE")
+			  << std::endl;
+	std::cout << "Path: " << this->_path << std::endl;
+	std::cout << "Protocol: " << this->_protocol << std::endl;
 
 	std::cout << "Headers:" << std::endl;
-	for(std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
-		std::cout << it->first << ": " << it->second << std::endl;
+	for(std::map<std::string, std::string>::const_iterator it = this->_headers.begin(); it != this->_headers.end(); ++it) {
+		std::cout << "\t" << it->first << ": " << it->second << std::endl;
 	}
 
-	std::cout << "Body:" << std::endl;
-	std::cout << body << std::endl;
+	//std::cout << "Body:" << std::endl;
+	//std::cout << this->_body << std::endl;
 }

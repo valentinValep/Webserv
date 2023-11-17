@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 16:32:39 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/17 10:52:05 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,38 +19,66 @@
 # include <sstream>
 # include <iostream>
 
+enum State {
+	RECEIVING_METHOD,
+	RECEIVING_HEADER,
+	RECEIVING_BODY,
+	REQUEST_FULLY_RECEIVED,
+	ERROR,
+};
+
 class ClientRequest {
-public:
-	enum State {
-		HEADER_FULLY_RECEIVED,
-		HEADER_NOT_FULLY_RECEIVED,
-		BODY_FULLY_RECEIVED,
-		BODY_NOT_FULLY_RECEIVED,
-		REQUEST_FULLY_RECEIVED,
+private:
+	class RequestStream: public std::stringstream {
+	public:
+		RequestStream() {}
+		RequestStream(const std::string &data): std::stringstream(data) {}
+		RequestStream(const RequestStream &other) {
+			std::cout << "RequestStream copy constructor" << other << std::endl;
+			*this << other.str();
+		}
+		~RequestStream() {}
+		RequestStream &operator=(const RequestStream &other) {
+			if (this != &other) {
+				this->clear();
+				*this << other.str();
+			}
+			return (*this);
+		}
 	};
 
 	in_port_t							_port;
-	int									errorCode; // if 0, no error
+	int									_errorCode;
 	int									_clientSocket;
-	Server								*server;
-	int									method;
-	State								state;
-	std::string							path;
-	std::string							protocol;
-	std::map<std::string, std::string>	headers;
-	std::string							body;
-	std::string							raw_data;
+	int									_method;
+	Server								*_server;
+	State								_state;
+	std::string							_path;
+	std::string							_protocol;
+	std::map<std::string, std::string>	_headers;
+	std::string							_body;
+	RequestStream						_raw_data;
 
+	void	findFirstServer(std::vector<Server> &servers);
+	void	findFinalServer(std::vector<Server> &servers);
+	void	parseMethodLine(const std::string line);
+	void	parseHeaderLine(const std::string line);
+	bool	needBody() const;
+	void	parseBodyLine(const std::string line);
+
+public:
 	ClientRequest();
 	ClientRequest(int fd, in_port_t port);
 
-	void	parseHeader(std::vector<Server> &servers);
-	void	parseBody();
-	void	print() const;
+	void		setError(int errorCode);
+	void		print() const;
 
-	void	setState(State newState);
-	void	setBodyState();
-	void	findServer(std::vector<Server> &servers);
+	void		operator<<(const std::string &data);
+	void		parse(std::vector<Server> &servers);
+	bool		isFullyReceived() const;
+	bool		isError() const;
+	std::string	getHeader(const std::string &key) const;
+	void		reset();
 
 	// Getters
 	int									getErrorCode() const;

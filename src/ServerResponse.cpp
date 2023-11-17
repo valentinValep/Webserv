@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 19:22:20 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/16 16:15:52 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,44 +15,37 @@
 #include "Route.hpp"
 #include <sstream>
 
-ServerResponse::ServerResponse(): _autoindex(false), _error_code(0), _method(0), _redirect_type(0)
+ServerResponse::ServerResponse() : _autoindex(false), _error_code(0), _method(0), _redirect_type(0)
 {}
+
+void ServerResponse::setError(int errorCode)
+{
+	this->_error_code = errorCode;
+}
 
 void ServerResponse::prepare(const ClientRequest &request)
 {
-	if (!request.server)
-	{
-		this->_error_code = 500;
-		return ;
-	}
+	if (!request.getServer())
+		return this->setError(500);
 
-	const Route	*route = request.server->getRoute(request.getPath());
+	const Route	*route = request.getServer()->getRoute(request.getPath());
 
 	// ## Request ##
 	// Client socket
 	this->_client_socket = request.getClientSocket();
 	// Error pages
-	this->_error_pages = request.server->getErrorPages();
+	this->_error_pages = request.getServer()->getErrorPages();
 	if (request.getErrorCode())
-	{
-		this->_error_code = request.getErrorCode();
-		return ;
-	}
+		return this->setError(request.getErrorCode());
 	// Method
 	if (route && route->hasMethods())
 		this->_method = route->getMethods() & request.getMethod();
 	else
-		this->_method = request.server->getMethods() & request.getMethod();
+		this->_method = request.getServer()->getMethods() & request.getMethod();
 	if (!this->_method)
-	{
-		this->_error_code = 405;
-		return ;
-	}
-	if (request.protocol != HTTP_PROTOCOL)
-	{
-		this->_error_code = 505;
-		return ;
-	}
+		return this->setError(405);
+	if (request.getProtocol() != HTTP_PROTOCOL)
+		return this->setError(505);
 	this->_path = request.getPath();
 	this->_headers = request.getHeaders();
 
@@ -61,17 +54,17 @@ void ServerResponse::prepare(const ClientRequest &request)
 	if (route && route->hasAutoindex())
 		this->_autoindex = route->getAutoindex();
 	else
-		this->_autoindex = request.server->getAutoindex();
+		this->_autoindex = request.getServer()->getAutoindex();
 	// Root
 	if (route && route->hasRoot())
 		this->_root = route->getRoot();
 	else
-		this->_root = request.server->getRoot();
+		this->_root = request.getServer()->getRoot();
 	// Index
 	if (route && route->hasIndex())
 		this->_index = route->getIndex();
 	else
-		this->_index = request.server->getIndex();
+		this->_index = request.getServer()->getIndex();
 	if (route)
 	{
 		// Redirect

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 18:05:11 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/16 15:41:46 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,8 @@ class ServerResponse {
 		std::string							_cgi_extension; // @TODO learn about it
 		std::string							_cgi_path; // @TODO learn about it
 		std::string							_upload_path; // @TODO learn about it
+
+		void	setError(int errorCode);
 	public:
 		ServerResponse();
 

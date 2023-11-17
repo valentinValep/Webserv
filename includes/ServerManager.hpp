@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 17:02:14 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/16 15:44:46 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ private:
 	int							nfds;
 	// struct sockaddr_in address;
 	std::vector<Server> 		servers;
-	std::vector<struct pollfd>	fds;
+	std::vector<struct pollfd>	fds; // @TODO change to std::set
 	std::map<int, int>			listeningSockets; // socket_fd -> port
 	std::map<int, SocketInfo>	clientSockets; // socket_fd -> clientRequest
 	char 						buffer[BUFFER_SIZE];
@@ -65,10 +65,8 @@ private:
 		__attribute__((warn_unused_result)); // @TODO
 	void	cleanFdsAndActiveSockets();
 
-	int		handleClientRequest(ClientRequest &request);
+	void	handleClientRequest(ClientRequest &request);
 	int		readClientRequest(ClientRequest &request);
-	void	storeHeaderClientRequest(char *buffer, int bytesRead, ClientRequest &request);
-	void	storeBodyClientRequest(char *buffer, int bytesRead, ClientRequest &request);
 	void	setInvalidFd(ClientRequest &request);
 
 public:
