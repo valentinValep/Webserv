@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/17 11:51:09 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/17 18:09:52 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "FileParser.hpp"
 #include "utils.hpp"
 
-#define MAX_CONNECTION 10
+#define MAX_CONNECTION 10 // always < 1024
 #define NO_EVENT 0
 #define CR std::cout << std::endl;
 
@@ -36,7 +36,6 @@ ServerManager::ServerManager(std::string configFilePath): nfds(0), fds()
 		this->start();
 	}
 }
-
 
 /************************************************************
  *						INIT								*
@@ -162,7 +161,7 @@ void ServerManager::start()
 			//std::cout << "Checking [" << this->fds[index].fd << "] == " << this->fds[index].revents << std::endl;
 			if (this->fds[index].revents == NO_EVENT)
 				continue;
-			//std::cout << "Event on [" << this->fds[index].fd << "]" << std::endl;
+			std::cout << "Event on [" << this->fds[index].fd << "]" << std::endl;
 			handleEvent(this->fds[index]);
 		}
 	}
@@ -181,12 +180,18 @@ void ServerManager::handleEvent(pollfd &pollfd)
 	{
 		std::cout << "📩 Handling on [" << pollfd.fd << "]" << std::endl;
 		this->handleClientRequest(this->clientSockets[pollfd.fd].request);
+		if (this->clientSockets[pollfd.fd].request.isClosed())
+		{
+			pollfd.fd = -1;
+			return;
+		}
+		std::cout << "DEBUG" << std::endl;
 		if (this->clientSockets[pollfd.fd].request.isFullyReceived()
 			|| this->clientSockets[pollfd.fd].request.isError())
 			pollfd.events = POLLOUT;
-		this->clientSockets[pollfd.fd].request.print();
+		this->clientSockets[pollfd.fd].request.short_print();
 	}
-	if (pollfd.revents & POLLOUT)
+	else if (pollfd.revents & POLLOUT)
 	{
 		std::cout << "📮 Responding on [" << pollfd.fd << "]" << std::endl;
 		ServerResponse serverResponse;
@@ -194,6 +199,11 @@ void ServerManager::handleEvent(pollfd &pollfd)
 		this->clientSockets[pollfd.fd].request.reset();
 		serverResponse.process();
 		pollfd.events = POLLIN;
+		std::cout << "🟢 Response sent on [" << pollfd.fd << "]" << std::endl;
+	}
+	else
+	{
+		std::cout << "⚠️ Unknown event on [" << pollfd.fd << "] (code: " << pollfd.revents << ")" << std::endl;
 	}
 	updateSocketActivity(pollfd.fd);
 	// detectInactiveSockets();
@@ -212,7 +222,6 @@ void ServerManager::cleanFdsAndActiveSockets() {
 		{
 			it = this->fds.erase(it);
 			this->nfds--;
-			// @TODO remove from clientSockets && detect inactive sockets otherwise no fd ever gets cleaned except one that closed
 		}
 		else
 			++it;
@@ -244,7 +253,6 @@ int ServerManager::acceptNewConnexion(int server_fd) {
 		std::cout << "server_fd: " << server_fd << std::endl;
 		perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In accept"));
 		exit(EXIT_FAILURE);
-		return (EXIT_FAILURE);
 	}
 
 	if (this->clientSockets.size() >= MAX_CONNECTION)
@@ -268,9 +276,26 @@ int ServerManager::acceptNewConnexion(int server_fd) {
 void	ServerManager::handleClientRequest(ClientRequest &request) {
 	ssize_t bytesRead = 0;
 	bytesRead = readClientRequest(request);
+	if (request.isClosed())
+		return;
 
 	request << std::string(this->buffer, bytesRead);
 	request.parse(this->servers);
+
+	//if (bytesRead > 0 && request.state == ClientRequest::HEADER_NOT_FULLY_RECEIVED)
+	//{
+	//	storeHeaderClientRequest(buffer, bytesRead, request);
+	//	std::cout << "ERROR CODE: " << request.errorCode << std::endl;
+	//	request.print();
+	//	return (EXIT_SUCCESS);
+	//}
+	//if (bytesRead > 0 && request.state == ClientRequest::BODY_NOT_FULLY_RECEIVED)
+	//{
+	//	storeBodyClientRequest(buffer, bytesRead, request);
+	//	request.print();
+	//	return (EXIT_SUCCESS);
+	//}
+	//return (EXIT_FAILURE);
 }
 
 int	ServerManager::readClientRequest(ClientRequest &request) {
@@ -281,9 +306,8 @@ int	ServerManager::readClientRequest(ClientRequest &request) {
 		if (bytesRead < 0)
 			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In read"));
 		if (bytesRead == 0)
-			std::cout << "❌ connection closed by client [" <<  request.getClientSocket() << "]" << std::endl;
-		setInvalidFd(request);
-		close(request.getClientSocket());
+			std::cout << "❌ Connection closed by client [" <<  request.getClientSocket() << "]" << std::endl;
+		request.close();
 		return (bytesRead);
 	}
 	//std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
@@ -292,19 +316,39 @@ int	ServerManager::readClientRequest(ClientRequest &request) {
 	return (bytesRead);
 }
 
+//	std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
+//	// for (int i = 0; i < bytesRead; i++)
+//	// 	std::cout << buffer[i];
+//	return (bytesRead);
+//}
+
+//void ServerManager::storeHeaderClientRequest(char *buffer, int bytesRead, ClientRequest &request) {
+//	request.raw_data += std::string(buffer, bytesRead);
+//	if (containsEmptyLine(request.raw_data))
+//	{
+//		request.setState(ClientRequest::HEADER_FULLY_RECEIVED);
+//		request.parseHeader(this->servers);
+//		request.setBodyState();
+//		request.raw_data = "";
+//	}
+//	else
+//		request.setState(ClientRequest::HEADER_NOT_FULLY_RECEIVED);
+//}
+
+//void ServerManager::storeBodyClientRequest(char *buffer, int bytesRead, ClientRequest &request) {
+//	request.raw_data += std::string(buffer, bytesRead);
+//	request.setBodyState();
+//	if (request.state == ClientRequest::REQUEST_FULLY_RECEIVED) {
+//		request.parseBody();
+//		request.raw_data = "";
+//	}
+//	else
+//		request.setState(ClientRequest::BODY_NOT_FULLY_RECEIVED);
+//}
+
 /************************************************************
  *							DEBUG							*
  ************************************************************/
-
-void ServerManager::setInvalidFd(ClientRequest &request) {
-	for (size_t i = 0; i < this->fds.size(); i++) {
-		if (this->fds[i].fd == request.getClientSocket()) {
-			this->fds[i].fd = -1;
-			break;
-		}
-	}
-	request.setError(499);
-}
 
 void ServerManager::printActiveSockets() {
 	for (std::map<int, SocketInfo>::iterator it = this->clientSockets.begin(); it != this->clientSockets.end(); ++it) {

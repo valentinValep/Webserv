@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/16 15:41:46 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/17 12:45:18 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 
 class ServerResponse {
 	private:
+		in_port_t							_port;
 		bool								_autoindex;
 		int									_error_code;
 		int									_method;
@@ -38,11 +39,13 @@ class ServerResponse {
 		std::map<int, std::string>			_error_pages;
 		int									_redirect_type; // @TODO learn about it
 		std::string							_redirect; // @TODO learn about it
-		std::string							_cgi_extension; // @TODO learn about it
-		std::string							_cgi_path; // @TODO learn about it
+		bool								_cgi_request;
+		std::string							_cgi_extension;
+		std::string							_cgi_path;
 		std::string							_upload_path; // @TODO learn about it
 
-		void	setError(int errorCode);
+		void			setError(int errorCode);
+		std::string		_getGenericErrorPage(void) const;
 	public:
 		ServerResponse();
 
@@ -51,6 +54,11 @@ class ServerResponse {
 		std::string	readFileContent(const std::string& filePath);
 		void		sendHttpResponse(int clientSocket, const std::string& content, const std::string& contentType);
 		void		sendHttpResponseCSS(int clientSocket, const std::string& content);
+		void		sendCGIResponse(int clientSocket, const std::string& content, const std::string& contentType);
+
+		// Getters
+		int			getMethod() const;
+		int			getPort() const;
 };
 
 #endif

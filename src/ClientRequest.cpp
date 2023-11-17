@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/17 11:34:10 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/17 18:06:47 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@
  *						CONSTRUCTORS						*
  ************************************************************/
 
-ClientRequest::ClientRequest(): _port(0), _errorCode(0), _clientSocket(0), _method(0),_server(NULL),  _state(RECEIVING_METHOD) {}
+ClientRequest::ClientRequest(): _cgiRequest(false), _port(0), _errorCode(0), _clientSocket(0), _method(0),_server(NULL),  _state(RECEIVING_METHOD) {}
 
-ClientRequest::ClientRequest(int fd, in_port_t port): _port(port), _errorCode(0), _clientSocket(fd), _method(0),_server(NULL), _state(RECEIVING_METHOD) {}
+ClientRequest::ClientRequest(int fd, in_port_t port): _cgiRequest(false), _port(port), _errorCode(0), _clientSocket(fd), _method(0),_server(NULL), _state(RECEIVING_METHOD) {}
 
 
 /************************************************************
@@ -34,6 +34,16 @@ bool ClientRequest::isFullyReceived() const
 bool ClientRequest::isError() const
 {
 	return (this->_state == ERROR);
+}
+
+bool ClientRequest::isClosed() const
+{
+	return (this->_state == CLOSED);
+}
+
+in_port_t ClientRequest::getPort() const
+{
+	return (this->_port);
 }
 
 int ClientRequest::getErrorCode() const
@@ -69,6 +79,11 @@ Server *ClientRequest::getServer() const
 int ClientRequest::getClientSocket() const
 {
 	return (this->_clientSocket);
+}
+
+bool ClientRequest::isCgiRequest() const
+{
+	return (this->_cgiRequest);
 }
 
 /************************************************************
@@ -119,7 +134,6 @@ void	ClientRequest::parseHeaderLine(const std::string line)
 	if (line.find(":") == std::string::npos)
 		return this->setError(400);
 	this->_headers[line.substr(0, line.find(":"))] = line.substr(line.find(":") + 2);
-
 }
 
 void ClientRequest::parseBodyLine(const std::string line)
@@ -149,7 +163,10 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 			return;
 		}
 		if (this->_state == RECEIVING_METHOD)
+		{
 			this->parseMethodLine(line);
+			this->detectCgi();
+		}
 		else if (this->_state == RECEIVING_HEADER)
 		{
 			this->parseHeaderLine(line);
@@ -160,6 +177,25 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 			this->parseBodyLine(line);
 		else
 			return;
+	}
+}
+
+void ClientRequest::detectCgi()
+{
+	if (this->_path.find("/cgi-bin/") == 0) {
+		this->_cgiRequest = true;
+		return;
+	}
+
+	const char* cgiExtensions[] = {".cgi", ".pl", ".py"};
+	const size_t numExtensions = sizeof(cgiExtensions) / sizeof(cgiExtensions[0]);
+
+	for (size_t i = 0; i < numExtensions; ++i) {
+		std::string ext = cgiExtensions[i];
+		if (this->_path.size() >= ext.size() && this->_path.compare(this->_path.size() - ext.size(), ext.size(), ext) == 0) {
+			this->_cgiRequest = true;
+			return;
+		}
 	}
 }
 
@@ -229,6 +265,7 @@ std::string ClientRequest::getHeader(const std::string & key) const
 
 void ClientRequest::reset()
 {
+	this->_cgiRequest = false;
 	this->_errorCode = 0;
 	this->_method = 0;
 	this->_state = RECEIVING_METHOD;
@@ -238,6 +275,13 @@ void ClientRequest::reset()
 	this->_body.clear();
 	this->_raw_data.clear();
 	this->_raw_data.str("");
+}
+
+void ClientRequest::close()
+{
+	this->_state = CLOSED;
+	this->_errorCode = 499;
+	::close(this->_clientSocket);
 }
 
 void ClientRequest::operator<<(const std::string &data)
@@ -265,6 +309,7 @@ void ClientRequest::print() const {
 		std::cout << "ClientRequest: Error: request not fully received" << std::endl;
 		return;
 	}
+	std::cout << "ClientRequest: " << std::endl;
 	std::cout << "Method: " << (this->_method == GET ? "GET" : this->_method == POST ? "POST"
 																					 : "DELETE")
 			  << std::endl;
@@ -278,4 +323,18 @@ void ClientRequest::print() const {
 
 	//std::cout << "Body:" << std::endl;
 	//std::cout << this->_body << std::endl;
+}
+
+void ClientRequest::short_print() const {
+	if (this->_state == ERROR) {
+		std::cout << "ClientRequest: Error: " << this->_errorCode << std::endl;
+		return;
+	}
+	if (this->_state != REQUEST_FULLY_RECEIVED) {
+		std::cout << "ClientRequest: Error: request parse is not finished" << std::endl;
+		return;
+	}
+	std::cout << "ClientRequest: " << (this->_method == GET ? "GET " : this->_method == POST ? "POST "
+																					 : "DELETE ");
+	std::cout << this->_path << std::endl;
 }

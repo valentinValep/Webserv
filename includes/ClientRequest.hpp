@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/17 10:57:59 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/17 15:40:30 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ enum State {
 	RECEIVING_HEADER,
 	RECEIVING_BODY,
 	REQUEST_FULLY_RECEIVED,
+	CLOSED,
 	ERROR,
 };
 
@@ -47,6 +48,7 @@ private:
 		}
 	};
 
+	bool								_cgiRequest;
 	in_port_t							_port;
 	int									_errorCode;
 	int									_clientSocket;
@@ -59,6 +61,7 @@ private:
 	std::string							_body;
 	RequestStream						_raw_data;
 
+	void	detectCgi();
 	void	findFirstServer(std::vector<Server> &servers);
 	void	findFinalServer(std::vector<Server> &servers);
 	void	parseMethodLine(const std::string line);
@@ -72,15 +75,19 @@ public:
 
 	void		setError(int errorCode);
 	void		print() const;
+	void		short_print() const;
 
 	void		operator<<(const std::string &data);
 	void		parse(std::vector<Server> &servers);
 	bool		isFullyReceived() const;
 	bool		isError() const;
+	bool		isClosed() const;
 	std::string	getHeader(const std::string &key) const;
 	void		reset();
+	void		close();
 
 	// Getters
+	in_port_t							getPort() const;
 	int									getErrorCode() const;
 	int									getClientSocket() const;
 	Server								*getServer() const;
@@ -88,6 +95,7 @@ public:
 	std::string							getPath() const;
 	std::string							getProtocol() const;
 	std::map<std::string, std::string>	getHeaders() const;
+	bool								isCgiRequest() const;
 };
 
 #endif
