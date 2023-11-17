@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/16 20:56:40 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/17 21:14:08 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,11 +194,17 @@ std::cout << "DEBUG: F_OK " << std::endl;
 			stat(locationPath.c_str(), &locationPathStat);
 			if (S_ISREG(locationPathStat.st_mode))	//	What if no perms to open file ?
 			{
+				if (access(locationPath.c_str(), R_OK))	//	Can happen ?
+				{
+					//	return 403
+std::cout << "DEBUG: Permission denied 403" << std::endl;
+					return ;
+				}
 				content = readFileContent(locationPath);
 				sendHttpResponse(this->_client_socket, content, "text/html");
 				break ;
 			}
-			if (S_ISDIR(locationPathStat.st_mode))
+			if (S_ISDIR(locationPathStat.st_mode))	//	Check perms here too
 			{
 std::cout << "DEBUG: locationPath is a folder..." << std::endl;
 				if (!(this->_redirect.empty()))
@@ -211,7 +217,7 @@ std::cout << "DEBUG: locationPath is a folder..." << std::endl;
 					//	HANDLE CGI HERE
 					return ;
 				}
-				indexPath = locationPath + this->_index;
+				indexPath = locationPath + "/" + this->_index;
 				std::cout << "indexPath: " << indexPath << std::endl;
 				if (!access(indexPath.c_str(), F_OK))
 				{
@@ -222,16 +228,76 @@ std::cout << "DEBUG: Found index at: " << indexPath << std::endl;
 				}
 				if (this->_autoindex)
 				{
+					if (access(locationPath.c_str(), R_OK))
+					{
+std::cout << "DEBUG: Permission denied 403" << std::endl;
+						//	return 403
+						return ;
+					}
 					//	generate index.html, listing folder elements, and respond with generated file
+						//	open locationPath dir and list elements
+						DIR		*dirStream;;
+
+						if (!(dirStream = opendir(locationPath.c_str())))
+						{
+							//	couldn't get directory stream
+							//	return 5xx error
+							break ;
+						}
+
+						std::stringstream	autoIndexedPage;
+
+						//	generate file 'header'
+						autoIndexedPage << "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>"
+						//	print folder name in title
+							<< this->_path << "</title>\n\t<link rel=favicon ... >\n</head>\n<body>\n";	//	keep basename only in title
+
+						//	loop on files
+						struct dirent	*dirContent = NULL;
+						do
+						{
+							errno = 0;
+							if (!(dirContent = readdir(dirStream)) && errno)
+							{
+								//	readdir error
+								//	return 5xx error
+								return ;
+							}
+							if (!dirContent)
+								break ;
+							//	else if (!dirent)
+								//empty folder
+							//	else
+								//	generate link
+							std::string		fileName(dirContent->d_name);
+							std::string		locationBasePath = locationPath.substr((this->_root.size()));	//	REMOVE TRAILING '/'s !
+							autoIndexedPage << "\t<a href=\"" << (locationBasePath + "/" + fileName) << "\">" << fileName << "</a><br>\n";
+
+						}
+						while (dirContent != NULL);
+						if (closedir(dirStream))
+						{
+							//	Error closing dir
+							//	Send 5xx response
+							return ;
+						}
+
+						//	generate file 'footer'
+						autoIndexedPage << "</body>\n</html>\n";
+
+						//	respond with generated html page
+						sendHttpResponse(this->_client_socket, autoIndexedPage.str(), "text/html");
 					return ;
 				}
 				//	return 404 error
+std::cout << "DEBUG: Not found 404" << std::endl;
 			}
 		}
 		else
 		{
-			std::cout << "DEBUG: F_NOK " << std::endl;
+std::cout << "DEBUG: F_NOK " << std::endl;
 			//	Respond with error number ...
+std::cout << "DEBUG: Not found 404" << std::endl;
 		}
 		break ;
 	}
