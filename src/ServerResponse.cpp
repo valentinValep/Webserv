@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/17 21:14:08 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/18 15:54:21 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,6 +165,21 @@ std::string		ServerResponse::_getGenericErrorPage(void) const
 	return (generic_page.str());
 }
 
+std::string		removeTrailingSlashes(std::string &path)
+{
+	size_t	index;
+
+	if (!path.empty())
+	{
+//		if ((index = path.find_last_of("/")) != path.npos)
+//			if (!(path[index + 1]))
+//				path.erase(index);
+		if ((index = path.find_last_not_of("/")) != path.npos)
+			path.erase(index + 1);
+	}
+	return (path);
+}
+
 void ServerResponse::process()
 {
 	std::string content;
@@ -182,7 +197,7 @@ void ServerResponse::process()
 	case GET:
 	{
 std::cout << "DEBUG:\n\troot:\t" << this->_root << "\n\tpath:\t" << this->_path << "\n\tindex:\t" << this->_index << std::endl;
-		std::string const	locationPath = this->_root + this->_path;
+		std::string const	locationPath = this->_root + removeTrailingSlashes(this->_path);
 		std::string			indexPath;
 std::cout << "DEBUG: locationPath: " << locationPath << std::endl;
 
