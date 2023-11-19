@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/17 17:20:38 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/19 21:02:51 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@
 # include <unistd.h>
 # include <dirent.h>
 # include <sstream>
+
+# define HTTPVERSION "1.1"
 
 class ServerResponse {
 	private:
@@ -52,7 +54,7 @@ class ServerResponse {
 
 		void		prepare(const ClientRequest& request);
 		void		process();
-		std::string	readFileContent(const std::string& filePath);
+		std::string	readFileContent(std::string const &filePath, std::string &mimeType);
 		void		sendHttpResponse(int clientSocket, const std::string& content, const std::string& contentType);
 		void		sendHttpResponseCSS(int clientSocket, const std::string& content);
 };

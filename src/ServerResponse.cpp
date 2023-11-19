@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/18 15:54:21 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/19 20:58:58 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,7 +165,7 @@ std::string		ServerResponse::_getGenericErrorPage(void) const
 	return (generic_page.str());
 }
 
-std::string		removeTrailingSlashes(std::string &path)
+std::string		trimTrailingSlashes(std::string &path)
 {
 	size_t	index;
 
@@ -182,22 +182,24 @@ std::string		removeTrailingSlashes(std::string &path)
 
 void ServerResponse::process()
 {
-	std::string content;
+	std::string		content;
+	std::string		mimeType;
+
 	if (this->_error_code)	//	check value?	//	Make function to return error codes out of this scope's code
 	{
 		if (this->_error_pages.find(this->_error_code) != this->_error_pages.end())
-			content = readFileContent(this->_root + this->_error_pages[this->_error_code]);
+			content = readFileContent(this->_root + this->_error_pages[this->_error_code], mimeType);
 		else
 			content = _getGenericErrorPage();
-		sendHttpResponse(this->_client_socket, content, "text/html");	//	@TODO	send proper status code
-		return;
+		sendHttpResponse(this->_error_code, content, "text/html");	//	@TODO	send proper status code
+		return ;
 	}
 	switch(this->_method)
 	{
 	case GET:
 	{
 std::cout << "DEBUG:\n\troot:\t" << this->_root << "\n\tpath:\t" << this->_path << "\n\tindex:\t" << this->_index << std::endl;
-		std::string const	locationPath = this->_root + removeTrailingSlashes(this->_path);
+		std::string const	locationPath = this->_root + trimTrailingSlashes(this->_path);
 		std::string			indexPath;
 std::cout << "DEBUG: locationPath: " << locationPath << std::endl;
 
@@ -215,8 +217,8 @@ std::cout << "DEBUG: F_OK " << std::endl;
 std::cout << "DEBUG: Permission denied 403" << std::endl;
 					return ;
 				}
-				content = readFileContent(locationPath);
-				sendHttpResponse(this->_client_socket, content, "text/html");
+				content = readFileContent(locationPath, mimeType);
+				sendHttpResponse(200, content, mimeType);	//	search MIME type
 				break ;
 			}
 			if (S_ISDIR(locationPathStat.st_mode))	//	Check perms here too
@@ -237,8 +239,8 @@ std::cout << "DEBUG: locationPath is a folder..." << std::endl;
 				if (!access(indexPath.c_str(), F_OK))
 				{
 std::cout << "DEBUG: Found index at: " << indexPath << std::endl;
-					content = readFileContent(indexPath);
-					sendHttpResponse(this->_client_socket, content, "text/html");
+					content = readFileContent(indexPath, mimeType);
+					sendHttpResponse(200, content, mimeType);	//	Should be of type html here. BUT what if our index page is of type .php or something else ?
 					break ;
 				}
 				if (this->_autoindex)
@@ -265,11 +267,11 @@ std::cout << "DEBUG: Permission denied 403" << std::endl;
 						//	generate file 'header'
 						autoIndexedPage << "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>"
 						//	print folder name in title
-							<< this->_path << "</title>\n\t<link rel=favicon ... >\n</head>\n<body>\n";	//	keep basename only in title
+							<< this->_path << "</title>\n\t<link rel=favicon ... >\n</head>\n<body>\n";	//	keep basename only in title	//	Add "content of "folder"' in html page
 
 						//	loop on files
 						struct dirent	*dirContent = NULL;
-						do
+						do	//	make infinite loop
 						{
 							errno = 0;
 							if (!(dirContent = readdir(dirStream)) && errno)
@@ -301,7 +303,7 @@ std::cout << "DEBUG: Permission denied 403" << std::endl;
 						autoIndexedPage << "</body>\n</html>\n";
 
 						//	respond with generated html page
-						sendHttpResponse(this->_client_socket, autoIndexedPage.str(), "text/html");
+						sendHttpResponse(200, autoIndexedPage.str(), "text/html");
 					return ;
 				}
 				//	return 404 error
@@ -329,21 +331,117 @@ std::cout << "DEBUG: Not found 404" << std::endl;
 	}
 }
 
-std::string ServerResponse::readFileContent(const std::string& filePath) {
-	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
+std::string		ServerResponse::readFileContent(std::string const &filePath, std::string &mimeType)
+{
+	std::ifstream								file(filePath.c_str(), std::ios::in | std::ios::binary);
+	static std::map<std::string, std::string>	mimeTypeList;
+	std::string									extension;
+	size_t										extensionIndex;
+
+	mimeTypeList[".aac"] = "audio/aac";
+	mimeTypeList[".abw"] = "application/x-abiword";
+	mimeTypeList[".arc"] = "application/x-freearc";
+	mimeTypeList[".avif"] = "image/avif";
+	mimeTypeList[".avi"] = "video/x-msvideo";
+	mimeTypeList[".azw"] = "application/vnd.amazon.ebook";
+	mimeTypeList[".bin"] = "application/octet-stream";
+	mimeTypeList[".bmp"] = "image/bmp";
+	mimeTypeList[".bz"] = "application/x-bzip";
+	mimeTypeList[".bz2"] = "application/x-bzip2";
+	mimeTypeList[".cda"] = "application/x-cdf";
+	mimeTypeList[".csh"] = "application/x-csh";
+	mimeTypeList[".css"] = "text/css";
+	mimeTypeList[".csv"] = "text/csv";
+	mimeTypeList[".doc"] = "application/msword";
+	mimeTypeList[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+	mimeTypeList[".eot"] = "application/vnd.ms-fontobject";
+	mimeTypeList[".epub"] = "application/epub+zip";
+	mimeTypeList[".gz"] = "application/gzip";
+	mimeTypeList[".gif"] = "image/gif";
+	mimeTypeList[".html"] = "text/html";
+	mimeTypeList[".htm"] = "text/html";
+	mimeTypeList[".ico"] = "image/vnd.microsoft.icon";
+	mimeTypeList[".ics"] = "text/calendar";
+	mimeTypeList[".jar"] = "application/java-archive";
+	mimeTypeList[".jpg"] = "image/jpeg";
+	mimeTypeList[".jpeg"] = "image/jpeg";
+	mimeTypeList[".js"] = "text/javascript";
+	mimeTypeList[".json"] = "application/json";
+	mimeTypeList[".jsonld"] = "application/ld+json";
+	mimeTypeList[".midi"] = "audio/x-midi";
+	mimeTypeList[".midi"] = "audio/midi";
+	mimeTypeList[".mid"] = "audio/x-midi";
+	mimeTypeList[".mid"] = "audio/midi";
+	mimeTypeList[".mjs"] = "text/javascript";
+	mimeTypeList[".mp3"] = "audio/mpeg";
+	mimeTypeList[".mp4"] = "video/mp4";
+	mimeTypeList[".mpeg"] = "video/mpeg";
+	mimeTypeList[".mpkg"] = "application/vnd.apple.installer+xml";
+	mimeTypeList[".odp"] = "application/vnd.oasis.opendocument.presentation";
+	mimeTypeList[".ods"] = "application/vnd.oasis.opendocument.spreadsheet";
+	mimeTypeList[".odt"] = "application/vnd.oasis.opendocument.text";
+	mimeTypeList[".oga"] = "audio/ogg";
+	mimeTypeList[".ogv"] = "video/ogg";
+	mimeTypeList[".ogx"] = "application/ogg";
+	mimeTypeList[".opus"] = "audio/opus";
+	mimeTypeList[".otf"] = "font/otf";
+	mimeTypeList[".png"] = "image/png";
+	mimeTypeList[".pdf"] = "application/pdf";
+	mimeTypeList[".php"] = "application/x-httpd-php";
+	mimeTypeList[".ppt"] = "application/vnd.ms-powerpoint";
+	mimeTypeList[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+	mimeTypeList[".rar"] = "application/vnd.rar";
+	mimeTypeList[".rtf"] = "application/rtf";
+	mimeTypeList[".sh"] = "application/x-sh";
+	mimeTypeList[".svg"] = "image/svg+xml";
+	mimeTypeList[".tar"] = "application/x-tar";
+	mimeTypeList[".tiff"] = "image/tiff";
+	mimeTypeList[".tif"] = "image/tiff";
+	mimeTypeList[".ts"] = "video/mp2t";
+	mimeTypeList[".ttf"] = "font/ttf";
+	mimeTypeList[".txt"] = "text/plain";
+	mimeTypeList[".vsd"] = "application/vnd.visio";
+	mimeTypeList[".wav"] = "audio/wav";
+	mimeTypeList[".weba"] = "audio/webm";
+	mimeTypeList[".webm"] = "video/webm";
+	mimeTypeList[".webp"] = "image/webp";
+	mimeTypeList[".woff"] = "font/woff";
+	mimeTypeList[".woff2"] = "font/woff2";
+	mimeTypeList[".xhtml"] = "application/xhtml+xml";
+	mimeTypeList[".xls"] = "application/vnd.ms-excel";
+	mimeTypeList[".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+	mimeTypeList[".xml"] = "application/xml";
+	mimeTypeList[".xul"] = "application/vnd.mozilla.xul+xml";
+	mimeTypeList[".zip"] = "application/zip";
+	mimeTypeList[".3gp"] = "video/3gpp";
+	mimeTypeList[".3g2"] = "video/3gpp2";
+	mimeTypeList[".7z"] = "application/x-7z-compressed";
+
 	if (!file.is_open()) {
 		perror("In opening file"); // @TODO return 404/5xx ?
 		//exit(EXIT_FAILURE); // @TODO return 404/5xx ?
 	}
+	//	determin MIME type here
+		mimeType = "";
+		//	find extension
+		if ((extensionIndex = filePath.find_last_of(".")) != filePath.npos)
+		{
+		//	compare extension (what if no extension ?)
+			if (mimeTypeList.find(filePath.substr(extensionIndex)) != mimeTypeList.end())	//	What if not found ?
+				mimeType = mimeTypeList[filePath.substr(extensionIndex)];
+		}
+	//	MimeType = determined MIME type here
+		mimeType = mimeTypeList[filePath.substr(extensionIndex)];
 	return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 }
 
-void ServerResponse::sendHttpResponse(int clientSocket, const std::string& content, const std::string& contentType) {	//	@TODO refactor: send proper return code + correct MIME type + use send
+void ServerResponse::sendHttpResponse(int const responseCode, std::string const &content, std::string const &contentType) {	//	@TODO refactor: send proper return code + correct MIME type + use send
 	std::stringstream httpHeaders;
-	httpHeaders << "HTTP/1.1 200 OK\r\n" <<
-				"Content-Length: " << content.size() << "\r\n" <<
-				"Content-Type: " << contentType << "\r\n" <<
-				"\r\n";
+	httpHeaders << "HTTP/" << HTTPVERSION << " " << responseCode << " \r\n"
+				<< "Content-Length: " << content.size() << "\r\n"
+				<< (contentType.empty() ? "" : "Content-Type: ")
+				<< (contentType.empty() ? "" : contentType) << "\r\n"
+				<< "\r\n";
 	std::string httpResponse = httpHeaders.str() + content;
-	write(clientSocket, httpResponse.c_str(), httpResponse.size());
+	write(this->_client_socket, httpResponse.c_str(), httpResponse.size());
 }
