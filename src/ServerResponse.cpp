@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 10:57:48 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 11:33:18 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void ServerResponse::prepare(const ClientRequest &request)
 		this->_method = request.getServer()->getMethods() & request.getMethod();
 	if (!this->_method)
 		return this->setError(405);
-	if (request.getProtocol() != HTTP_PROTOCOL)
+	if (request.getProtocol() != HTTP_PROTOCOL) // @TODO move to ClientRequest ?
 		return this->setError(505);
 	this->_path = request.getPath();
 	this->_headers = request.getHeaders();

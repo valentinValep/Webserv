@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/17 18:06:47 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 12:00:48 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 		this->findFirstServer(servers);
 	while (std::getline(this->_raw_data, line))
 	{
-		if (line.empty())
+		if (line.empty() || line.size() == 0)
 			return this->setError(400);
 		if (line[line.size() - 1] != '\r')
 		{
@@ -178,6 +178,7 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 		else
 			return;
 	}
+	this->_raw_data.clear();
 }
 
 void ClientRequest::detectCgi()
@@ -331,7 +332,7 @@ void ClientRequest::short_print() const {
 		return;
 	}
 	if (this->_state != REQUEST_FULLY_RECEIVED) {
-		std::cout << "ClientRequest: Error: request parse is not finished" << std::endl;
+		std::cout << "ClientRequest: request parse is not finished" << std::endl;
 		return;
 	}
 	std::cout << "ClientRequest: " << (this->_method == GET ? "GET " : this->_method == POST ? "POST "

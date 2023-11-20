@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/17 18:09:52 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 11:22:48 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,7 +185,6 @@ void ServerManager::handleEvent(pollfd &pollfd)
 			pollfd.fd = -1;
 			return;
 		}
-		std::cout << "DEBUG" << std::endl;
 		if (this->clientSockets[pollfd.fd].request.isFullyReceived()
 			|| this->clientSockets[pollfd.fd].request.isError())
 			pollfd.events = POLLOUT;
