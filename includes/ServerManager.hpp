@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/16 15:44:46 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 12:20:29 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ private:
 	void	parseConfigFile(std::string config_file);
 	void	printActiveSockets();
 	int		acceptNewConnexion(int server_fd)
-		__attribute__((warn_unused_result)); // @TODO
+		__attribute__((warn_unused_result));
 	void	cleanFdsAndActiveSockets();
 
 	void	handleClientRequest(ClientRequest &request);

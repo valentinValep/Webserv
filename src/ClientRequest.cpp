@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 12:00:48 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 12:28:17 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,6 @@ bool	ClientRequest::needBody() const
 		|| this->_headers.find("Transfer-Encoding") != this->_headers.end()));
 }
 
-// @TODO refactor parsing of the request
 void	ClientRequest::parseHeaderLine(const std::string line)
 {
 	if (line == "\r")
@@ -140,8 +139,9 @@ void ClientRequest::parseBodyLine(const std::string line)
 {
 	// @TODO check if it's valid
 	// @TODO check if it's not too big (max_body_size)
+	// @TODO learn about Transfer-Encoding
 	this->_body += line + "\n";
-	this->_state = REQUEST_FULLY_RECEIVED;// @TODO
+	this->_state = REQUEST_FULLY_RECEIVED;// @TODO use content-length to check if it's fully received
 }
 
 void	ClientRequest::parse(std::vector<Server> &servers)
@@ -202,7 +202,6 @@ void ClientRequest::detectCgi()
 
 void ClientRequest::findFirstServer(std::vector<Server> &servers)
 {
-	// @TODO move again in findFinalServer ?
 	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
 	{
 		if (it->getPort() == this->_port)
@@ -242,8 +241,6 @@ void ClientRequest::findFinalServer(std::vector<Server> &servers)
 	}
 	if (port != this->_port)
 		return this->setError(400);
-	//std::cout << "host_name: '" << host_name << "'" << std::endl;
-	//std::cout << "port: '" << port << "'" << std::endl;
 	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
 	{
 		if (it->hasServerName(host_name) && it->getPort() == port)
@@ -252,7 +249,6 @@ void ClientRequest::findFinalServer(std::vector<Server> &servers)
 			return;
 		}
 	}
-	// @TODO check there is no body
 	return;
 }
 

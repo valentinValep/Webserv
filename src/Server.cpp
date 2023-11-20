@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 14:16:53 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 13:26:21 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ Server::Server(fp::Module &mod): autoindex(true), port(80), methods(GET | POST |
 	this->parseMaxBodySize(mod);
 	this->parseRoot(mod);
 	this->parseIndex(mod);
-	// @TODO if methos is not defined, check if routes are defined and if all these routes have methods
+	// @TODO if methods is not defined, check if routes are defined and if all these routes have methods
 	this->parseMethods(mod);
 	this->parseServerNames(mod);
 	this->parseErrorPages(mod);

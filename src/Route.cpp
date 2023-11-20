@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 15:11:35 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 12:31:10 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include <iostream>
 #include <string>
 
-// @TODO remove default values
 Route::Route(): autoindex(true), methods(), redirect_type(), redirect(), index(""), root(""), cgi_extension(""), cgi_path(""), upload_path(""), _autoindex_set(false), _methods_set(false), _redirect_set(false), _index_set(false), _root_set(false), _cgi_set(false), _upload_set(false)
 {}
 

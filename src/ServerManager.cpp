@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/20 11:22:48 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 13:31:52 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,10 +129,7 @@ int ServerManager::setupNetwork() {
 			exit(EXIT_FAILURE);
 		}
 
-		struct pollfd new_server_fd;
-		new_server_fd.fd = serverSocket;
-		new_server_fd.events = POLLIN;
-		this->fds.push_back(new_server_fd); // @TODO compound literal
+		this->fds.push_back((struct pollfd){serverSocket, POLLIN, NO_EVENT});
 		this->listeningSockets[serverSocket] = it->getPort();
 		listeningPorts.insert(it->getPort());
 		this->nfds++;
@@ -251,10 +248,10 @@ int ServerManager::acceptNewConnexion(int server_fd) {
 	{
 		std::cout << "server_fd: " << server_fd << std::endl;
 		perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In accept"));
-		exit(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
 
-	if (this->clientSockets.size() >= MAX_CONNECTION)
+	if (this->clientSockets.size() >= MAX_CONNECTION) // @TODO move before accept() ?!
 	{
 		std::cout << "warning: max number of connections reached" << std::endl;
 		close(clientSocket);
