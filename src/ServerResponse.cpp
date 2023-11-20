@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 11:33:18 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 13:33:31 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,7 +158,6 @@ std::string		ServerResponse::_getGenericErrorPage(void) const
 	generic_page << "<!DOCTYPE html>\n<html lang=\"en\">\n\t<head>\n\t\t<meta charset=\"UTF-8\">\n\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t\t<title>"
 		<< this->_error_code << " " << error_codes[this->_error_code] << "</title>\n\t</head>\n\t<body>\n\t\t<center><h1>"
 		<< this->_error_code << " " << error_codes[this->_error_code] << "</h1></center>\n\t\t<hr><center>webserv</center>\n\t</body>\n</html>";
-
 	return (generic_page.str());
 }
 
@@ -166,14 +165,8 @@ std::string		trimTrailingSlashes(std::string &path)
 {
 	size_t	index;
 
-	if (!path.empty())
-	{
-//		if ((index = path.find_last_of("/")) != path.npos)
-//			if (!(path[index + 1]))
-//				path.erase(index);
-		if ((index = path.find_last_not_of("/")) != path.npos)
+	if (!(path.empty()) && ((index = path.find_last_not_of("/")) != path.npos))
 			path.erase(index + 1);
-	}
 	return (path);
 }
 
@@ -183,13 +176,13 @@ void ServerResponse::process()
 	std::string		content;
 	std::string		mimeType;
 
-	if (this->_error_code)	//	check value?	//	Make function to return error codes out of this scope's code
+	if (this->_error_code)	//	check value ?	//	Make function out of this scope
 	{
 		if (this->_error_pages.find(this->_error_code) != this->_error_pages.end())
 			content = readFileContent(this->_root + this->_error_pages[this->_error_code], mimeType);
 		else
 			content = _getGenericErrorPage();
-		sendHttpResponse(this->_error_code, content, "text/html");	//	@TODO	send proper status code
+		sendHttpResponse(this->_error_code, content, "text/html");
 		return ;
 	}
 	if (this->_cgi_request)
@@ -217,7 +210,7 @@ std::cout << "DEBUG: F_OK " << std::endl;
 			struct stat		locationPathStat;
 
 			stat(locationPath.c_str(), &locationPathStat);
-			if (S_ISREG(locationPathStat.st_mode))	//	What if no perms to open file ?
+			if (S_ISREG(locationPathStat.st_mode))
 			{
 				if (access(locationPath.c_str(), R_OK))	//	Can happen ?
 				{
@@ -248,7 +241,7 @@ std::cout << "DEBUG: locationPath is a folder..." << std::endl;
 				{
 std::cout << "DEBUG: Found index at: " << indexPath << std::endl;
 					content = readFileContent(indexPath, mimeType);
-					sendHttpResponse(200, content, mimeType);	//	Should be of type html here. BUT what if our index page is of type .php or something else ?
+					sendHttpResponse(200, content, mimeType);
 					break ;
 				}
 				if (this->_autoindex)
@@ -259,59 +252,58 @@ std::cout << "DEBUG: Permission denied 403" << std::endl;
 						//	return 403
 						return ;
 					}
-					//	generate index.html, listing folder elements, and respond with generated file
-						//	open locationPath dir and list elements
-						DIR		*dirStream;;
+					//	open locationPath dir and list elements
+					DIR		*dirStream;;
 
-						if (!(dirStream = opendir(locationPath.c_str())))
+					if (!(dirStream = opendir(locationPath.c_str())))
+					{
+						//	couldn't get directory stream
+						//	return 5xx error
+						break ;
+					}
+
+					std::stringstream	autoIndexedPage;
+
+					//	generate file 'header'
+					autoIndexedPage << "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>"
+					//	print folder name in title
+						<< this->_path << "</title>\n\t<link rel=favicon ... >\n</head>\n<body>\n";	//	keep basename only in title	//	Add "content of "folder"' in html page
+
+					//	loop on files
+					struct dirent	*dirContent = NULL;
+					do	//	make infinite loop
+					{
+						errno = 0;
+						if (!(dirContent = readdir(dirStream)) && errno)
 						{
-							//	couldn't get directory stream
+							//	readdir error
 							//	return 5xx error
-							break ;
-						}
-
-						std::stringstream	autoIndexedPage;
-
-						//	generate file 'header'
-						autoIndexedPage << "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>"
-						//	print folder name in title
-							<< this->_path << "</title>\n\t<link rel=favicon ... >\n</head>\n<body>\n";	//	keep basename only in title	//	Add "content of "folder"' in html page
-
-						//	loop on files
-						struct dirent	*dirContent = NULL;
-						do	//	make infinite loop
-						{
-							errno = 0;
-							if (!(dirContent = readdir(dirStream)) && errno)
-							{
-								//	readdir error
-								//	return 5xx error
-								return ;
-							}
-							if (!dirContent)
-								break ;
-							//	else if (!dirent)
-								//empty folder
-							//	else
-								//	generate link
-							std::string		fileName(dirContent->d_name);
-							std::string		locationBasePath = locationPath.substr((this->_root.size()));	//	REMOVE TRAILING '/'s !
-							autoIndexedPage << "\t<a href=\"" << (locationBasePath + "/" + fileName) << "\">" << fileName << "</a><br>\n";
-
-						}
-						while (dirContent != NULL);
-						if (closedir(dirStream))
-						{
-							//	Error closing dir
-							//	Send 5xx response
 							return ;
 						}
+						if (!dirContent)
+							break ;
+						//	else if (!dirent)
+							//empty folder
+						//	else
+							//	generate link
+						std::string		fileName(dirContent->d_name);
+						std::string		locationBasePath = locationPath.substr((this->_root.size()));	//	REMOVE TRAILING '/'s !
+						autoIndexedPage << "\t<a href=\"" << (locationBasePath + "/" + fileName) << "\">" << fileName << "</a><br>\n";
 
-						//	generate file 'footer'
-						autoIndexedPage << "</body>\n</html>\n";
+					}
+					while (dirContent != NULL);
+					if (closedir(dirStream))
+					{
+						//	Error closing dir
+						//	Send 5xx response
+						return ;
+					}
 
-						//	respond with generated html page
-						sendHttpResponse(200, autoIndexedPage.str(), "text/html");
+					//	generate file 'footer'
+					autoIndexedPage << "</body>\n</html>\n";
+
+					//	respond with generated html page
+					sendHttpResponse(200, autoIndexedPage.str(), "text/html");
 					return ;
 				}
 				//	return 404 error
@@ -429,21 +421,17 @@ std::string		ServerResponse::readFileContent(std::string const &filePath, std::s
 		perror("In opening file"); // @TODO return 404/5xx ?
 		//exit(EXIT_FAILURE); // @TODO return 404/5xx ?
 	}
-	//	determin MIME type here
-		mimeType = "";
-		//	find extension
-		if ((extensionIndex = filePath.find_last_of(".")) != filePath.npos)
-		{
-		//	compare extension (what if no extension ?)
-			if (mimeTypeList.find(filePath.substr(extensionIndex)) != mimeTypeList.end())	//	What if not found ?
-				mimeType = mimeTypeList[filePath.substr(extensionIndex)];
-		}
-	//	MimeType = determined MIME type here
-		mimeType = mimeTypeList[filePath.substr(extensionIndex)];
+	mimeType = "";
+	if ((extensionIndex = filePath.find_last_of(".")) != filePath.npos)
+	{
+		if (mimeTypeList.find(filePath.substr(extensionIndex)) != mimeTypeList.end())	//	What if not found ?
+			mimeType = mimeTypeList[filePath.substr(extensionIndex)];
+	}
+	mimeType = mimeTypeList[filePath.substr(extensionIndex)];
 	return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 }
 
-void ServerResponse::sendHttpResponse(int const responseCode, std::string const &content, std::string const &contentType) {	//	@TODO refactor: send proper return code + correct MIME type + use send
+void ServerResponse::sendHttpResponse(int const responseCode, std::string const &content, std::string const &contentType) {	//	@TODO refactor: use send()
 	std::stringstream httpHeaders;
 	httpHeaders << "HTTP/" << HTTPVERSION << " " << responseCode << " \r\n"
 				<< "Content-Length: " << content.size() << "\r\n"
