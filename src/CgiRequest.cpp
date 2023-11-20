@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiRequest.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 14:19:07 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/17 14:39:43 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 18:25:23 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,33 +20,34 @@
  *					CONSTRUCTOR								*
  ************************************************************/
 
-CgiRequest::CgiRequest(ServerResponse &response){
-	setEnv(response);
+CgiRequest::CgiRequest(ServerResponse &response) : serverResponse(response){
+	setPath();
+	setEnv();
 	convertEnv();
 	executeScript();
 	freeEnvp();
 };
 
-CgiRequest::~CgiRequest(){};
-
+CgiRequest::~CgiRequest(){
+};
+ 
 /************************************************************
  *						ENV STUFF							*
  ************************************************************/
 
-void		CgiRequest::setEnv(ServerResponse &response)
+void		CgiRequest::setEnv()
 {
 	_env["AUTH_TYPE"] = "";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_env["REDIRECT_STATUS"] = "200";
-	_env["METHOD"] = response.getMethod();
-	_env["PORT"] = response.getPort();
 	_env["SERVER_NAME"] = "webserv";
-	_env["CONTENT_LENGTH"] = "0";
-	_env["CONTENT_TYPE"] = "0";
-	_env["PATH_TRANSLATED"] = "";
-	_env["SCRIPT_FILENAME"] = "/www/script.cgi";
-	_env["QUERY_STRING"] = "";
+	_env["METHOD"] = serverResponse.getMethod();
+	_env["PORT"] = serverResponse.getPort();
+	_env["SCRIPT_FILENAME"] = serverResponse.getRoot() + _path;
+	_env["QUERY_STRING"] = _queryString;
+	_env["CONTENT_LENGTH"] = serverResponse.getContentLength();
+	_env["CONTENT_TYPE"] = serverResponse.getContentType();
 };
 
 void	CgiRequest::convertEnv()
@@ -70,6 +71,23 @@ void	CgiRequest::freeEnvp(){
 	delete[] _envp;
 };
 
+void	CgiRequest::setPath(){
+
+	std::string	path = serverResponse.getPath();
+	_queryString = "";
+	size_t queryPos = path.find("?");
+	if (queryPos != std::string::npos)
+	{	
+		_path = path.substr(0, queryPos);
+		_queryString = path.substr(queryPos + 1); 
+	}
+	else
+	{
+		_path = path;
+	}
+};
+
+
 /************************************************************
  *						EXECUTION							*
  ************************************************************/
@@ -91,8 +109,13 @@ void		CgiRequest::executeScript()
 
 void	CgiRequest::cgiChildProcess()
 {
-	const char *args[] = {"/usr/bin/python3", "/mnt/nfs/homes/vlepille/Documents/common-core/Webserv/www/script.py", NULL};
-	// char *env[] = {"REQUEST_METHOD=GET", "QUERY_STRING=user=123", NULL};
+	std::string cgiPath = serverResponse.getCgiPath();
+	_cgiInterpreter = cgiPath.c_str();
+
+	std::string scriptName = serverResponse.getRoot() + _path;
+	_scriptName = scriptName.c_str();
+	
+	const char *args[] = {_cgiInterpreter, _scriptName, NULL};
 
 	close(this->_fd[READ]);
 	dup2(this->_fd[WRITE], STDOUT_FILENO);

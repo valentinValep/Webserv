@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Route.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/15 14:33:50 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 17:40:16 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # include <vector>
 
 # define ACCEPTED_CGI_TABSIZE 1
-# define ACCEPTED_CGI (std::string [ACCEPTED_CGI_TABSIZE]){".php"} // @TODO choose the right one
+# define ACCEPTED_CGI (std::string [ACCEPTED_CGI_TABSIZE]){".py"} // @TODO choose the right one
 
 class Route {
 	private:

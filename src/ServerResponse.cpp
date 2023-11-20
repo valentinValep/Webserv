@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 11:33:18 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 17:21:41 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -464,6 +464,10 @@ void ServerResponse::sendCGIResponse(int clientSocket, const std::string& conten
 	write(clientSocket, cgiResponse.c_str(), cgiResponse.size());
 }
 
+/************************************************************
+ *						GETTERS								*
+ ************************************************************/
+
 int ServerResponse::getMethod() const
 {
 	return (this->_method);
@@ -472,4 +476,36 @@ int ServerResponse::getMethod() const
 int ServerResponse::getPort() const
 {
 	return (this->_port);
+}
+
+int	ServerResponse::getContentLength() const
+{
+	std::map<std::string, std::string>::const_iterator it = this->_headers.find("Content-Length");
+	if (it != this->_headers.end())
+		return (atoi(it->second.c_str()));
+	return (0);
+}
+
+std::string	ServerResponse::getContentType() const
+{
+	std::string contentType = "";
+	std::map<std::string, std::string>::const_iterator it = this->_headers.find("Content-Type");
+	if (it != this->_headers.end())
+		contentType = it->second;
+	return (contentType);
+}
+
+std::string ServerResponse::getPath() const
+{
+	return (this->_path);
+}
+
+std::string ServerResponse::getRoot() const
+{
+	return (this->_root);
+}
+
+std::string	ServerResponse::getCgiPath() const
+{
+	return (this->_cgi_path);
 }
