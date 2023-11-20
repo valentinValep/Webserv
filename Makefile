@@ -19,6 +19,7 @@ OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)CgiRequest.o \
 	$(BUILD_DIR)Route.o \
 	$(BUILD_DIR)utils.o \
+	$(BUILD_DIR)Body.o \
 
 MAIN_OBJ := $(BUILD_DIR)main.o
 

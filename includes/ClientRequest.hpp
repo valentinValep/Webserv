@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/17 15:40:30 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 17:27:23 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define CLIENTREQUEST_HPP
 
 # include "Server.hpp"
+# include "Body.hpp"
 # include <string>
 # include <vector>
 # include <sstream>
@@ -53,12 +54,12 @@ private:
 	int									_errorCode;
 	int									_clientSocket;
 	int									_method;
-	Server								*_server;
 	State								_state;
+	Server								*_server;
 	std::string							_path;
 	std::string							_protocol;
 	std::map<std::string, std::string>	_headers;
-	std::string							_body;
+	Body								_body;
 	RequestStream						_raw_data;
 
 	void	detectCgi();
@@ -66,7 +67,7 @@ private:
 	void	findFinalServer(std::vector<Server> &servers);
 	void	parseMethodLine(const std::string line);
 	void	parseHeaderLine(const std::string line);
-	bool	needBody() const;
+	bool	needBody();
 	void	parseBodyLine(const std::string line);
 
 public:

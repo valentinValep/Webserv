@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 12:28:17 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 19:00:28 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@
  *						CONSTRUCTORS						*
  ************************************************************/
 
-ClientRequest::ClientRequest(): _cgiRequest(false), _port(0), _errorCode(0), _clientSocket(0), _method(0),_server(NULL),  _state(RECEIVING_METHOD) {}
+ClientRequest::ClientRequest(): _cgiRequest(false), _port(0), _errorCode(0), _clientSocket(0), _method(0), _state(RECEIVING_METHOD), _server(NULL) {}
 
-ClientRequest::ClientRequest(int fd, in_port_t port): _cgiRequest(false), _port(port), _errorCode(0), _clientSocket(fd), _method(0),_server(NULL), _state(RECEIVING_METHOD) {}
+ClientRequest::ClientRequest(int fd, in_port_t port): _cgiRequest(false), _port(port), _errorCode(0), _clientSocket(fd), _method(0), _state(RECEIVING_METHOD), _server(NULL) {}
 
 
 /************************************************************
@@ -113,11 +113,18 @@ void ClientRequest::parseMethodLine(const std::string line)
 	this->_state = RECEIVING_HEADER;
 }
 
-bool	ClientRequest::needBody() const
+bool	ClientRequest::needBody()
 {
-	return (this->_method != GET && this->_method != DELETE
-		&& (this->_headers.find("Content-Length") != this->_headers.end()
-		|| this->_headers.find("Transfer-Encoding") != this->_headers.end()));
+	if (this->_method != POST)
+		return (false);
+	if (this->_headers.find("Content-Length") != this->_headers.end())
+	{
+		this->_body.setContentLength(atoi(this->_headers["Content-Length"].c_str())); // @TODO check if using atoi is safe
+		// @TODO check if it's not too big (max_body_size)
+		return (true);
+	}
+	this->_body.setChunked();
+	return (true);
 }
 
 void	ClientRequest::parseHeaderLine(const std::string line)
@@ -137,11 +144,19 @@ void	ClientRequest::parseHeaderLine(const std::string line)
 
 void ClientRequest::parseBodyLine(const std::string line)
 {
-	// @TODO check if it's valid
-	// @TODO check if it's not too big (max_body_size)
-	// @TODO learn about Transfer-Encoding
-	this->_body += line + "\n";
-	this->_state = REQUEST_FULLY_RECEIVED;// @TODO use content-length to check if it's fully received
+	if (this->_body.isFinished())
+		return;
+	try {
+		this->_body.parseLine(line + "\n");
+	}
+	catch (const Body::BodyException &e) {
+		return this->setError(400);
+	}
+	if (this->_body.isFinished())
+	{
+		this->_state = REQUEST_FULLY_RECEIVED;
+		return;
+	}
 }
 
 void	ClientRequest::parse(std::vector<Server> &servers)
@@ -152,6 +167,8 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 		this->findFirstServer(servers);
 	while (std::getline(this->_raw_data, line))
 	{
+		if (this->_state == ERROR)
+			return;
 		if (line.empty() || line.size() == 0)
 			return this->setError(400);
 		if (line[line.size() - 1] != '\r')
