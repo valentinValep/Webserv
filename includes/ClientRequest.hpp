@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/17 15:40:30 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 19:53:37 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ private:
 	public:
 		RequestStream() {}
 		RequestStream(const std::string &data): std::stringstream(data) {}
-		RequestStream(const RequestStream &other) {
+		RequestStream(const RequestStream &other): std::basic_ios<char>(), std::stringstream() {
 			//std::cout << "RequestStream copy constructor" << other.str() << std::endl;
 			*this << other.str();
 		}
