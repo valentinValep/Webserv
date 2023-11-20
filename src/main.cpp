@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:41:09 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 11:08:29 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 11:10:37 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ try {
 		std::cout << "Usage: ./webserv <optional: config_file>" << std::endl;
 		return 1;
 	}
-	signal(SIGINT, sigint_handler);
+	//signal(SIGINT, sigint_handler);
 	ServerManager webServe(argc == 2 ? argv[1] : "config/default.conf");
 	return 0;
 }
