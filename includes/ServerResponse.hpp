@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 10:49:12 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/20 18:27:35 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,11 @@ class ServerResponse {
 		// Getters
 		int			getMethod() const;
 		int			getPort() const;
+		int			getContentLength() const;
+		std::string	getCgiPath() const;
+		std::string	getPath() const;
+		std::string	getRoot() const;
+		std::string	getContentType() const;
 };
 
 #endif

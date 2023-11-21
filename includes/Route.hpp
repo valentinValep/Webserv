@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 12:18:28 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/21 11:31:42 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # include <vector>
 
 # define ACCEPTED_CGI_TABSIZE 1
-# define ACCEPTED_CGI (std::string [ACCEPTED_CGI_TABSIZE]){".php"} // @TODO choose the right one
+# define ACCEPTED_CGI (std::string [ACCEPTED_CGI_TABSIZE]){".py"} // @TODO choose the right one
 
 class Route {
 	private:

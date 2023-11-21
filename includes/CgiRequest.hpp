@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiRequest.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 13:59:35 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/17 12:46:48 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/21 11:05:37 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,17 +26,24 @@ class CgiRequest {
 		CgiRequest(ServerResponse &response);
 		~CgiRequest();
 
-		void			setEnv(ServerResponse &response);
+		void			setEnv();
 		void			executeScript();
 		void			cgiChildProcess();
 		void			cgiParentProcess();
 		void			printResponse();
 		void			convertEnv();
+		void			setPath();
 		void			freeEnvp();
 		std::string		getResponse();
 
 	private:
+		ServerResponse						&serverResponse;
+		std::string							_path;
+		std::string							_queryString;
 		std::string							_response;
+		std::string							_cgiBody;
+		const char*							_cgiInterpreter;
+		const char*							_scriptName;
 		char**								_envp;
 		std::map<std::string, std::string>	_env;
 		int									_fd[2];

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 19:00:28 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/21 11:31:50 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,17 +205,25 @@ void ClientRequest::detectCgi()
 		return;
 	}
 
+	std::string pathWithoutQuery = this->_path;
+	size_t queryPos = this->_path.find("?");
+	if (queryPos != std::string::npos) {
+		pathWithoutQuery = this->_path.substr(0, queryPos);
+	}
+
 	const char* cgiExtensions[] = {".cgi", ".pl", ".py"};
 	const size_t numExtensions = sizeof(cgiExtensions) / sizeof(cgiExtensions[0]);
 
 	for (size_t i = 0; i < numExtensions; ++i) {
 		std::string ext = cgiExtensions[i];
-		if (this->_path.size() >= ext.size() && this->_path.compare(this->_path.size() - ext.size(), ext.size(), ext) == 0) {
+		if (pathWithoutQuery.size() >= ext.size() && pathWithoutQuery.compare(pathWithoutQuery.size() - ext.size(), ext.size(), ext) == 0) {
 			this->_cgiRequest = true;
 			return;
 		}
 	}
+	this->_cgiRequest = false;
 }
+
 
 void ClientRequest::findFirstServer(std::vector<Server> &servers)
 {
