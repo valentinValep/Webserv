@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 11:31:58 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/21 12:00:44 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,20 +192,18 @@ void ServerResponse::process()
 		sendHttpResponse(this->_error_code, content, "text/html");	//	@TODO	send proper status code
 		return ;
 	}
-	if (this->_cgi_request)
-	{
-		std::cout << "CGI FOUND" << std::endl;
-		CgiRequest cgiRequest(*this);
-		std::cout << " THE REPONSE IS " << std::endl;
-		cgiRequest.printResponse();
-		content = cgiRequest.getResponse();
-		sendCGIResponse(this->_client_socket, content, "text/html");
-		return ;
-	}
 	switch(this->_method)
 	{
 	case GET:
 	{
+		if (this->_cgi_request)
+		{
+			CgiRequest cgiRequest(*this);
+			// cgiRequest.printResponse();
+			content = cgiRequest.getResponse();
+			sendCGIResponse(this->_client_socket, content, "text/html");
+			return ;
+		}
 std::cout << "DEBUG:\n\troot:\t" << this->_root << "\n\tpath:\t" << this->_path << "\n\tindex:\t" << this->_index << std::endl;
 		std::string const	locationPath = this->_root + trimTrailingSlashes(this->_path);
 		std::string			indexPath;
@@ -327,9 +325,20 @@ std::cout << "DEBUG: Not found 404" << std::endl;
 		break ;
 	}
 	case POST:
-		// Handle POST request
-		// Generate appropriate response
+	{
+		// case 1: file upload
+			//@TODO : identify Content-type is multipart/form-data
+		// case 2: CGI
+		if (this->_cgi_request)
+		{
+			CgiRequest cgiRequest(*this);
+			// cgiRequest.printResponse();
+			content = cgiRequest.getResponse();
+			sendCGIResponse(this->_client_socket, content, "text/html");
+			return ;
+		}
 		break ;
+	}
 	case DELETE:
 		// Handle DELETE request
 		// Generate appropriate response
