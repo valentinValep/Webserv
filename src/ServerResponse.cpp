@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 12:10:38 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/21 13:28:32 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,6 +186,48 @@ void	ServerResponse::_sendErrorPage(int errorCode)	//	chec for correct value ?
 	sendHttpResponse(errorCode, content, "text/html");
 }
 
+void	ServerResponse::_sendAutoIndexed(std::string const &locationPath)
+{
+	DIR					*dirStream;;
+	std::stringstream	autoIndexedPage;
+
+	if (!(dirStream = opendir(locationPath.c_str())))
+	{
+		_sendErrorPage(500);
+		return ;
+	}
+	//	generate file 'header'
+	autoIndexedPage << "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>"
+					<< this->_path << "</title>\n\t<link rel=favicon ... >\n</head>\n<body>\n";	//	Add favicon link	//	Add "content of "folder"' in html page + horizontal line
+
+	struct dirent	*dirContent = NULL;
+
+	while (42)
+	{
+		errno = 0;
+		if (!(dirContent = readdir(dirStream)) && errno)
+		{
+			_sendErrorPage(500);
+			return ;
+		}
+		if (!dirContent)
+			break ;
+
+		std::string		fileName(dirContent->d_name);
+		std::string		locationBasePath = locationPath.substr((this->_root.size()));	//	no need for a variable
+
+		autoIndexedPage << "\t<a href=\"" << (locationBasePath + "/" + fileName) << "\">" << fileName << "</a><br>\n";	//	Add info about file here if needed
+	}
+	if (closedir(dirStream))
+	{
+		_sendErrorPage(500);
+		return ;
+	}
+	//	generate file 'footer'
+	autoIndexedPage << "</body>\n</html>\n";
+	sendHttpResponse(200, autoIndexedPage.str(), "text/html");
+}
+
 // @TODO if _error_code is 400, send error and close connection maybe not for all 400 (check RFC last paragraph section 2.2)
 void ServerResponse::process()
 {
@@ -218,33 +260,31 @@ std::cout << "DEBUG: locationPath: " << locationPath << std::endl;
 
 		if	(!access(locationPath.c_str(), F_OK))
 		{
-std::cout << "DEBUG: F_OK " << std::endl;	//	But what if no perms even if path exists ?
+std::cout << "DEBUG: F_OK " << std::endl;
 			struct stat		locationPathStat;
 
 			if (stat(locationPath.c_str(), &locationPathStat))
 			{
-				//	Error stating locationPath
+				//	Error stating locationPath (system error, no perms on one folder in path ?)
 std::cout << "DEBUG: Failed stating locationPath" << std::endl;
 			}
 			if (S_ISREG(locationPathStat.st_mode))
 			{
-				if (access(locationPath.c_str(), R_OK))	//	Can happen ?
+				if (access(locationPath.c_str(), R_OK))	//	Can happen ? The user should have rights on his own hosted files...
 				{
-					//	return 403
 std::cout << "DEBUG: Permission denied 403" << std::endl;
 					_sendErrorPage(403);
 					return ;
 				}
 				content = readFileContent(locationPath, mimeType);	//	Make function _sendFile
-				sendHttpResponse(200, content, mimeType);
+				sendHttpResponse(200, content, mimeType);			//
 				break ;
 			}
-			if (S_ISDIR(locationPathStat.st_mode))	//	Check perms here too
+			if (S_ISDIR(locationPathStat.st_mode))
 			{
 std::cout << "DEBUG: locationPath is a folder..." << std::endl;
-				if (access(locationPath.c_str(), R_OK))	//	Can happen ?
+				if (access(locationPath.c_str(), R_OK))
 				{
-					//	return 403
 std::cout << "DEBUG: Permission denied 403" << std::endl;
 					_sendErrorPage(403);
 					return ;
@@ -270,79 +310,15 @@ std::cout << "DEBUG: Found index at: " << indexPath << std::endl;
 				}
 				if (this->_autoindex)
 				{
-					if (access(locationPath.c_str(), R_OK))
-					{
-std::cout << "DEBUG: Permission denied 403" << std::endl;
-						//	return 403
-						_sendErrorPage(403);
-						return ;
-					}
-					//	open locationPath dir and list elements
-					DIR		*dirStream;;
-
-					if (!(dirStream = opendir(locationPath.c_str())))
-					{
-						//	couldn't get directory stream
-						//	return 5xx error
-						_sendErrorPage(500);
-						break ;
-					}
-
-					std::stringstream	autoIndexedPage;
-
-					//	generate file 'header'
-					autoIndexedPage << "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>"
-					//	print folder name in title
-						<< this->_path << "</title>\n\t<link rel=favicon ... >\n</head>\n<body>\n";	//	keep basename only in title	//	Add "content of "folder"' in html page
-
-					//	loop on files
-					struct dirent	*dirContent = NULL;
-					do	//	make infinite loop
-					{
-						errno = 0;
-						if (!(dirContent = readdir(dirStream)) && errno)
-						{
-							//	readdir error
-							//	return 5xx error
-							_sendErrorPage(500);
-							return ;
-						}
-						if (!dirContent)
-							break ;
-						//	else if (!dirent)
-							//empty folder
-						//	else
-							//	generate link
-						std::string		fileName(dirContent->d_name);
-						std::string		locationBasePath = locationPath.substr((this->_root.size()));	//	REMOVE TRAILING '/'s !
-						autoIndexedPage << "\t<a href=\"" << (locationBasePath + "/" + fileName) << "\">" << fileName << "</a><br>\n";
-
-					}
-					while (dirContent != NULL);
-					if (closedir(dirStream))
-					{
-						//	Error closing dir
-						//	Send 5xx response
-						_sendErrorPage(500);
-						return ;
-					}
-
-					//	generate file 'footer'
-					autoIndexedPage << "</body>\n</html>\n";
-
-					//	respond with generated html page
-					sendHttpResponse(200, autoIndexedPage.str(), "text/html");
+					_sendAutoIndexed(locationPath);
 					return ;
 				}
 std::cout << "DEBUG: Not found 404" << std::endl;
-				//	return 404 error
 				_sendErrorPage(404);
 			}
 		}
 		else
 		{
-std::cout << "DEBUG: F_NOK " << std::endl;
-			//	Respond with error number ...
 std::cout << "DEBUG: Not found 404" << std::endl;
 			_sendErrorPage(404);
 		}
@@ -355,7 +331,6 @@ std::cout << "DEBUG: Not found 404" << std::endl;
 	case DELETE:
 		{
 std::cout << "DELETE request" << std::endl;
-			// Handle DELETE request
 			// find file.
 			if (!(access(locationPath.c_str(), F_OK)))
 			{

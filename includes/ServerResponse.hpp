@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 18:59:37 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/21 13:17:44 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ class ServerResponse {
 		void			setError(int errorCode);
 		std::string		_getGenericErrorPage(int) const;
 		void			_sendErrorPage(int);
+		void			_sendAutoIndexed(std::string const &);
 	public:
 		ServerResponse();
 
