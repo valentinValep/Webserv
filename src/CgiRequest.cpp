@@ -6,12 +6,14 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 14:19:07 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 18:25:23 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/21 11:09:41 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CgiRequest.hpp"
 
+#define GET 1
+#define POST 2
 #define READ 0
 #define WRITE 1
 #define ERROR -1
@@ -45,9 +47,17 @@ void		CgiRequest::setEnv()
 	_env["METHOD"] = serverResponse.getMethod();
 	_env["PORT"] = serverResponse.getPort();
 	_env["SCRIPT_FILENAME"] = serverResponse.getRoot() + _path;
-	_env["QUERY_STRING"] = _queryString;
 	_env["CONTENT_LENGTH"] = serverResponse.getContentLength();
 	_env["CONTENT_TYPE"] = serverResponse.getContentType();
+	if (serverResponse.getMethod() == GET) {
+		_cgiBody = "";
+		_env["QUERY_STRING"] = _queryString;
+	}
+	else if (serverResponse.getMethod() == POST) {
+		_env["QUERY_STRING"] = "";
+		_cgiBody = _queryString;
+	}
+	
 };
 
 void	CgiRequest::convertEnv()
@@ -116,9 +126,18 @@ void	CgiRequest::cgiChildProcess()
 	_scriptName = scriptName.c_str();
 	
 	const char *args[] = {_cgiInterpreter, _scriptName, NULL};
-
+	
 	close(this->_fd[READ]);
 	dup2(this->_fd[WRITE], STDOUT_FILENO);
+	
+	if (_cgiBody.length() > 0)
+	{
+		int _fd2[2];
+		pipe(_fd2);
+		dup2(_fd2[READ], STDIN_FILENO);
+		write(_fd2[WRITE], _cgiBody.c_str(), _cgiBody.length());
+		close(_fd2[WRITE]);
+	}
 	if (execve(args[0], const_cast<char *const *>(args), this->_envp))
 		exit(ERROR);
 };

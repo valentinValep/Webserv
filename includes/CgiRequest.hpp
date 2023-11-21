@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 13:59:35 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 18:23:04 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/21 11:05:37 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ class CgiRequest {
 		std::string							_path;
 		std::string							_queryString;
 		std::string							_response;
+		std::string							_cgiBody;
 		const char*							_cgiInterpreter;
 		const char*							_scriptName;
 		char**								_envp;
