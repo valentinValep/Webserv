@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 12:16:20 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/21 13:13:53 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void Server::parseAutoindex(fp::Module &mod)
 		return ;
 	if (var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: autoindex need one value" << std::endl;
+		std::cerr << "\033[31mError\033[0m: autoindex need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	if (var->getAttributes()[0] == "on")
@@ -75,7 +75,7 @@ void Server::parseAutoindex(fp::Module &mod)
 		this->autoindex = false;
 	else
 	{
-		std::cerr << "Error: autoindex value need to be on or off" << std::endl;
+		std::cerr << "\033[31mError\033[0m: autoindex value need to be on or off" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 }
@@ -89,17 +89,17 @@ void Server::parsePort(fp::Module &mod)
 	var = mod.getVariable("listen");
 	if (!var || var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: listen need one value" << std::endl;
+		std::cerr << "\033[31mError\033[0m: listen need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	if (anti_overflow_atoi(var->getAttributes()[0].c_str(), &this->port))
 	{
-		std::cerr << "Error: port value need to be an integer" << std::endl;
+		std::cerr << "\033[31mError\033[0m: port value need to be an integer" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	if (this->port < 0 || this->port > 65535)
 	{
-		std::cerr << "Error: port value need to be between 0 and 65535" << std::endl;
+		std::cerr << "\033[31mError\033[0m: port value need to be between 0 and 65535" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 }
@@ -111,12 +111,12 @@ void Server::parseMaxBodySize(fp::Module &mod)
 	var = mod.getVariable("client_max_body_size");
 	if (!var || var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: client_max_body_size need one value" << std::endl;
+		std::cerr << "\033[31mError\033[0m: client_max_body_size need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	if (anti_overflow_atoi(var->getAttributes()[0].c_str(), &this->max_body_size))
 	{
-		std::cerr << "Error: client_max_body_size value need to be an integer" << std::endl;
+		std::cerr << "\033[31mError\033[0m: client_max_body_size value need to be an integer" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 }
@@ -128,7 +128,7 @@ void Server::parseRoot(fp::Module &mod)
 	var = mod.getVariable("root");
 	if (!var || var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: root need one value" << std::endl;
+		std::cerr << "\033[31mError\033[0m: root need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	this->root = var->getAttributes()[0];
@@ -141,7 +141,7 @@ void Server::parseIndex(fp::Module &mod)
 	var = mod.getVariable("index");
 	if (!var || var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: index need one value" << std::endl;
+		std::cerr << "\033[31mError\033[0m: index need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	this->index = var->getAttributes()[0];
@@ -165,7 +165,7 @@ void Server::parseMethods(fp::Module &mod)
 			this->methods |= DELETE;
 		else
 		{
-			std::cerr << "Error: allow_methods value need to be GET, POST or DELETE" << std::endl;
+			std::cerr << "\033[31mError\033[0m: allow_methods value need to be GET, POST or DELETE" << std::endl;
 			throw ServerManager::ParsingException();
 		}
 	}
@@ -180,7 +180,7 @@ void Server::parseServerNames(fp::Module &mod)
 		return ;
 	if (var->getAttributes().size() == 0)
 	{
-		std::cerr << "Error: server_name need at least one value" << std::endl;
+		std::cerr << "\033[31mError\033[0m: server_name need at least one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	this->server_names.clear();
@@ -215,17 +215,17 @@ void Server::parseErrorPages(fp::Module &mod)
 			var = dynamic_cast<fp::Variable *>(*it);
 			if (!var || var->getAttributes().size() != 2)
 			{
-				std::cerr << "Error: error_page need two values" << std::endl;
+				std::cerr << "\033[31mError\033[0m: error_page need two values" << std::endl;
 				throw ServerManager::ParsingException();
 			}
 			if (anti_overflow_atoi(var->getAttributes()[0].c_str(), &code))
 			{
-				std::cerr << "Error: error_page code value need to be an integer" << std::endl;
+				std::cerr << "\033[31mError\033[0m: error_page code value need to be an integer" << std::endl;
 				throw ServerManager::ParsingException();
 			}
 			if (code < 100 || code > 599) // @TODO check exacts known codes ?
 			{
-				std::cerr << "Error: error_page code value need to be between 100 and 599" << std::endl;
+				std::cerr << "\033[31mError\033[0m: error_page code value need to be between 100 and 599" << std::endl;
 				throw ServerManager::ParsingException();
 			}
 			path = var->getAttributes()[1];
@@ -248,10 +248,16 @@ void Server::parseRoutes(fp::Module &mod)
 			mod = dynamic_cast<fp::Module *>(*it);
 			if (!mod || mod->getAttributes().size() != 1)
 			{
-				std::cerr << "Error: location need a path" << std::endl;
+				std::cerr << "\033[31mError\033[0m: location need a path" << std::endl;
 				throw ServerManager::ParsingException();
 			}
 			path = mod->getAttributes()[0];
+			if (path[0] != '/')
+			{
+				std::cerr << "\033[31mError\033[0m: location path need to start with a /" << std::endl;
+				std::cerr << "Sugesstion: use location '\033[1m/" << path << "\033[0m' instead of location '\033[1m/" << path << "\033[0m'" << std::endl;
+				throw ServerManager::ParsingException();
+			}
 			this->routes[path] = Route(*mod);
 		}
 	}

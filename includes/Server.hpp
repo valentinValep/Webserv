@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 12:12:47 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/21 13:07:30 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,8 @@ class Server {
 		int			max_body_size; // optional // @TODO convert to long ?
 		std::string root;
 		std::string index;
-		std::map<int, std::string> error_pages; // @TODO check every page exists with access (if no warning) but recheck when sending respond
-		std::map<std::string, Route> routes; // optional if methods // @TODO check start with '/'
+		std::map<int, std::string> error_pages;
+		std::map<std::string, Route> routes; // optional if methods
 		std::vector<std::string> server_names; // optional
 
 		// Parsers
