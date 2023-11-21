@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 15:25:00 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/21 19:26:31 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -262,6 +262,12 @@ void ServerResponse::process()
 			sendCGIResponse(this->_client_socket, content, "text/html");
 			return ;
 		}
+		if (!(this->_redirect.empty()))
+		{
+std::cout << "DEBUG: redirection" << std::endl;
+			sendHttpRedirection();
+			return ;
+		}
 std::cout << "DEBUG:\n\troot:\t" << this->_root << "\n\tpath:\t" << this->_path << "\n\tindex:\t" << this->_index << std::endl;
 		std::string			indexPath;
 std::cout << "DEBUG: locationPath: " << locationPath << std::endl;
@@ -300,13 +306,14 @@ std::cout << "DEBUG: Permission denied 403" << std::endl;
 				if (!(this->_redirect.empty()))
 				{
 					//	respond with redirection
+					sendHttpRedirection();
 					return ;
 				}
-				if (!(this->_cgi_path.empty()))
-				{
-					//	HANDLE CGI HERE
-					return ;
-				}
+//				if (!(this->_cgi_path.empty()))
+//				{
+//					//	HANDLE CGI HERE
+//					return ;
+//				}
 				indexPath = locationPath + "/" + this->_index;
 				std::cout << "indexPath: " << indexPath << std::endl;
 				if (!access(indexPath.c_str(), F_OK))
@@ -482,6 +489,14 @@ void ServerResponse::sendHttpResponse(int const responseCode, std::string const 
 				<< "\r\n";
 	std::string httpResponse = httpHeaders.str() + content;
 	write(this->_client_socket, httpResponse.c_str(), httpResponse.size());
+}
+
+void ServerResponse::sendHttpRedirection() {	//	@TODO refactor: use send()
+	std::stringstream httpHeaders;
+	httpHeaders << "HTTP/" << HTTPVERSION << " " << this->_redirect_type << " \r\n"
+				<< "Location: " << this->_redirect << "\r\n"
+				<< "\r\n";
+	write(this->_client_socket, httpHeaders.str().c_str(), httpHeaders.str().size());
 }
 
 void ServerResponse::sendCGIResponse(int clientSocket, const std::string& content, const std::string& contentType) {

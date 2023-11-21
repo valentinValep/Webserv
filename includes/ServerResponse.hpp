@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 15:21:28 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/21 18:54:55 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ class ServerResponse {
 		void		process();
 		std::string	readFileContent(std::string const &filePath, std::string &mimeType);
 		void		sendHttpResponse(int clientSocket, const std::string& content, const std::string& contentType);
-		void		sendHttpResponseCSS(int clientSocket, const std::string& content);
+		void		sendHttpRedirection(void);
 		void		sendCGIResponse(int clientSocket, const std::string& content, const std::string& contentType);
 
 		// Getters

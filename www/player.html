@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>TV</title>
+	<link rel="stylesheet" type="text/css" href="/style/style.css">
+	<link rel="icon" href="favicon.gif" type="image/gif"/>
+    <script>
+        var videos = ["https://www.youtube.com/embed/9bZkp7q19f0", "https://www.youtube.com/embed/dQw4w9WgXcQ", "https://www.youtube.com/embed/jIQ6UV2onyI", "https://www.youtube.com/embed/FpU3gRRWYEA", "https://www.youtube.com/embed/Q-iZMkvHnFw", "https://www.youtube.com/embed/kOEDG3j1bjs", "https://www.youtube.com/embed/Bp7GBNYKhS0", "https://www.youtube.com/embed/7ecYoSvGO60", "https://www.youtube.com/embed/MH9FyLsfDzw", "https://www.youtube.com/embed/JKxlsvZXG7c"];
+        window.onload = function () {
+            var playerDiv = document.getElementById("random_player");
+            var player = document.createElement("IFRAME");
+            var randomVideoUrl = videos[Math.floor(Math.random() * videos.length)];
+            player.setAttribute('width', '640');
+            player.setAttribute('height', '390');
+            player.setAttribute('src', randomVideoUrl);
+            playerDiv.appendChild(player);
+        };
+    </script>
+</head>
+<body>
+    <div id="random_player" />
+</body>
+</html>
