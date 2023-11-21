@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 18:27:35 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/21 15:21:28 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 # include <unistd.h>
 # include <dirent.h>
 # include <sstream>
+# include <cstdio>
 
 # define HTTPVERSION "1.1"
 
@@ -51,7 +52,9 @@ class ServerResponse {
 		std::string							_upload_path; // @TODO learn about it
 
 		void			setError(int errorCode);
-		std::string		_getGenericErrorPage(void) const;
+		std::string		_getGenericErrorPage(int) const;
+		void			_sendErrorPage(int);
+		void			_sendAutoIndexed(std::string const &);
 	public:
 		ServerResponse();
 
