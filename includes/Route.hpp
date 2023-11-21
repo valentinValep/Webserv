@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 11:31:42 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/21 11:59:31 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ class Route {
 		bool		_cgi_set;
 		bool		_upload_set;
 
-		// @TODO Define a directory or a file from where the file should be searched (for example, if url /kapouet is rooted to /tmp/www, url /kapouet/pouic/toto/pouet is /tmp/www/pouic/toto/pouet).
 		void	parseMethods(fp::Module &mod);
 		void	parseRoot(fp::Module &mod);
 		void	parseIndex(fp::Module &mod);

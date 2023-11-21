@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 13:26:21 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/21 12:16:20 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,6 +190,17 @@ void Server::parseServerNames(fp::Module &mod)
 	}
 }
 
+void	Server::verifyErrorPages(void)
+{
+	for (std::map<int, std::string>::iterator it = this->error_pages.begin(); it != this->error_pages.end(); it++)
+	{
+		if (access((this->root + "/" + it->second).c_str(), F_OK | R_OK) == -1)
+		{
+			std::cerr << "Warning: error_page " << it->first << " file " << this->root + "/" + it->second << " doesn't exist or is not readable" << std::endl;
+		}
+	}
+}
+
 void Server::parseErrorPages(fp::Module &mod)
 {
 	// @TODO write an error for some necessary error pages (404, 500, etc)
@@ -221,6 +232,7 @@ void Server::parseErrorPages(fp::Module &mod)
 			this->error_pages[code] = path;
 		}
 	}
+	this->verifyErrorPages();
 }
 
 void Server::parseRoutes(fp::Module &mod)

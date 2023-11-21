@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/16 14:23:59 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/21 12:12:47 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class Server {
 		void	parseMethods(fp::Module &mod);
 		void	parseServerNames(fp::Module &mod);
 		void	parseErrorPages(fp::Module &mod);
+		void	verifyErrorPages();
 		void	parseRoutes(fp::Module &mod);
 
 
