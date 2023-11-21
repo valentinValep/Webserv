@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 20:29:07 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/21 12:10:38 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,7 +176,11 @@ void	ServerResponse::_sendErrorPage(int errorCode)	//	chec for correct value ?
 	std::string		mimeType;
 
 	if (this->_error_pages.find(errorCode) != this->_error_pages.end())
+	{
 		content = readFileContent(this->_root + "/" + this->_error_pages[errorCode], mimeType);
+		if (content.empty())
+			content = _getGenericErrorPage(errorCode);
+	}
 	else
 		content = _getGenericErrorPage(errorCode);
 	sendHttpResponse(errorCode, content, "text/html");
@@ -214,10 +218,14 @@ std::cout << "DEBUG: locationPath: " << locationPath << std::endl;
 
 		if	(!access(locationPath.c_str(), F_OK))
 		{
-std::cout << "DEBUG: F_OK " << std::endl;
+std::cout << "DEBUG: F_OK " << std::endl;	//	But what if no perms even if path exists ?
 			struct stat		locationPathStat;
 
-			stat(locationPath.c_str(), &locationPathStat);
+			if (stat(locationPath.c_str(), &locationPathStat))
+			{
+				//	Error stating locationPath
+std::cout << "DEBUG: Failed stating locationPath" << std::endl;
+			}
 			if (S_ISREG(locationPathStat.st_mode))
 			{
 				if (access(locationPath.c_str(), R_OK))	//	Can happen ?
@@ -234,6 +242,13 @@ std::cout << "DEBUG: Permission denied 403" << std::endl;
 			if (S_ISDIR(locationPathStat.st_mode))	//	Check perms here too
 			{
 std::cout << "DEBUG: locationPath is a folder..." << std::endl;
+				if (access(locationPath.c_str(), R_OK))	//	Can happen ?
+				{
+					//	return 403
+std::cout << "DEBUG: Permission denied 403" << std::endl;
+					_sendErrorPage(403);
+					return ;
+				}
 				if (!(this->_redirect.empty()))
 				{
 					//	respond with redirection
