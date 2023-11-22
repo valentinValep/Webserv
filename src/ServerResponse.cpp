@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 19:26:31 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/22 15:53:40 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,15 +190,16 @@ void	ServerResponse::_sendAutoIndexed(std::string const &locationPath)
 {
 	DIR					*dirStream;;
 	std::stringstream	autoIndexedPage;
+	struct stat			fileStat;
 
 	if (!(dirStream = opendir(locationPath.c_str())))
 	{
 		_sendErrorPage(500);
 		return ;
 	}
-	//	generate file 'header'
 	autoIndexedPage << "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>"
-					<< this->_path << "</title>\n\t<link rel=favicon ... >\n</head>\n<body>\n";	//	Add favicon link	//	Add "content of "folder"' in html page + horizontal line
+					<< this->_path << "</title>\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"/style/autoindex.css\">\n\t"
+					<< "<link rel=\"icon\" href=\"/favicon.gif\" type=\"image/gif\">\n</head>\n<body>\n\t<h1>Index of " << this->_path << "</h1>\n\t<hr>\n";
 
 	struct dirent	*dirContent = NULL;
 
@@ -214,16 +215,21 @@ void	ServerResponse::_sendAutoIndexed(std::string const &locationPath)
 			break ;
 
 		std::string		fileName(dirContent->d_name);
-		std::string		locationBasePath = locationPath.substr((this->_root.size()));	//	no need for a variable
 
-		autoIndexedPage << "\t<a href=\"" << (locationBasePath + "/" + fileName) << "\">" << fileName << "</a><br>\n";	//	Add info about file here if needed
+		if (stat((locationPath + "/" + fileName).c_str(), &fileStat))
+		{
+			_sendErrorPage(500);
+			closedir(dirStream);
+			return ;
+		}
+		autoIndexedPage << "  <a class=\"space" << (S_ISDIR(fileStat.st_mode) ? " dir" : (S_ISREG(fileStat.st_mode) ? " file" : ""))
+			<< "\" href=\"" << (locationPath.substr((this->_root.size())) + "/" + fileName) << "\">" << fileName << "</a><br>\n";
 	}
 	if (closedir(dirStream))
 	{
 		_sendErrorPage(500);
 		return ;
 	}
-	//	generate file 'footer'
 	autoIndexedPage << "</body>\n</html>\n";
 	sendHttpResponse(200, autoIndexedPage.str(), "text/html");
 }
