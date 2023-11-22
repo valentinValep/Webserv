@@ -127,8 +127,3 @@ Images and other resources: Enhance the visual elements of the website.
 
 There is no server-side processing or database interaction involved. All the content is pre-defined and stored as files, and the web server simply serves these files to the client upon request.    
 </details>
-
-<h2> TESTS / OTHER </h2>
-
-* To see the client request being made/sent to your server, head to Inspect > Nextwork 
-![Screenshot from 2023-11-01 14-12-44](https://github.com/chmadran/Webserv/assets/113340699/627d7a73-b642-42cf-b566-a54258792e2f)
