@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/22 15:37:53 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 16:29:01 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,12 +49,12 @@ void	configParser(fp::FileParser &parser)
 	parser.require("/server/root");
 	parser.require("/server/index");
 	parser.require("/server/allow_methods");
-	parser.require("/server/error_page"); // @TODO require error_page code (404, 500, etc)
 
 	// White list
 	parser.whitelist("/server/server_name");
 	parser.whitelist("/server/client_max_body_size");
 	parser.whitelist("/server/autoindex");
+	parser.whitelist("/server/error_page");
 
 	parser.whitelist("/server/location/allow_methods");
 	parser.whitelist("/server/location/root");

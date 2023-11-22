@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 16:04:53 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 16:32:25 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@
  *					CONSTRUCTORS/DESTRUCTOR					*
  ************************************************************/
 
-// @TODO remove default values
 Server::Server(): autoindex(true), port(8080), methods(GET | POST | DELETE), max_body_size(1000000), root("./"), index("index.html")
 {
 	error_pages[400] = "error/400.html";
@@ -37,8 +36,7 @@ Server::Server(): autoindex(true), port(8080), methods(GET | POST | DELETE), max
 	server_names.push_back("norminet");
 }
 
-// @TODO remove some default values (for each necessary)
-Server::Server(fp::Module &mod): autoindex(true), port(80), methods(GET | POST | DELETE), max_body_size(1000000), root("./"), index("index.html")
+Server::Server(fp::Module &mod): autoindex(true), port(80), methods(0), max_body_size(-1), root("./"), index("index.html")
 {
 	this->parseAutoindex(mod);
 	this->parsePort(mod);
@@ -203,7 +201,7 @@ void Server::parseServerNames(fp::Module &mod)
 	}
 }
 
-void	Server::verifyErrorPages(void)
+void	Server::warningErrorPages(void)
 {
 	for (std::map<int, std::string>::iterator it = this->error_pages.begin(); it != this->error_pages.end(); it++)
 	{
@@ -212,11 +210,18 @@ void	Server::verifyErrorPages(void)
 			std::cerr << "\033[93mWarning\033[0m: error_page " << it->first << " file " << this->root + "/" + it->second << " doesn't exist or is not readable" << std::endl;
 		}
 	}
+
+	static const int basic_codes[] = {400, 403, 404, 405, 413, 500, 501, 505};
+
+	for (int i = 0; i < 8; i++)
+	{
+		if (this->error_pages.find(basic_codes[i]) == this->error_pages.end())
+			std::cerr << "\033[93mWarning\033[0m: error_page " << basic_codes[i] << " is not defined (think about defining it)" << std::endl;
+	}
 }
 
 void Server::parseErrorPages(fp::Module &mod)
 {
-	// @TODO write an error for some necessary error pages (404, 500, etc)
 	for (std::vector<fp::Object *>::const_iterator it = mod.getObjects().begin(); it != mod.getObjects().end(); it++)
 	{
 		if ((*it)->getName() == "error_page")
@@ -245,7 +250,7 @@ void Server::parseErrorPages(fp::Module &mod)
 			this->error_pages[code] = path;
 		}
 	}
-	this->verifyErrorPages();
+	this->warningErrorPages();
 }
 
 void Server::parseRoutes(fp::Module &mod)
