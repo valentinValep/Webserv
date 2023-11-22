@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 13:07:30 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 16:06:37 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,12 +26,12 @@ class Server {
 		// Attributes
 		bool		autoindex;
 		int 		port;
-		int			methods; // optional if some routes and all these routes have methods
-		int			max_body_size; // optional // @TODO convert to long ?
+		int			methods; // optional if some routes and all these routes have methods @TODO
+		long		max_body_size; // optional, if not set, default is -1
 		std::string root;
 		std::string index;
 		std::map<int, std::string> error_pages;
-		std::map<std::string, Route> routes; // optional if methods
+		std::map<std::string, Route> routes; // optional if methods @TODO
 		std::vector<std::string> server_names; // optional
 
 		// Parsers

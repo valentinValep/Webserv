@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 14:11:22 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/22 16:07:31 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,9 +48,9 @@ class ServerResponse {
 		std::string							_root;
 		std::string							_index;
 		std::map<int, std::string>			_error_pages;
-		int									_redirect_type; // @TODO learn about it
-		std::string							_redirect; // @TODO learn about it
-		
+		int									_redirect_type;
+		std::string							_redirect;
+
 		//CGI
 		bool								_cgi_request;
 		std::string							_cgi_extension;
@@ -58,17 +58,17 @@ class ServerResponse {
 
 		//Upload
 		bool								_file_upload;
-		std::string							_upload_path; // @TODO learn about it
+		std::string							_upload_path;
 		std::string							_boundary;
 		std::string							_file_name;
 		std::string							_file_body;
-		
+
 		void			setError(int errorCode);
 		std::string		_getGenericErrorPage(int) const;
 		void			_sendErrorPage(int);
 		void			_sendAutoIndexed(std::string const &);
-	
-	
+
+
 	public:
 		ServerResponse();
 

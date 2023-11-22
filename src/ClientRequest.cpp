@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 15:37:49 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 16:09:19 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,10 +124,11 @@ bool	ClientRequest::needBody()
 		return (false);
 	if (this->_headers.find("Content-Length") != this->_headers.end())
 	{
-		int	contentLength = atoi(this->_headers["Content-Length"].c_str()); // @TODO check if using atoi is safe
-		if (contentLength < 0)
+		errno = 0;
+		int	contentLength = std::strtol(this->_headers["Content-Length"].c_str(), NULL, 10);
+		if (contentLength < 0 || errno == ERANGE)
 		{
-			this->setError(400);
+			this->setError(__FILE__, __LINE__, 400);
 			return (false);
 		}
 
@@ -164,7 +165,7 @@ void ClientRequest::parseBodyLine(const std::string &line)
 		return this->setError(__FILE__, __LINE__, 400);
 	}
 	catch (const Body::BodyTooLargeException &e) {
-		return this->setError(413);
+		return this->setError(__FILE__, __LINE__, 413);
 	}
 	if (this->_body.isFinished())
 	{
@@ -221,7 +222,7 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 				}
 				catch(const Body::BodyTooLargeException& e)
 				{
-					this->setError(413);
+					this->setError(__FILE__, __LINE__, 413);
 				}
 			}
 		}
@@ -358,6 +359,8 @@ void ClientRequest::operator<<(const std::string &data)
 
 void ClientRequest::setError(std::string file, int line, int errorCode)
 {
+	(void)file;
+	(void)line;
 	//std::cout << "Debug: " << file << ":" << line << ": ClientRequest: setError: errorCode: " << errorCode << std::endl;
 	this->_errorCode = errorCode;
 	this->_state = ERROR;

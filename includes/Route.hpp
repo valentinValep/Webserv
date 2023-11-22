@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 11:59:31 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 15:43:52 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # include <vector>
 
 # define ACCEPTED_CGI_TABSIZE 1
-# define ACCEPTED_CGI (std::string [ACCEPTED_CGI_TABSIZE]){".py"} // @TODO choose the right one
+# define ACCEPTED_CGI (std::string [ACCEPTED_CGI_TABSIZE]){".py"}
 
 class Route {
 	private:
@@ -34,7 +34,10 @@ class Route {
 		std::string	cgi_extension; // one to implement
 		std::string	cgi_path; // if cgi_extension
 		std::string	upload_path;
-		// @TODO if there is a redirect can we have a cgi ? Same with upload ?
+		// ⬇️ @TODO ⬇️
+		// after uploading a file, use autoindex or index.
+		// after uploading a file, we can redirect to a page.
+		// after uploading a file, we can execute a cgi script.
 
 		bool		_autoindex_set;
 		bool		_methods_set;
