@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 12:31:10 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 17:06:30 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,7 @@ void Route::parseMethods(fp::Module &mod)
 		return ;
 	if (var->getAttributes().size() == 0)
 	{
-		std::cerr << "Error: allow_methods values need to be GET, POST and/or DELETE" << std::endl;
+		std::cerr << "\033[91mError\033[0m: allow_methods values need to be GET, POST and/or DELETE" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	this->_methods_set = true;
@@ -137,7 +137,7 @@ void Route::parseMethods(fp::Module &mod)
 			this->methods |= DELETE;
 		else
 		{
-			std::cerr << "Error: allow_methods value need to be GET, POST or DELETE" << std::endl;
+			std::cerr << "\033[91mError\033[0m: allow_methods value need to be GET, POST or DELETE" << std::endl;
 			throw ServerManager::ParsingException();
 		}
 	}
@@ -152,7 +152,7 @@ void Route::parseRoot(fp::Module &mod)
 		return ;
 	if (var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: root need one value" << std::endl;
+		std::cerr << "\033[91mError\033[0m: root need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	this->_root_set = true;
@@ -168,7 +168,7 @@ void Route::parseIndex(fp::Module &mod)
 		return ;
 	if (var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: index need one value" << std::endl;
+		std::cerr << "\033[91mError\033[0m: index need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	this->_index_set = true;
@@ -184,7 +184,7 @@ void Route::parseAutoindex(fp::Module &mod)
 		return ;
 	if (var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: autoindex need one value" << std::endl;
+		std::cerr << "\033[91mError\033[0m: autoindex need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	this->_autoindex_set = true;
@@ -194,7 +194,7 @@ void Route::parseAutoindex(fp::Module &mod)
 		this->autoindex = false;
 	else
 	{
-		std::cerr << "Error: autoindex value need to be on or off" << std::endl;
+		std::cerr << "\033[91mError\033[0m: autoindex value need to be on or off" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 }
@@ -208,7 +208,7 @@ void Route::parseCgiExtension(fp::Module &mod)
 		return ;
 	if (var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: extension need one value" << std::endl;
+		std::cerr << "\033[91mError\033[0m: extension need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	this->_cgi_set = true;
@@ -218,7 +218,7 @@ void Route::parseCgiExtension(fp::Module &mod)
 		if (this->cgi_extension == ACCEPTED_CGI[i])
 			return ;
 	}
-	std::cerr << "Error: extension value need to be one of the following: ";
+	std::cerr << "\033[91mError\033[0m: extension value need to be one of the following: ";
 	for (int i = 0; i < ACCEPTED_CGI_TABSIZE; i++)
 	{
 		std::cerr << ACCEPTED_CGI[i];
@@ -238,12 +238,12 @@ void Route::parseCgiPath(fp::Module &mod)
 		return ;
 	if (!this->hasCgi())
 	{
-		std::cerr << "Error: cgi_extension and cgi_path need to be both set" << std::endl;
+		std::cerr << "\033[91mError\033[0m: cgi_extension and cgi_path need to be both set" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	if (var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: cgi_path need one value" << std::endl;
+		std::cerr << "\033[91mError\033[0m: cgi_path need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	this->cgi_path = var->getAttributes()[0];
@@ -258,7 +258,7 @@ void Route::parseUploadPath(fp::Module &mod)
 		return ;
 	if (var->getAttributes().size() != 1)
 	{
-		std::cerr << "Error: upload_path need one value" << std::endl;
+		std::cerr << "\033[91mError\033[0m: upload_path need one value" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	this->_upload_set = true;
@@ -274,12 +274,12 @@ void Route::parseRedirect(fp::Module &mod)
 		return ;
 	if (var->getAttributes().size() != 2)
 	{
-		std::cerr << "Error: return need two values" << std::endl;
+		std::cerr << "\033[91mError\033[0m: return need two values" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	if (var->getAttributes()[0] != "301" && var->getAttributes()[0] != "302")
 	{
-		std::cerr << "Error: return first value need to be 301 or 302" << std::endl;
+		std::cerr << "\033[91mError\033[0m: return first value need to be 301 or 302" << std::endl;
 		throw ServerManager::ParsingException();
 	}
 	this->_redirect_set = true;

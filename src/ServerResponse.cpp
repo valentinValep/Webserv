@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 14:44:52 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/22 17:08:03 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -371,7 +371,7 @@ std::cout << "DELETE request" << std::endl;
 			break ;
 		}
 	default:
-		std::cerr << "CRITIC ERROR: Unauthorized method not catched in ServerResponse!" << std::endl;
+		std::cerr << " \033[91mCRITIC Error\033[0m: Unauthorized method not catched in ServerResponse!" << std::endl;
 	}
 }
 
@@ -407,7 +407,7 @@ std::string ServerResponse::extractBoundary() {
 void ServerResponse::setUpload()
 {
 	 std::map<std::string, std::string>::const_iterator it = this->_headers.find("Content-Type");
-		
+
 	if (it != this->_headers.end() && it->second.find("multipart/form-data") != std::string::npos) {
 		size_t filenamePos = _body.find("filename=\"");
 		if (filenamePos != std::string::npos) {

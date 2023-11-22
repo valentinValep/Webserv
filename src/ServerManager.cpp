@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/22 16:29:01 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 17:02:48 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,20 +147,25 @@ void ServerManager::start()
 
 	while (1) {
 		//std::cout << "Polling on " << this->nfds << " fds" << std::endl;
-		ret = poll(&this->fds.front(), this->nfds, 5000); // @TODO if 0 just clean inactive sockets ?
+		ret = poll(&this->fds.front(), this->nfds, 5000);
 		if (ret == -1)
 		{
 			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In poll"));
 			exit(EXIT_FAILURE);
 		}
-		for (int index = 0; index < this->nfds; index++)
+		if (ret > 0)
 		{
-			//std::cout << "Checking [" << this->fds[index].fd << "] == " << this->fds[index].revents << std::endl;
-			if (this->fds[index].revents == NO_EVENT)
-				continue;
-			std::cout << "Event on [" << this->fds[index].fd << "]" << std::endl;
-			handleEvent(this->fds[index]);
+			for (int index = 0; index < this->nfds; index++)
+			{
+				//std::cout << "Checking [" << this->fds[index].fd << "] == " << this->fds[index].revents << std::endl;
+				if (this->fds[index].revents == NO_EVENT)
+					continue;
+				std::cout << "Event on [" << this->fds[index].fd << "]" << std::endl;
+				handleEvent(this->fds[index]);
+			}
 		}
+		// detectInactiveSockets();
+		this->cleanFdsAndActiveSockets();
 	}
 };
 
@@ -204,9 +209,7 @@ void ServerManager::handleEvent(pollfd &pollfd)
 	{
 		std::cout << "⚠️ Unknown event on [" << pollfd.fd << "] (code: " << pollfd.revents << ")" << std::endl;
 	}
-	updateSocketActivity(pollfd.fd);
-	// detectInactiveSockets();
-	cleanFdsAndActiveSockets(); // @TODO move in the main loop ?
+	this->updateSocketActivity(pollfd.fd);
 }
 
 
@@ -256,7 +259,7 @@ int ServerManager::acceptNewConnexion(int server_fd) {
 
 	if (this->clientSockets.size() >= MAX_CONNECTION) // @TODO move before accept() ?!
 	{
-		std::cout << "warning: max number of connections reached" << std::endl;
+		std::cout << "\033[93mWarning\033[0m: max number of connections reached" << std::endl;
 		close(clientSocket);
 		return (EXIT_FAILURE);
 	}
