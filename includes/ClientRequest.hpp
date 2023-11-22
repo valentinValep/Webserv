@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 11:08:45 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/22 15:36:00 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ private:
 	void	parseMethodLine(const std::string line);
 	void	parseHeaderLine(const std::string line);
 	bool	needBody();
-	void	parseBodyLine(const std::string line);
+	void	parseBodyLine(const std::string &line);
 
 public:
 	ClientRequest();
@@ -86,6 +86,7 @@ public:
 	std::string	getHeader(const std::string &key) const;
 	std::string	getBodyBody() const;
 	void		reset();
+	void		hard_reset();
 	void		close();
 
 	// Getters

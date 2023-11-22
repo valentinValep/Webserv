@@ -1,6 +1,10 @@
 #include "Body.hpp"
+#include <iostream>
 
-Body::Body(): _lastChunk(false), _length(0), _received(0), _chunkExpected(CHUNK_SIZE), _state(NO_BODY) {}
+Body::Body(): _lastChunk(false), _length(0), _received(0), _chunkExpected(CHUNK_SIZE), _state(NO_BODY)
+{
+	this->_chunkExpected = CHUNK_SIZE;
+}
 
 Body::~Body() {}
 
@@ -13,9 +17,14 @@ Body	&Body::operator=(const Body &src)
 {
 	if (this != &src)
 	{
+		this->_lastChunk = src._lastChunk;
 		this->_length = src._length;
 		this->_received = src._received;
+		this->_maxBodySize = src._maxBodySize;
+		this->_chunkExpected = src._chunkExpected;
 		this->_state = src._state;
+		this->_body = src._body;
+		this->_hexa = src._hexa;
 	}
 	return (*this);
 }
@@ -47,11 +56,6 @@ void Body::parseLine(const std::string line)
 {
 	if (this->_state == NO_BODY || this->_state == FINISHED)
 		return;
-	if (this->_received == this->_length)
-	{
-		this->_state = FINISHED;
-		return;
-	}
 	if (this->_state == CONTENT_LENGTH)
 	{
 		for (unsigned int i = 0; i < line.size(); i++)
@@ -79,24 +83,25 @@ void Body::parseLine(const std::string line)
 			{
 				if (line[i] != '\n')
 					throw BodyException();
+				if (this->_lastChunk)
+				{
+					this->_state = FINISHED;
+					return;
+				}
 				if (this->_hexa.size() == 0)
 					this->_chunkExpected = CHUNK_SIZE;
 				else
 				{
-					if (this->_lastChunk)
-					{
-						this->_state = FINISHED;
-						return;
-					}
 					this->_length = hstoi(this->_hexa);
+					this->_received = 0;
+					this->_hexa.clear();
 					if (this->_length == 0)
 					{
 						this->_chunkExpected = CHUNK_END_R;
 						this->_lastChunk = true;
 					}
-					this->_received = 0;
-					this->_chunkExpected = CHUNK_DATA;
-					this->_hexa.clear();
+					else
+						this->_chunkExpected = CHUNK_DATA;
 				}
 			}
 			else if (this->_chunkExpected == CHUNK_SIZE)
@@ -114,6 +119,8 @@ void Body::parseLine(const std::string line)
 			{
 				this->_body.push_back(line[i]);
 				this->_received++;
+				if (this->_received >= this->_maxBodySize)
+					throw BodyTooLargeException();
 				if (this->_received == this->_length)
 					this->_chunkExpected = CHUNK_END_R;
 			}
@@ -133,10 +140,14 @@ bool Body::isFinished() const
 
 void Body::clear()
 {
-	this->_body.clear();
+	this->_lastChunk = false;
 	this->_length = 0;
 	this->_received = 0;
+	this->_maxBodySize = 0;
+	this->_chunkExpected = CHUNK_SIZE;
 	this->_state = NO_BODY;
+	this->_body.clear();
+	this->_hexa.clear();
 }
 
 void Body::setChunked()
@@ -148,4 +159,11 @@ void Body::setContentLength(unsigned int length)
 {
 	this->_length = length;
 	this->_state = CONTENT_LENGTH;
+}
+
+void Body::setMaxBodySize(unsigned int size)
+{
+	if (this->_state == CONTENT_LENGTH && this->_length > size)
+		throw BodyTooLargeException();
+	this->_maxBodySize = size;
 }

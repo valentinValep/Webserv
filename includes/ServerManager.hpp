@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/20 12:20:29 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 14:27:36 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@
 # define DELETE 4
 # define BUFFER_SIZE 100000
 
+# define DEFAULT_CONFIG_FILE "config/default.conf"
 # define HTTP_PROTOCOL "HTTP/1.1"
 
 struct SocketInfo {
@@ -50,7 +51,7 @@ private:
 	int							nfds;
 	// struct sockaddr_in address;
 	std::vector<Server> 		servers;
-	std::vector<struct pollfd>	fds; // @TODO change to std::set
+	std::vector<struct pollfd>	fds;
 	std::map<int, int>			listeningSockets; // socket_fd -> port
 	std::map<int, SocketInfo>	clientSockets; // socket_fd -> clientRequest
 	char 						buffer[BUFFER_SIZE];

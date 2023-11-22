@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/21 14:24:17 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/22 15:37:53 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,7 +147,7 @@ void ServerManager::start()
 
 	while (1) {
 		//std::cout << "Polling on " << this->nfds << " fds" << std::endl;
-		ret = poll(&this->fds.front(), this->nfds, 5000);
+		ret = poll(&this->fds.front(), this->nfds, 5000); // @TODO if 0 just clean inactive sockets ?
 		if (ret == -1)
 		{
 			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In poll"));
@@ -192,7 +192,10 @@ void ServerManager::handleEvent(pollfd &pollfd)
 		std::cout << "📮 Responding on [" << pollfd.fd << "]" << std::endl;
 		ServerResponse serverResponse;
 		serverResponse.prepare(this->clientSockets[pollfd.fd].request);
-		this->clientSockets[pollfd.fd].request.reset();
+		if (this->clientSockets[pollfd.fd].request.isError())
+			this->clientSockets[pollfd.fd].request.hard_reset();
+		else
+			this->clientSockets[pollfd.fd].request.reset();
 		serverResponse.process();
 		pollfd.events = POLLIN;
 		std::cout << "🟢 Response sent on [" << pollfd.fd << "]" << std::endl;

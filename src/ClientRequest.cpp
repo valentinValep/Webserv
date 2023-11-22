@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 13:59:47 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/22 15:37:49 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,8 +124,14 @@ bool	ClientRequest::needBody()
 		return (false);
 	if (this->_headers.find("Content-Length") != this->_headers.end())
 	{
-		this->_body.setContentLength(atoi(this->_headers["Content-Length"].c_str())); // @TODO check if using atoi is safe
-		// @TODO check if it's not too big (max_body_size)
+		int	contentLength = atoi(this->_headers["Content-Length"].c_str()); // @TODO check if using atoi is safe
+		if (contentLength < 0)
+		{
+			this->setError(400);
+			return (false);
+		}
+
+		this->_body.setContentLength(contentLength);
 		return (true);
 	}
 	this->_body.setChunked();
@@ -147,7 +153,7 @@ void	ClientRequest::parseHeaderLine(const std::string line)
 	this->_headers[line.substr(0, line.find(":"))] = line.substr(line.find(":") + 2);
 }
 
-void ClientRequest::parseBodyLine(const std::string line)
+void ClientRequest::parseBodyLine(const std::string &line)
 {
 	if (this->_body.isFinished())
 		return;
@@ -156,6 +162,9 @@ void ClientRequest::parseBodyLine(const std::string line)
 	}
 	catch (const Body::BodyException &e) {
 		return this->setError(__FILE__, __LINE__, 400);
+	}
+	catch (const Body::BodyTooLargeException &e) {
+		return this->setError(413);
 	}
 	if (this->_body.isFinished())
 	{
@@ -172,28 +181,49 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 		this->findFirstServer(servers);
 	while (std::getline(this->_raw_data, line))
 	{
+		//// #### DEBUG
+		//for (std::size_t i = 0; i < line.size(); ++i) {
+		//	std::cout << (int)line[i] << " ";
+		//}
+		//std::cout << std::endl;
+		//// #### END DEBUG
+		if (this->_raw_data.eof())
+		{
+			//std::cout << "eof" << std::endl;
+			this->_raw_data.clear();
+			this->_raw_data << line;
+			return;
+		}
+
 		if (this->_state == ERROR)
 			return;
 		if ((line.empty() || line.size() == 0) && this->_state != RECEIVING_BODY)
 			return this->setError(__FILE__, __LINE__, 400);
+		//std::cout << "state: " << this->_state << " line: '" << line << "'" << std::endl;
 		if (line[line.size() - 1] != '\r' && this->_state != RECEIVING_BODY)
-		{
-			if (this->_raw_data.eof())
-				this->_raw_data << line;
-			else
-				this->setError(__FILE__, __LINE__, 400);
-			return;
-		}
+			return this->setError(__FILE__, __LINE__, 400);
 		if (this->_state == RECEIVING_METHOD)
 		{
 			this->parseMethodLine(line);
+			if (this->_state == ERROR)
+				return;
 			this->detectCgi();
 		}
 		else if (this->_state == RECEIVING_HEADER)
 		{
 			this->parseHeaderLine(line);
 			if (this->_state != RECEIVING_HEADER)
+			{
 				this->findFinalServer(servers);
+				try
+				{
+					this->_body.setMaxBodySize(this->_server->getMaxBodySize());
+				}
+				catch(const Body::BodyTooLargeException& e)
+				{
+					this->setError(413);
+				}
+			}
 		}
 		else if (this->_state == RECEIVING_BODY)
 			this->parseBodyLine(line);
@@ -301,13 +331,18 @@ void ClientRequest::reset()
 	this->_headers.clear();
 	this->_body.clear();
 	this->_raw_data.clear();
-	this->_raw_data.str("");
+	this->_raw_data.str(""); // @TODO check if it's necessary
+}
+
+void ClientRequest::hard_reset()
+{
+	this->reset();
+	this->_server = NULL;
 }
 
 void ClientRequest::close()
 {
 	this->_state = CLOSED;
-	this->_errorCode = 499;
 	::close(this->_clientSocket);
 }
 
@@ -323,7 +358,7 @@ void ClientRequest::operator<<(const std::string &data)
 
 void ClientRequest::setError(std::string file, int line, int errorCode)
 {
-	std::cout << "Debug: " << file << ":" << line << ": ClientRequest: setError: errorCode: " << errorCode << std::endl;
+	//std::cout << "Debug: " << file << ":" << line << ": ClientRequest: setError: errorCode: " << errorCode << std::endl;
 	this->_errorCode = errorCode;
 	this->_state = ERROR;
 }
@@ -334,7 +369,11 @@ void ClientRequest::print() const {
 		return;
 	}
 	if (this->_state != REQUEST_FULLY_RECEIVED) {
-		std::cout << "ClientRequest: Error: request not fully received" << std::endl;
+		std::cout << "ClientRequest: not fully received" << std::endl;
+		return;
+	}
+	if (this->_state == RECEIVING_BODY) {
+		std::cout << "ClientRequest: receiving body" << std::endl;
 		return;
 	}
 	std::cout << "ClientRequest: " << std::endl;
