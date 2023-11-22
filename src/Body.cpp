@@ -119,7 +119,7 @@ void Body::parseLine(const std::string line)
 			{
 				this->_body.push_back(line[i]);
 				this->_received++;
-				if (this->_received >= this->_maxBodySize)
+				if (this->_maxBodySize != -1 && this->_received >= this->_maxBodySize)
 					throw BodyTooLargeException();
 				if (this->_received == this->_length)
 					this->_chunkExpected = CHUNK_END_R;
@@ -155,15 +155,15 @@ void Body::setChunked()
 	this->_state = CHUNKED;
 }
 
-void Body::setContentLength(unsigned int length)
+void Body::setContentLength(long length)
 {
 	this->_length = length;
 	this->_state = CONTENT_LENGTH;
 }
 
-void Body::setMaxBodySize(unsigned int size)
+void Body::setMaxBodySize(long size)
 {
-	if (this->_state == CONTENT_LENGTH && this->_length > size)
+	if (this->_state == CONTENT_LENGTH && size != -1 && this->_length > size)
 		throw BodyTooLargeException();
 	this->_maxBodySize = size;
 }

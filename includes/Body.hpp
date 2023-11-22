@@ -20,9 +20,9 @@ private:
 	};
 
 	bool			_lastChunk;
-	unsigned int	_length;
-	unsigned int	_received;
-	unsigned int	_maxBodySize;
+	long			_length;
+	long			_received;
+	long			_maxBodySize;
 	ChunkExpected	_chunkExpected;
 	BodyState		_state;
 	std::string		_body;
@@ -39,8 +39,8 @@ public:
 	bool		isFinished() const;
 	void		clear();
 	void		setChunked();
-	void		setContentLength(unsigned int length);
-	void		setMaxBodySize(unsigned int size);
+	void		setContentLength(long length);
+	void		setMaxBodySize(long size);
 
 	class BodyException: public std::exception {
 		virtual const char *what() const throw() {

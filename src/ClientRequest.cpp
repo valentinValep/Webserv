@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 16:12:54 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 17:49:04 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,7 @@ bool	ClientRequest::needBody()
 	if (this->_headers.find("Content-Length") != this->_headers.end())
 	{
 		errno = 0;
-		int	contentLength = std::strtol(this->_headers["Content-Length"].c_str(), NULL, 10);
+		long contentLength = std::strtol(this->_headers["Content-Length"].c_str(), NULL, 10);
 		if (contentLength < 0 || errno == ERANGE)
 		{
 			this->setError(__FILE__, __LINE__, 400);
@@ -182,6 +182,9 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 		this->findFirstServer(servers);
 	while (std::getline(this->_raw_data, line))
 	{
+		if (this->_state == ERROR)
+			return;
+
 		//// #### DEBUG
 		//for (std::size_t i = 0; i < line.size(); ++i) {
 		//	std::cout << (int)line[i] << " ";
@@ -197,8 +200,6 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 			return;
 		}
 
-		if (this->_state == ERROR)
-			return;
 		if ((line.empty() || line.size() == 0) && this->_state != RECEIVING_BODY)
 			return this->setError(__FILE__, __LINE__, 400);
 		//std::cout << "state: " << this->_state << " line: '" << line << "'" << std::endl;

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 17:13:22 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 17:52:35 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,26 +35,10 @@ void ServerResponse::prepare(const ClientRequest &request)
 
 	this->_port = request.getPort();
 
-	// ## Request ##
 	// Client socket
 	this->_client_socket = request.getClientSocket();
 	// Error pages
 	this->_error_pages = request.getServer()->getErrorPages();
-	if (request.getErrorCode())
-		return this->setError(request.getErrorCode());
-	// Method
-	if (route && route->hasMethods())
-		this->_method = route->getMethods() & request.getMethod();
-	else
-		this->_method = request.getServer()->getMethods() & request.getMethod();
-	if (!this->_method)
-		return this->setError(405);
-	if (request.getProtocol() != HTTP_PROTOCOL) // @TODO move to ClientRequest ?
-		return this->setError(505);
-	this->_path = request.getPath();
-	this->_headers = request.getHeaders();
-
-	// ## Server ##
 	// Autoindex
 	if (route && route->hasAutoindex())
 		this->_autoindex = route->getAutoindex();
@@ -70,6 +54,21 @@ void ServerResponse::prepare(const ClientRequest &request)
 		this->_index = route->getIndex();
 	else
 		this->_index = request.getServer()->getIndex();
+	if (request.getErrorCode())
+		return this->setError(request.getErrorCode());
+
+	// Method
+	if (route && route->hasMethods())
+		this->_method = route->getMethods() & request.getMethod();
+	else
+		this->_method = request.getServer()->getMethods() & request.getMethod();
+	if (!this->_method)
+		return this->setError(405);
+	if (request.getProtocol() != HTTP_PROTOCOL && request.getProtocol() != "undefined") // @TODO move to ClientRequest ?
+		return this->setError(505);
+	this->_path = request.getPath();
+	this->_headers = request.getHeaders();
+
 	if (route)
 	{
 		// Redirect
@@ -240,6 +239,7 @@ void ServerResponse::process()
 
 	if (this->_error_code)	//	check value ?
 	{
+		std::cout << "DEBUUUUUG: error code: " << this->_error_code << std::endl;
 		_sendErrorPage(this->_error_code);
 		return ;
 	}
@@ -547,7 +547,7 @@ std::string		ServerResponse::readFileContent(std::string const &filePath, std::s
 	mimeTypeList[".7z"] = "application/x-7z-compressed";
 
 	if (!file.is_open()) {
-		perror("In opening file"); // @TODO return 404/5xx ?
+		perror(("In opening file " + filePath).c_str()); // @TODO return 404/5xx ?
 		//exit(EXIT_FAILURE); // @TODO return 404/5xx ?
 	}
 	mimeType = "";
