@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 16:09:19 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 16:12:54 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,6 +192,7 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 		{
 			//std::cout << "eof" << std::endl;
 			this->_raw_data.clear();
+			this->_raw_data.str("");
 			this->_raw_data << line;
 			return;
 		}
@@ -232,6 +233,7 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 			return;
 	}
 	this->_raw_data.clear();
+	this->_raw_data.str("");
 }
 
 void ClientRequest::detectCgi()
@@ -332,7 +334,7 @@ void ClientRequest::reset()
 	this->_headers.clear();
 	this->_body.clear();
 	this->_raw_data.clear();
-	this->_raw_data.str(""); // @TODO check if it's necessary
+	this->_raw_data.str("");
 }
 
 void ClientRequest::hard_reset()
