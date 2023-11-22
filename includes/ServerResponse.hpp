@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 16:07:31 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 17:12:30 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,7 @@
 # include <cstdio>
 
 # define HTTPVERSION "1.1"
-# define MAX_FILE_SIZE 100000
-# define UPLOAD_LOCATION "./www/var/uploads"
-
+# define MAX_FILE_SIZE 10 * 1024 * 1024 // 1MB
 
 class ServerResponse {
 	private:
@@ -60,8 +58,9 @@ class ServerResponse {
 		bool								_file_upload;
 		std::string							_upload_path;
 		std::string							_boundary;
-		std::string							_file_name;
-		std::string							_file_body;
+		std::map<std::string, std::string>	_upload_file_data;
+		// std::string							_file_name;
+		// std::string							_file_body;
 
 		void			setError(int errorCode);
 		std::string		_getGenericErrorPage(int) const;

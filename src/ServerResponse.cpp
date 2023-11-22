@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 17:08:03 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 17:13:22 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -328,9 +328,7 @@ void ServerResponse::process()
 	}
 	case POST:
 	{
-		// @TODO: handle if file has same name
-		// @TODO: handle error
-		// @TODO: upload of multiple files
+		// @TODO: handle error, which ones ? badrequest=400
 		if (this->_file_upload)
 		{
 			createWriteFile();
@@ -340,7 +338,7 @@ void ServerResponse::process()
 			return ;
 		}
 
-		else if (this->_cgi_request)
+		if (this->_cgi_request)
 		{
 			CgiRequest cgiRequest(*this);
 			// cgiRequest.printResponse();
@@ -379,6 +377,31 @@ std::cout << "DELETE request" << std::endl;
  *						UPLOAD								*
  ************************************************************/
 
+int ServerResponse::createWriteFile() {
+	int status = EXIT_SUCCESS;
+
+	for (std::map<std::string, std::string>::iterator it = _upload_file_data.begin(); it != _upload_file_data.end(); ++it) {
+		std::string filename = it->first;
+		std::string fileContent = it->second;
+		std::string path = _root + "/uploads/" + filename;
+
+		std::ifstream file(path.c_str());
+		if (file) {
+			std::cout << "Warning: A file with the same name (" << filename << ") already exists and will be overwritten." << std::endl;
+			file.close();
+		}
+		std::ofstream newFile(path.c_str());
+		if (!newFile) {
+			status = EXIT_FAILURE;
+			std::cout << "ERROR: Failed to create file: " << filename << std::endl;
+			continue;
+		}
+		newFile.write(fileContent.c_str(), fileContent.size());
+		newFile.close();
+	}
+	return (status);
+}
+
 std::string ServerResponse::extractFileBody(size_t filenameEndPos) {
 	std::string content = "";
 	size_t fileStartPos = _body.find("\r\n\r\n", filenameEndPos) + 4;
@@ -400,37 +423,37 @@ std::string ServerResponse::extractBoundary() {
 			boundaryPos += boundaryPrefix.length();
 			boundary = it->second.substr(boundaryPos);
 		}
+		boundary.erase(std::remove(boundary.begin(), boundary.end(), '\r'), boundary.end());
+		boundary.erase(std::remove(boundary.begin(), boundary.end(), '\n'), boundary.end());
 	}
 	return (boundary);
 }
 
-void ServerResponse::setUpload()
-{
-	 std::map<std::string, std::string>::const_iterator it = this->_headers.find("Content-Type");
+void ServerResponse::setUpload() {
+	std::map<std::string, std::string>::const_iterator it = this->_headers.find("Content-Type");
 
 	if (it != this->_headers.end() && it->second.find("multipart/form-data") != std::string::npos) {
-		size_t filenamePos = _body.find("filename=\"");
-		if (filenamePos != std::string::npos) {
+		this->_file_upload = true;
+		this->_boundary = extractBoundary();
+
+		size_t pos = 0;
+		while ((pos = _body.find("filename=\"", pos)) != std::string::npos) {
+			size_t filenamePos = pos;
 			size_t filenameEndPos = _body.find("\"", filenamePos + 10);
+			pos = filenameEndPos;
 			if (filenameEndPos != std::string::npos && filenameEndPos > filenamePos + 10) {
-				this->_file_upload = true;
-				this->_file_name = _body.substr(filenamePos + 10, filenameEndPos - (filenamePos + 10));
-				this->_boundary = extractBoundary();
-				this->_file_body = extractFileBody(filenameEndPos);
+				std::string filename = _body.substr(filenamePos + 10, filenameEndPos - (filenamePos + 10));
+				std::string fileContent = extractFileBody(filenameEndPos);
+				if (fileContent.size() > MAX_FILE_SIZE)
+				{
+					std::cout << "ERROR: File too large will not be uploaded: " << filename << std::endl;
+					_sendErrorPage(413);
+					continue;
+				}
+				_upload_file_data[filename] = fileContent;
 			}
 		}
 	}
-}
-
-int ServerResponse::createWriteFile() {
-	std::string mimeType = "";
-	std::string path = _root + "/uploads/" +_file_name;
-	std::ofstream newFile(path.c_str());
-	newFile << _file_body;
-	if (!newFile)
-		return (EXIT_FAILURE);
-	newFile.close();
-	return (EXIT_SUCCESS);
 }
 
 /************************************************************

@@ -1,17 +1,5 @@
 # Webserv
 
-
-<h2>TO DO</h2>
-
-The read stuff : 
-
-- [ ] The read loop, implement a loop to read from the socket in chunks (e.g., in a buffer of 1024 bytes). After each read: (i) append the data to a request buffer, (ii) check if the buffer contains the end of the request (e.g., an empty line for headers, the end of the content based on Content-Length, the last chunk in chunked encoding, etc.) (iii) If the end of the request is detected, process the request (iv) If not, continue reading from the socket)
-
-The response :
-
-- [ ] Store the above buffer and loop until received fully (end token reached). Then parse the request, process it (GET, DELETE, POST), and compose the reponse. Then set flag to POLLOUT and send once ready
-
-
 <h2> BASICS </h2>
 
 <details><summary><h6>What is a web server ?</h6></summary>
@@ -139,8 +127,3 @@ Images and other resources: Enhance the visual elements of the website.
 
 There is no server-side processing or database interaction involved. All the content is pre-defined and stored as files, and the web server simply serves these files to the client upon request.    
 </details>
-
-<h2> TESTS / OTHER </h2>
-
-* To see the client request being made/sent to your server, head to Inspect > Nextwork 
-![Screenshot from 2023-11-01 14-12-44](https://github.com/chmadran/Webserv/assets/113340699/627d7a73-b642-42cf-b566-a54258792e2f)
