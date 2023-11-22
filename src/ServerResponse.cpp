@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 17:52:35 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/22 18:31:39 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "ServerManager.hpp"
 #include "CgiRequest.hpp"
 #include "Route.hpp"
-#include <sstream>
 
 ServerResponse::ServerResponse() : _port(0), _autoindex(false), _error_code(0), _method(0), _redirect_type(0), _cgi_request(false), _file_upload(false)
 {}
@@ -193,15 +192,16 @@ void	ServerResponse::_sendAutoIndexed(std::string const &locationPath)
 {
 	DIR					*dirStream;;
 	std::stringstream	autoIndexedPage;
+	struct stat			fileStat;
 
 	if (!(dirStream = opendir(locationPath.c_str())))
 	{
 		_sendErrorPage(500);
 		return ;
 	}
-	//	generate file 'header'
 	autoIndexedPage << "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>"
-					<< this->_path << "</title>\n\t<link rel=favicon ... >\n</head>\n<body>\n";	//	Add favicon link	//	Add "content of "folder"' in html page + horizontal line
+					<< this->_path << "</title>\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"/style/style.css\">\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"/style/autoindex.css\">\n\t"
+					<< "<link rel=\"icon\" href=\"/favicon.gif\" type=\"image/gif\">\n</head>\n<body>\n\t<h1>Index of " << this->_path << "</h1>\n\t<hr>\n";
 
 	struct dirent	*dirContent = NULL;
 
@@ -217,16 +217,21 @@ void	ServerResponse::_sendAutoIndexed(std::string const &locationPath)
 			break ;
 
 		std::string		fileName(dirContent->d_name);
-		std::string		locationBasePath = locationPath.substr((this->_root.size()));	//	no need for a variable
 
-		autoIndexedPage << "\t<a href=\"" << (locationBasePath + "/" + fileName) << "\">" << fileName << "</a><br>\n";	//	Add info about file here if needed
+		if (stat((locationPath + "/" + fileName).c_str(), &fileStat))
+		{
+			_sendErrorPage(500);
+			closedir(dirStream);
+			return ;
+		}
+		autoIndexedPage << "  <a class=\"space" << (S_ISDIR(fileStat.st_mode) ? " dir" : (S_ISREG(fileStat.st_mode) ? " file" : ""))
+			<< "\" href=\"" << (locationPath.substr((this->_root.size())) + "/" + fileName) << "\">" << fileName << "</a><br>\n";
 	}
 	if (closedir(dirStream))
 	{
 		_sendErrorPage(500);
 		return ;
 	}
-	//	generate file 'footer'
 	autoIndexedPage << "</body>\n</html>\n";
 	sendHttpResponse(200, autoIndexedPage.str(), "text/html");
 }
@@ -256,74 +261,67 @@ void ServerResponse::process()
 			sendCGIResponse(this->_client_socket, content, "text/html");
 			return ;
 		}
-		// std::cout << "DEBUG:\n\troot:\t" << this->_root << "\n\tpath:\t" << this->_path << "\n\tindex:\t" << this->_index << std::endl;
-		std::string			indexPath;
-		// std::cout << "DEBUG: locationPath: " << locationPath << std::endl;
-
-		if	(!access(locationPath.c_str(), F_OK))
+		if (!(this->_redirect.empty()))
 		{
-		// std::cout << "DEBUG: F_OK " << std::endl;
+			sendHttpRedirection();
+			return ;
+		}
+		std::string			indexPath;
+
+		if(!access(locationPath.c_str(), F_OK))
+		{
 			struct stat		locationPathStat;
 
+			if(access(locationPath.c_str(), R_OK))
+			{
+				_sendErrorPage(403);
+				return ;
+			}
 			if (stat(locationPath.c_str(), &locationPathStat))
 			{
-				//	Error stating locationPath (system error, no perms on one folder in path ?)
-				std::cout << "DEBUG: Failed stating locationPath" << std::endl;
+				_sendErrorPage(500);
+				return ;
 			}
 			if (S_ISREG(locationPathStat.st_mode))
 			{
-				if (access(locationPath.c_str(), R_OK))	//	Can happen ? The user should have rights on his own hosted files...
-				{
-					std::cout << "DEBUG: Permission denied 403" << std::endl;
-					_sendErrorPage(403);
-					return ;
-				}
-				content = readFileContent(locationPath, mimeType);	//	Make function _sendFile
-				sendHttpResponse(200, content, mimeType);			//
-				break ;
+				content = readFileContent(locationPath, mimeType);
+				sendHttpResponse(200, content, mimeType);
+				return ;
 			}
 			if (S_ISDIR(locationPathStat.st_mode))
 			{
-				std::cout << "DEBUG: locationPath is a folder..." << std::endl;
-				if (access(locationPath.c_str(), R_OK))
-				{
-					std::cout << "DEBUG: Permission denied 403" << std::endl;
-					_sendErrorPage(403);
-					return ;
-				}
 				if (!(this->_redirect.empty()))
 				{
-					//	respond with redirection
+					sendHttpRedirection();
 					return ;
 				}
-				if (!(this->_cgi_path.empty()))
-				{
-					//	HANDLE CGI HERE
-					return ;
-				}
+//				if (!(this->_cgi_path.empty()))	//	!	\\	Should be handled here too ??
+//				{
+//					//	HANDLE CGI HERE
+//					return ;
+//				}
 				indexPath = locationPath + "/" + this->_index;
-				std::cout << "indexPath: " << indexPath << std::endl;
 				if (!access(indexPath.c_str(), F_OK))
 				{
-					std::cout << "DEBUG: Found index at: " << indexPath << std::endl;
-					content = readFileContent(indexPath, mimeType);
-					sendHttpResponse(200, content, mimeType);
-					break ;
+					if (!access(indexPath.c_str(), R_OK))
+					{
+						content = readFileContent(indexPath, mimeType);
+						sendHttpResponse(200, content, mimeType);
+						return ;
+					}
+					_sendErrorPage(403);
+					return ;
 				}
 				if (this->_autoindex)
 				{
 					_sendAutoIndexed(locationPath);
 					return ;
 				}
-				std::cout << "DEBUG: Not found 404" << std::endl;
 				_sendErrorPage(404);
 			}
 		}
 		else
-		{
-			std::cout << "DEBUG: Not found 404" << std::endl;
 			_sendErrorPage(404);
-		}
 		break ;
 	}
 	case POST:
@@ -350,21 +348,17 @@ void ServerResponse::process()
 	}
 	case DELETE:
 		{
-std::cout << "DELETE request" << std::endl;
-			// find file.
 			if (!(access(locationPath.c_str(), F_OK)))
 			{
-				//	if found, check permissions to delete it
 				if (!(access(locationPath.c_str(), W_OK)))
 				{
-					//	if ok, delete file, respond with 204 or with 200 if a response html is sent
+					//	if ok, delete file, respond with 204 or with 200 if a response html has to be sent
 					std::remove(locationPath.c_str());
 					sendHttpResponse(204, "", "text/html");
 				}
 				else
 					_sendErrorPage(403);
 			}
-			//	if not found, return 404 ?
 			_sendErrorPage(404);
 			break ;
 		}
@@ -570,6 +564,14 @@ void ServerResponse::sendHttpResponse(int const responseCode, std::string const 
 				<< "\r\n";
 	std::string httpResponse = httpHeaders.str() + content;
 	write(this->_client_socket, httpResponse.c_str(), httpResponse.size());
+}
+
+void ServerResponse::sendHttpRedirection() {	//	@TODO refactor: use send()
+	std::stringstream httpHeaders;
+	httpHeaders << "HTTP/" << HTTPVERSION << " " << this->_redirect_type << " \r\n"
+				<< "Location: " << this->_redirect << "\r\n"
+				<< "\r\n";
+	write(this->_client_socket, httpHeaders.str().c_str(), httpHeaders.str().size());
 }
 
 void ServerResponse::sendCGIResponse(int clientSocket, const std::string& content, const std::string& contentType) {
