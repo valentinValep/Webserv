@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 15:20:52 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/22 11:08:45 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ public:
 	ClientRequest();
 	ClientRequest(int fd, in_port_t port);
 
-	void		setError(int errorCode);
+	void		setError(std::string file, int line, int errorCode);
 	void		print() const;
 	void		short_print() const;
 
@@ -84,6 +84,7 @@ public:
 	bool		isError() const;
 	bool		isClosed() const;
 	std::string	getHeader(const std::string &key) const;
+	std::string	getBodyBody() const;
 	void		reset();
 	void		close();
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 11:49:13 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/21 13:59:47 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,11 @@ int ClientRequest::getClientSocket() const
 	return (this->_clientSocket);
 }
 
+std::string ClientRequest::getBodyBody() const
+{
+	return (this->_body.getBody());
+}
+
 bool ClientRequest::isCgiRequest() const
 {
 	return (this->_cgiRequest);
@@ -101,7 +106,7 @@ void ClientRequest::parseMethodLine(const std::string line)
 	lines >> method >> this->_path >> this->_protocol >> end;
 	if (method.empty() || this->_path.empty() || this->_protocol.empty()
 		|| !end.empty() || lines.bad() || !lines.eof())
-		return this->setError(400);
+		return this->setError(__FILE__, __LINE__, 400);
 	if (method == "GET")
 		this->_method = GET;
 	else if (method == "POST")
@@ -109,7 +114,7 @@ void ClientRequest::parseMethodLine(const std::string line)
 	else if (method == "DELETE")
 		this->_method = DELETE;
 	else
-		return this->setError(405);
+		return this->setError(__FILE__, __LINE__, 405);
 	this->_state = RECEIVING_HEADER;
 }
 
@@ -138,7 +143,7 @@ void	ClientRequest::parseHeaderLine(const std::string line)
 		return;
 	}
 	if (line.find(":") == std::string::npos)
-		return this->setError(400);
+		return this->setError(__FILE__, __LINE__, 400);
 	this->_headers[line.substr(0, line.find(":"))] = line.substr(line.find(":") + 2);
 }
 
@@ -150,7 +155,7 @@ void ClientRequest::parseBodyLine(const std::string line)
 		this->_body.parseLine(line + "\n");
 	}
 	catch (const Body::BodyException &e) {
-		return this->setError(400);
+		return this->setError(__FILE__, __LINE__, 400);
 	}
 	if (this->_body.isFinished())
 	{
@@ -169,14 +174,14 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 	{
 		if (this->_state == ERROR)
 			return;
-		if (line.empty() || line.size() == 0)
-			return this->setError(400);
+		if ((line.empty() || line.size() == 0) && this->_state != RECEIVING_BODY)
+			return this->setError(__FILE__, __LINE__, 400);
 		if (line[line.size() - 1] != '\r' && this->_state != RECEIVING_BODY)
 		{
 			if (this->_raw_data.eof())
 				this->_raw_data << line;
 			else
-				this->setError(400);
+				this->setError(__FILE__, __LINE__, 400);
 			return;
 		}
 		if (this->_state == RECEIVING_METHOD)
@@ -236,7 +241,7 @@ void ClientRequest::findFirstServer(std::vector<Server> &servers)
 		}
 	}
 	if (!this->_server)
-		return this->setError(5);
+		return this->setError(__FILE__, __LINE__, 5);
 }
 
 void ClientRequest::findFinalServer(std::vector<Server> &servers)
@@ -247,7 +252,7 @@ void ClientRequest::findFinalServer(std::vector<Server> &servers)
 	size_t				pos;
 
 	if (this->_headers.find("Host") == this->_headers.end())
-		return this->setError(400);
+		return this->setError(__FILE__, __LINE__, 400);
 	pos = this->_headers["Host"].find(":");
 	if (pos == std::string::npos)
 	{
@@ -261,11 +266,11 @@ void ClientRequest::findFinalServer(std::vector<Server> &servers)
 		std::istringstream iss(port_str);
 		iss >> port_str;
 		if (port_str.empty() || port_str.length() > 5)
-			return this->setError(400);
+			return this->setError(__FILE__, __LINE__, 400);
 		port = atoi(port_str.c_str());
 	}
 	if (port != this->_port)
-		return this->setError(400);
+		return this->setError(__FILE__, __LINE__, 400);
 	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
 	{
 		if (it->hasServerName(host_name) && it->getPort() == port)
@@ -316,8 +321,9 @@ void ClientRequest::operator<<(const std::string &data)
  *						PRINT								*
  ************************************************************/
 
-void ClientRequest::setError(int errorCode)
+void ClientRequest::setError(std::string file, int line, int errorCode)
 {
+	std::cout << "Debug: " << file << ":" << line << ": ClientRequest: setError: errorCode: " << errorCode << std::endl;
 	this->_errorCode = errorCode;
 	this->_state = ERROR;
 }

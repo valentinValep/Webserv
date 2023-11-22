@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 15:25:00 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/22 14:44:52 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,15 @@
 #include "Route.hpp"
 #include <sstream>
 
-ServerResponse::ServerResponse() : _port(0), _autoindex(false), _error_code(0), _method(0), _redirect_type(0), _cgi_request(false)
+ServerResponse::ServerResponse() : _port(0), _autoindex(false), _error_code(0), _method(0), _redirect_type(0), _cgi_request(false), _file_upload(false)
 {}
 
 void ServerResponse::setError(int errorCode)
 {
 	this->_error_code = errorCode;
 }
+
+
 
 void ServerResponse::prepare(const ClientRequest &request)
 {
@@ -84,8 +86,10 @@ void ServerResponse::prepare(const ClientRequest &request)
 			this->_cgi_path = route->getCgiPath();
 		}
 		// Upload
-		if (route->hasUpload())
-			this->_upload_path = route->getUploadPath();
+		this->_body = request.getBodyBody();
+		setUpload();
+	// 	if (route->hasUpload())
+	// 		this->_upload_path = route->getUploadPath();
 	}
 }
 
@@ -239,16 +243,6 @@ void ServerResponse::process()
 		_sendErrorPage(this->_error_code);
 		return ;
 	}
-	if (this->_cgi_request)
-	{
-		std::cout << "CGI FOUND" << std::endl;
-		CgiRequest cgiRequest(*this);
-		std::cout << " THE REPONSE IS " << std::endl;
-		cgiRequest.printResponse();
-		content = cgiRequest.getResponse();
-		sendCGIResponse(this->_client_socket, content, "text/html");
-		return ;
-	}
 	std::string const	locationPath = this->_root + trimTrailingSlashes(this->_path);
 	switch(this->_method)
 	{
@@ -262,25 +256,25 @@ void ServerResponse::process()
 			sendCGIResponse(this->_client_socket, content, "text/html");
 			return ;
 		}
-std::cout << "DEBUG:\n\troot:\t" << this->_root << "\n\tpath:\t" << this->_path << "\n\tindex:\t" << this->_index << std::endl;
+		// std::cout << "DEBUG:\n\troot:\t" << this->_root << "\n\tpath:\t" << this->_path << "\n\tindex:\t" << this->_index << std::endl;
 		std::string			indexPath;
-std::cout << "DEBUG: locationPath: " << locationPath << std::endl;
+		// std::cout << "DEBUG: locationPath: " << locationPath << std::endl;
 
 		if	(!access(locationPath.c_str(), F_OK))
 		{
-std::cout << "DEBUG: F_OK " << std::endl;
+		// std::cout << "DEBUG: F_OK " << std::endl;
 			struct stat		locationPathStat;
 
 			if (stat(locationPath.c_str(), &locationPathStat))
 			{
 				//	Error stating locationPath (system error, no perms on one folder in path ?)
-std::cout << "DEBUG: Failed stating locationPath" << std::endl;
+				std::cout << "DEBUG: Failed stating locationPath" << std::endl;
 			}
 			if (S_ISREG(locationPathStat.st_mode))
 			{
 				if (access(locationPath.c_str(), R_OK))	//	Can happen ? The user should have rights on his own hosted files...
 				{
-std::cout << "DEBUG: Permission denied 403" << std::endl;
+					std::cout << "DEBUG: Permission denied 403" << std::endl;
 					_sendErrorPage(403);
 					return ;
 				}
@@ -290,10 +284,10 @@ std::cout << "DEBUG: Permission denied 403" << std::endl;
 			}
 			if (S_ISDIR(locationPathStat.st_mode))
 			{
-std::cout << "DEBUG: locationPath is a folder..." << std::endl;
+				std::cout << "DEBUG: locationPath is a folder..." << std::endl;
 				if (access(locationPath.c_str(), R_OK))
 				{
-std::cout << "DEBUG: Permission denied 403" << std::endl;
+					std::cout << "DEBUG: Permission denied 403" << std::endl;
 					_sendErrorPage(403);
 					return ;
 				}
@@ -311,7 +305,7 @@ std::cout << "DEBUG: Permission denied 403" << std::endl;
 				std::cout << "indexPath: " << indexPath << std::endl;
 				if (!access(indexPath.c_str(), F_OK))
 				{
-std::cout << "DEBUG: Found index at: " << indexPath << std::endl;
+					std::cout << "DEBUG: Found index at: " << indexPath << std::endl;
 					content = readFileContent(indexPath, mimeType);
 					sendHttpResponse(200, content, mimeType);
 					break ;
@@ -321,23 +315,32 @@ std::cout << "DEBUG: Found index at: " << indexPath << std::endl;
 					_sendAutoIndexed(locationPath);
 					return ;
 				}
-std::cout << "DEBUG: Not found 404" << std::endl;
+				std::cout << "DEBUG: Not found 404" << std::endl;
 				_sendErrorPage(404);
 			}
 		}
 		else
 		{
-std::cout << "DEBUG: Not found 404" << std::endl;
+			std::cout << "DEBUG: Not found 404" << std::endl;
 			_sendErrorPage(404);
 		}
 		break ;
 	}
 	case POST:
 	{
-		// case 1: file upload
-			//@TODO : identify Content-type is multipart/form-data
-		// case 2: CGI
-		if (this->_cgi_request)
+		// @TODO: handle if file has same name
+		// @TODO: handle error
+		// @TODO: upload of multiple files
+		if (this->_file_upload)
+		{
+			createWriteFile();
+			std::string mimeTypehere = "text/html";
+			std::string content = readFileContent(this->_root + "/204.html", mimeTypehere);
+			sendUploadResponse(this->_client_socket, content, "text/html");
+			return ;
+		}
+
+		else if (this->_cgi_request)
 		{
 			CgiRequest cgiRequest(*this);
 			// cgiRequest.printResponse();
@@ -371,6 +374,68 @@ std::cout << "DELETE request" << std::endl;
 		std::cerr << "CRITIC ERROR: Unauthorized method not catched in ServerResponse!" << std::endl;
 	}
 }
+
+/************************************************************
+ *						UPLOAD								*
+ ************************************************************/
+
+std::string ServerResponse::extractFileBody(size_t filenameEndPos) {
+	std::string content = "";
+	size_t fileStartPos = _body.find("\r\n\r\n", filenameEndPos) + 4;
+	size_t fileEndPos = _body.find(_boundary, fileStartPos);
+	if (fileStartPos < fileEndPos) {
+		content = _body.substr(fileStartPos, fileEndPos - fileStartPos - 2);
+	}
+	return (content);
+}
+
+std::string ServerResponse::extractBoundary() {
+	std::string boundary = "";
+	std::string boundaryPrefix = "boundary=";
+	std::map<std::string, std::string>::iterator it = _headers.find("Content-Type");
+
+	if (it != _headers.end()) {
+		size_t boundaryPos = it->second.find(boundaryPrefix);
+		if (boundaryPos != std::string::npos) {
+			boundaryPos += boundaryPrefix.length();
+			boundary = it->second.substr(boundaryPos);
+		}
+	}
+	return (boundary);
+}
+
+void ServerResponse::setUpload()
+{
+	 std::map<std::string, std::string>::const_iterator it = this->_headers.find("Content-Type");
+		
+	if (it != this->_headers.end() && it->second.find("multipart/form-data") != std::string::npos) {
+		size_t filenamePos = _body.find("filename=\"");
+		if (filenamePos != std::string::npos) {
+			size_t filenameEndPos = _body.find("\"", filenamePos + 10);
+			if (filenameEndPos != std::string::npos && filenameEndPos > filenamePos + 10) {
+				this->_file_upload = true;
+				this->_file_name = _body.substr(filenamePos + 10, filenameEndPos - (filenamePos + 10));
+				this->_boundary = extractBoundary();
+				this->_file_body = extractFileBody(filenameEndPos);
+			}
+		}
+	}
+}
+
+int ServerResponse::createWriteFile() {
+	std::string mimeType = "";
+	std::string path = _root + "/uploads/" +_file_name;
+	std::ofstream newFile(path.c_str());
+	newFile << _file_body;
+	if (!newFile)
+		return (EXIT_FAILURE);
+	newFile.close();
+	return (EXIT_SUCCESS);
+}
+
+/************************************************************
+ *						SEND RESPONSE						*
+ ************************************************************/
 
 std::string		ServerResponse::readFileContent(std::string const &filePath, std::string &mimeType)
 {
@@ -487,6 +552,16 @@ void ServerResponse::sendHttpResponse(int const responseCode, std::string const 
 void ServerResponse::sendCGIResponse(int clientSocket, const std::string& content, const std::string& contentType) {
 	std::stringstream cgiHeaders;
 	cgiHeaders << "HTTP/1.1 200 OK\r\n" <<
+				"Content-Length: " << content.size() << "\r\n" <<
+				"Content-Type: " << contentType << "\r\n" <<
+				"\r\n";
+	std::string cgiResponse = cgiHeaders.str() + content;
+	write(clientSocket, cgiResponse.c_str(), cgiResponse.size());
+}
+
+void ServerResponse::sendUploadResponse(int clientSocket, const std::string& content, const std::string& contentType) {
+	std::stringstream cgiHeaders;
+	cgiHeaders << "HTTP/1.1 201 OK\r\n" <<
 				"Content-Length: " << content.size() << "\r\n" <<
 				"Content-Type: " << contentType << "\r\n" <<
 				"\r\n";

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/20 13:31:52 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/21 14:24:17 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -306,9 +306,9 @@ int	ServerManager::readClientRequest(ClientRequest &request) {
 		request.close();
 		return (bytesRead);
 	}
-	//std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
-	//for (int i = 0; i < bytesRead; i++)
-	//	std::cout << this->buffer[i];
+	// std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
+	// for (int i = 0; i < bytesRead; i++)
+	// 	std::cout << this->buffer[i];
 	return (bytesRead);
 }
 
