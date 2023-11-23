@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/23 14:52:56 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/23 14:56:41 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include "utils.hpp"
 
 #define MAX_CONNECTION 10 // always < 1024
-#define MAX_SIMULTANEOUS_CONNECTIONS 5 // always small 
 #define NO_EVENT 0
 #define TIMEOUT 120
 #define CR std::cout << std::endl;
@@ -251,31 +250,26 @@ void ServerManager::acceptNewConnexion(int server_fd) {
 	struct sockaddr_in	clientAddress;
 	socklen_t			clientAddressLength = sizeof(clientAddress);
 
-	// @TODO loop over accept() until no more pending connections (Check non blocking accept) (limit to N simultaneous connections)
-	for (int i = 0; i < MAX_SIMULTANEOUS_CONNECTIONS; i++)
+	clientSocket = accept(server_fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
+
+	if (clientSocket < 0)
 	{
-		// @TODO check Linux specific errno
-		if ((clientSocket = accept(server_fd, (struct sockaddr*)&clientAddress, &clientAddressLength)) <= 0)
-			break ;
-		// if (clientSocket < 0)
-		// {
-		// 	std::cout << "server_fd: " << server_fd << std::endl;
-		// 	perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In accept"));
-		// 	return ;
-		// }
-
-		if (this->clientSockets.size() >= MAX_CONNECTION) // @TODO move before accept() ?!
-		{
-			std::cout << "\033[93mWarning\033[0m: max number of connections reached" << std::endl;
-			close(clientSocket);
-			return ;
-		}
-		this->clientSockets[clientSocket] = (SocketInfo){ClientRequest(clientSocket, this->listeningSockets[server_fd]), time(NULL)};
-		this->fds.push_back((struct pollfd){clientSocket, POLLIN, NO_EVENT});
-		this->nfds++;
-
-		std::cout << "✅ New connexion on fd [" << clientSocket << "]" << std::endl;
+		std::cout << "server_fd: " << server_fd << std::endl;
+		perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In accept"));
+		return ;
 	}
+
+	if (this->clientSockets.size() >= MAX_CONNECTION) // @TODO move before accept() ?!
+	{
+		std::cout << "\033[93mWarning\033[0m: max number of connections reached" << std::endl;
+		close(clientSocket);
+		return ;
+	}
+	this->clientSockets[clientSocket] = (SocketInfo){ClientRequest(clientSocket, this->listeningSockets[server_fd]), time(NULL)};
+	this->fds.push_back((struct pollfd){clientSocket, POLLIN, NO_EVENT});
+	this->nfds++;
+
+	std::cout << "✅ New connexion on fd [" << clientSocket << "]" << std::endl;
 	return ;
 };
 
