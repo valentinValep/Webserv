@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/23 14:45:19 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/23 14:52:56 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,12 +257,12 @@ void ServerManager::acceptNewConnexion(int server_fd) {
 		// @TODO check Linux specific errno
 		if ((clientSocket = accept(server_fd, (struct sockaddr*)&clientAddress, &clientAddressLength)) <= 0)
 			break ;
-		if (clientSocket < 0)
-		{
-			std::cout << "server_fd: " << server_fd << std::endl;
-			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In accept"));
-			return ;
-		}
+		// if (clientSocket < 0)
+		// {
+		// 	std::cout << "server_fd: " << server_fd << std::endl;
+		// 	perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In accept"));
+		// 	return ;
+		// }
 
 		if (this->clientSockets.size() >= MAX_CONNECTION) // @TODO move before accept() ?!
 		{
