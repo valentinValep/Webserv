@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/23 11:25:27 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/23 13:31:23 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 
 #define MAX_CONNECTION 10 // always < 1024
 #define NO_EVENT 0
+#define TIMEOUT 120
 #define CR std::cout << std::endl;
 
 #define SCSTR( x ) static_cast< std::ostringstream & >( \
@@ -164,6 +165,7 @@ void ServerManager::start()
 				handleEvent(this->fds[index]);
 			}
 		}
+		this->detectTimeOut();
 		this->cleanFdsAndActiveSockets();
 	}
 };
@@ -316,4 +318,25 @@ void ServerManager::printActiveSockets() {
 void	ServerManager::updateSocketActivity(int socket) {
 
 	clientSockets[socket].lastActivity = time(NULL);
+}
+
+void	ServerManager::detectTimeOut() {
+	time_t currentTime = time(NULL);
+
+	for (std::map<int, SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
+		time_t lastActivity = it->second.lastActivity;
+		double secondsSinceLastActivity = difftime(currentTime, lastActivity);
+
+		if (secondsSinceLastActivity > TIMEOUT) {
+			std::cout << "🕑 Inactive socket [" << it->second.request.getClientSocket() << "] will be removed." << std::endl;
+			 for (std::vector<struct pollfd>::iterator fd_it = fds.begin(); fd_it != fds.end(); ++fd_it) {
+				if (fd_it->fd == it->first) {
+					// std::cout << "🕑 Removing socket [" << fd_it->fd << "] from pollfd." << std::endl;
+					fd_it->fd = -1;
+					break;
+				}
+			}
+			it->second.request.close();
+		}
+	}
 }

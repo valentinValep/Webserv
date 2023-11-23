@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/23 11:54:55 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/23 13:39:14 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,9 +86,15 @@ void ServerResponse::prepare(const ClientRequest &request)
 		// Upload
 		this->_body = request.getBodyBody();
 		setUpload();
-		if (this->_file_upload || route->hasUpload())
-			this->_upload_path = route->getUploadPath();
-		std::cout << "upload path: " << this->_upload_path << std::endl;
+		if (this->_file_upload) {
+			if (route->hasUpload()) {
+				this->_upload_path = route->getUploadPath(); }
+			else
+			{
+				std::cout << "Error: upload path has not been set, upload not allowed" << std::endl;
+				_file_upload = false;
+			}
+		}
 	}
 }
 
