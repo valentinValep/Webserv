@@ -141,7 +141,7 @@ void Body::parseLine(const std::string line)
 					this->_chunkExpected = CHUNK_END_N;
 					continue;
 				}
-				if (!isHexa(line[i]))
+				if (!Body::isHexa(line[i]))
 					throw BodyException();
 				this->_hexa.push_back(line[i]);
 			}
@@ -163,7 +163,7 @@ bool Body::isFinished() const
 	return (this->_state == FINISHED);
 }
 
-static bool	isHexa(char c)
+bool	Body::isHexa(char c)
 {
 	return ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
 }

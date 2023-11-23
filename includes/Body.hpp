@@ -37,6 +37,7 @@ public:
 	void		parseLine(const std::string line);
 	std::string	getBody() const;
 	bool		isFinished() const;
+	static bool	isHexa(char c);
 	void		clear();
 	void		setChunked();
 	void		setContentLength(long length);
