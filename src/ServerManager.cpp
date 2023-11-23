@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/23 13:31:23 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/23 14:45:19 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "utils.hpp"
 
 #define MAX_CONNECTION 10 // always < 1024
+#define MAX_SIMULTANEOUS_CONNECTIONS 5 // always small 
 #define NO_EVENT 0
 #define TIMEOUT 120
 #define CR std::cout << std::endl;
@@ -114,6 +115,11 @@ int ServerManager::setupNetwork() {
 		}
 
 		int opt = 1;
+		if (fcntl(serverSocket, F_SETFL, O_NONBLOCK) < 0) {
+			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In fnctl"));
+			exit(EXIT_FAILURE);
+		}
+		
 		// @TODO change SOL_SOCKET by TCP protocol (man setsockopt) ? check return < 0 ?
 		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int))) {
 			perror(SCSTR(__FILE__ << ":" << __LINE__ << "setsockopt"));
@@ -174,9 +180,7 @@ void ServerManager::handleEvent(pollfd &pollfd)
 {
 	if (listeningSockets.find(pollfd.fd) != listeningSockets.end())
 	{
-		int ret = acceptNewConnexion(pollfd.fd);
-		(void) ret;
-		// @TODO check return value
+		acceptNewConnexion(pollfd.fd);
 		return;
 	}
 	if (pollfd.revents & POLLIN)
@@ -241,35 +245,38 @@ void ServerManager::cleanFdsAndActiveSockets() {
 	}
 }
 
-int ServerManager::acceptNewConnexion(int server_fd) {
+void ServerManager::acceptNewConnexion(int server_fd) {
 
 	int					clientSocket = 0;
 	struct sockaddr_in	clientAddress;
 	socklen_t			clientAddressLength = sizeof(clientAddress);
 
 	// @TODO loop over accept() until no more pending connections (Check non blocking accept) (limit to N simultaneous connections)
-	clientSocket = accept(server_fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
-
-	// @TODO check Linux specific errno
-	if (clientSocket < 0)
+	for (int i = 0; i < MAX_SIMULTANEOUS_CONNECTIONS; i++)
 	{
-		std::cout << "server_fd: " << server_fd << std::endl;
-		perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In accept"));
-		return (EXIT_FAILURE);
-	}
+		// @TODO check Linux specific errno
+		if ((clientSocket = accept(server_fd, (struct sockaddr*)&clientAddress, &clientAddressLength)) <= 0)
+			break ;
+		if (clientSocket < 0)
+		{
+			std::cout << "server_fd: " << server_fd << std::endl;
+			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In accept"));
+			return ;
+		}
 
-	if (this->clientSockets.size() >= MAX_CONNECTION) // @TODO move before accept() ?!
-	{
-		std::cout << "\033[93mWarning\033[0m: max number of connections reached" << std::endl;
-		close(clientSocket);
-		return (EXIT_FAILURE);
-	}
-	this->clientSockets[clientSocket] = (SocketInfo){ClientRequest(clientSocket, this->listeningSockets[server_fd]), time(NULL)};
-	this->fds.push_back((struct pollfd){clientSocket, POLLIN, NO_EVENT});
-	this->nfds++;
+		if (this->clientSockets.size() >= MAX_CONNECTION) // @TODO move before accept() ?!
+		{
+			std::cout << "\033[93mWarning\033[0m: max number of connections reached" << std::endl;
+			close(clientSocket);
+			return ;
+		}
+		this->clientSockets[clientSocket] = (SocketInfo){ClientRequest(clientSocket, this->listeningSockets[server_fd]), time(NULL)};
+		this->fds.push_back((struct pollfd){clientSocket, POLLIN, NO_EVENT});
+		this->nfds++;
 
-	std::cout << "✅ New connexion on fd [" << clientSocket << "]" << std::endl;
-	return (EXIT_SUCCESS);
+		std::cout << "✅ New connexion on fd [" << clientSocket << "]" << std::endl;
+	}
+	return ;
 };
 
 /************************************************************

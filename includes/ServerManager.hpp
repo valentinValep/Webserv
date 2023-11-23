@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/23 12:21:12 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/23 14:46:34 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@
 # include <fcntl.h>
 # include <iomanip>
 # include <ctime>
+# include <fcntl.h>
+# include <unistd.h>
 
 # define GET 1
 # define POST 2
@@ -62,8 +64,7 @@ private:
 	void	updateSocketActivity(int socket);
 	void	parseConfigFile(std::string config_file);
 	void	printActiveSockets();
-	int		acceptNewConnexion(int server_fd)
-		__attribute__((warn_unused_result));
+	void	acceptNewConnexion(int server_fd);
 	void	cleanFdsAndActiveSockets();
 	void	detectTimeOut();
 	void	handleClientRequest(ClientRequest &request);
