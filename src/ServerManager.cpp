@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/23 14:56:41 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/23 15:13:59 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -292,7 +292,6 @@ int	ServerManager::readClientRequest(ClientRequest &request) {
 	ssize_t bytesRead = recv(request.getClientSocket(), this->buffer, BUFFER_SIZE, 0);
 
 	if (bytesRead <= 0) {
-		// @TODO better handling of error here
 		if (bytesRead < 0)
 			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In read"));
 		if (bytesRead == 0)
