@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/23 15:13:59 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/23 15:55:26 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -221,29 +221,6 @@ void ServerManager::handleEvent(pollfd &pollfd)
  *						NETWORK STUFF						*
  ************************************************************/
 
-void ServerManager::cleanFdsAndActiveSockets() {
-	for (std::vector<struct pollfd>::iterator it = this->fds.begin(); it != this->fds.end();)
-	{
-		if (it->fd == -1)
-		{
-			it = this->fds.erase(it);
-			this->nfds--;
-		}
-		else
-			++it;
-	}
-
-	for (std::map<int, SocketInfo>::iterator it = this->clientSockets.begin(); it != this->clientSockets.end();) {
-		if (it->second.request.getClientSocket() == -1) {
-			std::map<int, SocketInfo>::iterator toErase = it;
-			++it;
-			this->clientSockets.erase(toErase);
-		} else {
-			++it;
-		}
-	}
-}
-
 void ServerManager::acceptNewConnexion(int server_fd) {
 
 	int					clientSocket = 0;
@@ -331,12 +308,34 @@ void	ServerManager::detectTimeOut() {
 			std::cout << "🕑 Inactive socket [" << it->second.request.getClientSocket() << "] will be removed." << std::endl;
 			 for (std::vector<struct pollfd>::iterator fd_it = fds.begin(); fd_it != fds.end(); ++fd_it) {
 				if (fd_it->fd == it->first) {
-					// std::cout << "🕑 Removing socket [" << fd_it->fd << "] from pollfd." << std::endl;
 					fd_it->fd = -1;
 					break;
 				}
 			}
 			it->second.request.close();
+		}
+	}
+}
+
+void ServerManager::cleanFdsAndActiveSockets() {
+	for (std::vector<struct pollfd>::iterator it = this->fds.begin(); it != this->fds.end();)
+	{
+		if (it->fd == -1)
+		{
+			it = this->fds.erase(it);
+			this->nfds--;
+		}
+		else
+			++it;
+	}
+
+	for (std::map<int, SocketInfo>::iterator it = this->clientSockets.begin(); it != this->clientSockets.end();) {
+		if (it->second.request.getClientSocket() == -1) {
+			std::map<int, SocketInfo>::iterator toErase = it;
+			++it;
+			this->clientSockets.erase(toErase);
+		} else {
+			++it;
 		}
 	}
 }

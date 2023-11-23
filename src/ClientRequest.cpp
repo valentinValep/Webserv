@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 17:49:04 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/23 15:53:59 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -348,6 +348,7 @@ void ClientRequest::close()
 {
 	this->_state = CLOSED;
 	::close(this->_clientSocket);
+	this->_clientSocket = -1;
 }
 
 void ClientRequest::operator<<(const std::string &data)
