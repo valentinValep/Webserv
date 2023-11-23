@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/23 17:37:03 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/23 18:36:49 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -251,9 +251,9 @@ void ClientRequest::detectCgi()
 		pathWithoutQuery = this->_path.substr(0, queryPos);
 	}
 
-	//	@TODO: Searching for extension is not enough. Accessing localhost:8080/hdxfcghbj.py returns respons 200.
-	const char* cgiExtensions[] = {".cgi", ".pl", ".py"};
-	const size_t numExtensions = sizeof(cgiExtensions) / sizeof(cgiExtensions[0]);
+	//	@TODO: Searching for extension is not enough. Accessing localhost:8080/hdxfcghbj.py returns respons 200. (Same problem with ,py)
+	const char* cgiExtensions[] = {".cgi", ".pl", ".py"};	//	Use a Vector<std::string>	//	char * transformed to std::String below
+	const size_t numExtensions = sizeof(cgiExtensions) / sizeof(cgiExtensions[0]);	//	useless
 
 	for (size_t i = 0; i < numExtensions; ++i) {
 		std::string ext = cgiExtensions[i];
