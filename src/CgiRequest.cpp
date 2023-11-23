@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 14:19:07 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 11:09:41 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/23 11:28:28 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 #define ERROR -1
 
 /************************************************************
- *					CONSTRUCTOR								*
+ *					CONSTRUCTOR/DESTRUCTOR					*
  ************************************************************/
 
 CgiRequest::CgiRequest(ServerResponse &response) : serverResponse(response){
@@ -153,6 +153,10 @@ void	CgiRequest::cgiParentProcess()
 	}
 	close(this->_fd[READ]);
 };
+
+/************************************************************
+ *						UTILS								*
+ ***********************************************************/
 
 std::string CgiRequest::getResponse()
 {

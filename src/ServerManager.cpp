@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/22 17:02:48 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/23 11:25:27 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,7 +164,6 @@ void ServerManager::start()
 				handleEvent(this->fds[index]);
 			}
 		}
-		// detectInactiveSockets();
 		this->cleanFdsAndActiveSockets();
 	}
 };
@@ -284,20 +283,6 @@ void	ServerManager::handleClientRequest(ClientRequest &request) {
 	request << std::string(this->buffer, bytesRead);
 	request.parse(this->servers);
 
-	//if (bytesRead > 0 && request.state == ClientRequest::HEADER_NOT_FULLY_RECEIVED)
-	//{
-	//	storeHeaderClientRequest(buffer, bytesRead, request);
-	//	std::cout << "ERROR CODE: " << request.errorCode << std::endl;
-	//	request.print();
-	//	return (EXIT_SUCCESS);
-	//}
-	//if (bytesRead > 0 && request.state == ClientRequest::BODY_NOT_FULLY_RECEIVED)
-	//{
-	//	storeBodyClientRequest(buffer, bytesRead, request);
-	//	request.print();
-	//	return (EXIT_SUCCESS);
-	//}
-	//return (EXIT_FAILURE);
 }
 
 int	ServerManager::readClientRequest(ClientRequest &request) {
@@ -317,36 +302,6 @@ int	ServerManager::readClientRequest(ClientRequest &request) {
 	// 	std::cout << this->buffer[i];
 	return (bytesRead);
 }
-
-//	std::cout << "\n\n" << "===============   "  << bytesRead << " BYTES  RECEIVED   ===============\n";
-//	// for (int i = 0; i < bytesRead; i++)
-//	// 	std::cout << buffer[i];
-//	return (bytesRead);
-//}
-
-//void ServerManager::storeHeaderClientRequest(char *buffer, int bytesRead, ClientRequest &request) {
-//	request.raw_data += std::string(buffer, bytesRead);
-//	if (containsEmptyLine(request.raw_data))
-//	{
-//		request.setState(ClientRequest::HEADER_FULLY_RECEIVED);
-//		request.parseHeader(this->servers);
-//		request.setBodyState();
-//		request.raw_data = "";
-//	}
-//	else
-//		request.setState(ClientRequest::HEADER_NOT_FULLY_RECEIVED);
-//}
-
-//void ServerManager::storeBodyClientRequest(char *buffer, int bytesRead, ClientRequest &request) {
-//	request.raw_data += std::string(buffer, bytesRead);
-//	request.setBodyState();
-//	if (request.state == ClientRequest::REQUEST_FULLY_RECEIVED) {
-//		request.parseBody();
-//		request.raw_data = "";
-//	}
-//	else
-//		request.setState(ClientRequest::BODY_NOT_FULLY_RECEIVED);
-//}
 
 /************************************************************
  *							DEBUG							*

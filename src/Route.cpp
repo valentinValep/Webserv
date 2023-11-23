@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Route.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 17:06:30 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/23 11:27:21 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,10 @@
 #include "ServerManager.hpp"
 #include <iostream>
 #include <string>
+
+/************************************************************
+ *					CONSTRUCTORS/DESTRUCTOR					*
+ ***********************************************************/
 
 Route::Route(): autoindex(true), methods(), redirect_type(), redirect(), index(""), root(""), cgi_extension(""), cgi_path(""), upload_path(""), _autoindex_set(false), _methods_set(false), _redirect_set(false), _index_set(false), _root_set(false), _cgi_set(false), _upload_set(false)
 {}
@@ -32,6 +36,10 @@ Route::Route(fp::Module &mod): autoindex(true), methods(), redirect_type(), redi
 
 Route::~Route()
 {}
+
+/************************************************************
+ *					GETTERS/HAS								*
+ ***********************************************************/
 
 bool Route::getAutoindex() const
 {
@@ -112,6 +120,10 @@ bool Route::hasUpload() const
 {
 	return this->_upload_set;
 }
+
+/************************************************************
+ *							PARSING							*
+ ************************************************************/
 
 void Route::parseMethods(fp::Module &mod)
 {

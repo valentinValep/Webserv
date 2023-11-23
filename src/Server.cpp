@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 16:32:25 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/23 11:25:58 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -340,52 +340,3 @@ bool Server::hasServerName(const std::string &serverName) const
 {
 	return (std::find(this->server_names.begin(), this->server_names.end(), serverName) != this->server_names.end());
 }
-
-/************************************************************
- *				CLIENT SOCKET HANDLERS						*
- ************************************************************/
-
-//void	Server::updateClientSocketActivity(int socket) {
-//	time_t currentTime = time(NULL);
-
-//	for (std::vector<SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
-//		if (it->socket == socket) {
-//			it->lastActivity = currentTime;
-//			break;
-//		}
-//	}
-//};
-
-//void Server::detectInactiveClientSockets() {
-//	time_t currentTime = time(NULL);
-
-//	for (std::vector<SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
-//		if (currentTime - it->lastActivity > 120) {
-//			std::cout << "Inactive socket detected [" << it->socket << "]" << std::endl;
-//			it->socket = -1;
-//			}
-//		}
-//}
-
-
-/************************************************************
- *					PRINT FUNCTIONS							*
- ************************************************************/
-
-//void Server::printActiveSockets() {
-//	const int width = 20;
-//	std::cout << std::left << std::setw(width) << "Socket FD"
-//			  << std::left << std::setw(width) << "Last Activity" << std::endl;
-//	std::cout << std::string(40, '-') << std::endl; // Print a separator line
-
-//	for (std::vector<SocketInfo>::const_iterator it = clientSockets.begin();
-//		 it != clientSockets.end(); ++it) {
-//		char buffer[30];
-//		std::time_t lastActivity = static_cast<time_t>(it->lastActivity);
-//		std::tm *tm_info = std::localtime(&lastActivity);
-//		std::strftime(buffer, 30, "%Y-%m-%d %H:%M:%S", tm_info);
-
-//		std::cout << std::left << std::setw(width) << it->socket
-//				  << std::left << std::setw(width) << buffer << std::endl;
-//	}
-//}

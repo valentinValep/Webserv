@@ -1,12 +1,14 @@
 #include "Body.hpp"
 #include <iostream>
 
+/************************************************************
+ *					CONSTRUCTORS/DESTRUCTOR					*
+ ***********************************************************/
+
 Body::Body(): _lastChunk(false), _length(0), _received(0), _chunkExpected(CHUNK_SIZE), _state(NO_BODY)
 {
 	this->_chunkExpected = CHUNK_SIZE;
 }
-
-Body::~Body() {}
 
 Body::Body(const Body &src)
 {
@@ -29,10 +31,38 @@ Body	&Body::operator=(const Body &src)
 	return (*this);
 }
 
-static bool	isHexa(char c)
+Body::~Body() {}
+
+/************************************************************
+ *						SETTERS/GETTERS						*
+ ***********************************************************/
+
+void Body::setChunked()
 {
-	return ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
+	this->_state = CHUNKED;
 }
+
+void Body::setContentLength(long length)
+{
+	this->_length = length;
+	this->_state = CONTENT_LENGTH;
+}
+
+void Body::setMaxBodySize(long size)
+{
+	if (this->_state == CONTENT_LENGTH && size != -1 && this->_length > size)
+		throw BodyTooLargeException();
+	this->_maxBodySize = size;
+}
+
+std::string Body::getBody() const
+{
+	return (this->_body);
+}
+
+/************************************************************
+ *							UTILS							*
+ ***********************************************************/
 
 static unsigned int	hstoi(std::string hexa)
 {
@@ -128,14 +158,14 @@ void Body::parseLine(const std::string line)
 	}
 }
 
-std::string Body::getBody() const
-{
-	return (this->_body);
-}
-
 bool Body::isFinished() const
 {
 	return (this->_state == FINISHED);
+}
+
+static bool	isHexa(char c)
+{
+	return ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
 }
 
 void Body::clear()
@@ -150,20 +180,3 @@ void Body::clear()
 	this->_hexa.clear();
 }
 
-void Body::setChunked()
-{
-	this->_state = CHUNKED;
-}
-
-void Body::setContentLength(long length)
-{
-	this->_length = length;
-	this->_state = CONTENT_LENGTH;
-}
-
-void Body::setMaxBodySize(long size)
-{
-	if (this->_state == CONTENT_LENGTH && size != -1 && this->_length > size)
-		throw BodyTooLargeException();
-	this->_maxBodySize = size;
-}
