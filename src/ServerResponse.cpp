@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 18:31:39 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/23 11:05:44 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -427,8 +427,6 @@ void ServerResponse::setUpload() {
 	std::map<std::string, std::string>::const_iterator it = this->_headers.find("Content-Type");
 
 	if (it != this->_headers.end() && it->second.find("multipart/form-data") != std::string::npos) {
-		this->_file_upload = true;
-		this->_boundary = extractBoundary();
 
 		size_t pos = 0;
 		while ((pos = _body.find("filename=\"", pos)) != std::string::npos) {
@@ -436,6 +434,11 @@ void ServerResponse::setUpload() {
 			size_t filenameEndPos = _body.find("\"", filenamePos + 10);
 			pos = filenameEndPos;
 			if (filenameEndPos != std::string::npos && filenameEndPos > filenamePos + 10) {
+				if (_file_upload == false)
+				{
+					this->_file_upload = true;
+					this->_boundary = extractBoundary();
+				}
 				std::string filename = _body.substr(filenamePos + 10, filenameEndPos - (filenamePos + 10));
 				std::string fileContent = extractFileBody(filenameEndPos);
 				if (fileContent.size() > MAX_FILE_SIZE)
@@ -448,6 +451,7 @@ void ServerResponse::setUpload() {
 			}
 		}
 	}
+	std::cout << "DEBUG: _file_upload: " << _file_upload << std::endl;
 }
 
 /************************************************************
