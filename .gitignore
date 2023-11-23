@@ -4,3 +4,4 @@ unit_tests
 .vscode/
 ignore_me*
 www/no_perms
+www/no_perms_folder

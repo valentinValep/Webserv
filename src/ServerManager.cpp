@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/23 15:55:26 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/23 15:59:25 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "FileParser.hpp"
 #include "utils.hpp"
 
-#define MAX_CONNECTION 10 // always < 1024
+#define MAX_CONNECTION 1020 // always < 1024
 #define NO_EVENT 0
 #define TIMEOUT 120
 #define CR std::cout << std::endl;

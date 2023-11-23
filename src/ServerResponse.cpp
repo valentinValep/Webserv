@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/23 13:39:14 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/23 17:03:31 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,6 @@ void ServerResponse::setError(int errorCode)
 {
 	this->_error_code = errorCode;
 }
-
-
 
 void ServerResponse::prepare(const ClientRequest &request)
 {
@@ -251,7 +249,6 @@ void ServerResponse::process()
 
 	if (this->_error_code)	//	check value ?
 	{
-		std::cout << "DEBUUUUUG: error code: " << this->_error_code << std::endl;
 		_sendErrorPage(this->_error_code);
 		return ;
 	}
@@ -571,6 +568,7 @@ void ServerResponse::sendHttpResponse(int const responseCode, std::string const 
 				<< (content.empty() ? 0 : content.size()) << "\r\n"
 				<< (contentType.empty() ? "" : "Content-Type: ")
 				<< (contentType.empty() ? "" : contentType) << "\r\n"
+				<< (responseCode == 400 ? "Connection: close" : "") << "\r\n"
 				<< "\r\n";
 	std::string httpResponse = httpHeaders.str() + content;
 	write(this->_client_socket, httpResponse.c_str(), httpResponse.size());
