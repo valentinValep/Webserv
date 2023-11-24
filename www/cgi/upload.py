@@ -7,7 +7,7 @@ print("<title>UPLOAD SCRIPT</title>")
 print("</head><body>")
 
 print("<h1>Python CGI Form</h1>")
-print("<form method='post' action='script.py' enctype='multipart/form-data'>")
+print("<form method='post' action='uploads' enctype='multipart/form-data'>")
 print("<p>File 1: <input type='file' name='fichier' /></p>")
 print("<p>File 2: <input type='file' name='fichier' /></p>")
 print("<p>File 3: <input type='file' name='fichier' /></p>")

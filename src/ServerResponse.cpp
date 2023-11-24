@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/23 17:03:31 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/24 12:04:09 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -330,7 +330,6 @@ void ServerResponse::process()
 	}
 	case POST:
 	{
-		// @TODO: handle error, which ones ? badrequest=400
 		if (this->_file_upload)
 		{
 			createWriteFile();
