@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/23 15:59:25 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/24 15:05:19 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,7 +118,7 @@ int ServerManager::setupNetwork() {
 			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In fnctl"));
 			exit(EXIT_FAILURE);
 		}
-		
+
 		// @TODO change SOL_SOCKET by TCP protocol (man setsockopt) ? check return < 0 ?
 		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int))) {
 			perror(SCSTR(__FILE__ << ":" << __LINE__ << "setsockopt"));
@@ -186,13 +186,15 @@ void ServerManager::handleEvent(pollfd &pollfd)
 	{
 		std::cout << "📩 Handling on [" << pollfd.fd << "]" << std::endl;
 		this->handleClientRequest(this->clientSockets[pollfd.fd].request);
+		// @TODO if request send connection close, close socket after sending response
+		// https://www.rfc-editor.org/rfc/rfc9112.html#name-tear-down
 		if (this->clientSockets[pollfd.fd].request.isClosed())
 		{
 			pollfd.fd = -1;
 			return;
 		}
 		if (this->clientSockets[pollfd.fd].request.isFullyReceived()
-			|| this->clientSockets[pollfd.fd].request.isError())
+			|| (this->clientSockets[pollfd.fd].request.getErrorCode() == 400))
 			pollfd.events = POLLOUT;
 		this->clientSockets[pollfd.fd].request.short_print();
 	}
@@ -201,11 +203,17 @@ void ServerManager::handleEvent(pollfd &pollfd)
 		std::cout << "📮 Responding on [" << pollfd.fd << "]" << std::endl;
 		ServerResponse serverResponse;
 		serverResponse.prepare(this->clientSockets[pollfd.fd].request);
-		if (this->clientSockets[pollfd.fd].request.isError())
+		serverResponse.process();
+		if (this->clientSockets[pollfd.fd].request.getErrorCode() == 400)
+		{
+			this->clientSockets[pollfd.fd].request.close();
+			pollfd.fd = -1;
+			return;
+		}
+		else if (this->clientSockets[pollfd.fd].request.isError())
 			this->clientSockets[pollfd.fd].request.hard_reset();
 		else
 			this->clientSockets[pollfd.fd].request.reset();
-		serverResponse.process();
 		pollfd.events = POLLIN;
 		std::cout << "🟢 Response sent on [" << pollfd.fd << "]" << std::endl;
 	}
@@ -262,7 +270,6 @@ void	ServerManager::handleClientRequest(ClientRequest &request) {
 
 	request << std::string(this->buffer, bytesRead);
 	request.parse(this->servers);
-
 }
 
 int	ServerManager::readClientRequest(ClientRequest &request) {

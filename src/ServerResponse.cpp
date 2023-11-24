@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/24 12:04:09 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/24 15:05:22 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ void ServerResponse::prepare(const ClientRequest &request)
 		this->_index = route->getIndex();
 	else
 		this->_index = request.getServer()->getIndex();
+	// Error
 	if (request.getErrorCode())
 		return this->setError(request.getErrorCode());
 
@@ -59,6 +60,7 @@ void ServerResponse::prepare(const ClientRequest &request)
 		this->_method = route->getMethods() & request.getMethod();
 	else
 		this->_method = request.getServer()->getMethods() & request.getMethod();
+	std::cout << "method: " << this->_method << std::endl;
 	if (!this->_method)
 		return this->setError(405);
 	if (request.getProtocol() != HTTP_PROTOCOL && request.getProtocol() != "undefined") // @TODO move to ClientRequest ?
@@ -570,6 +572,7 @@ void ServerResponse::sendHttpResponse(int const responseCode, std::string const 
 				<< (responseCode == 400 ? "Connection: close" : "") << "\r\n"
 				<< "\r\n";
 	std::string httpResponse = httpHeaders.str() + content;
+	// @TODO handle broken pipe
 	write(this->_client_socket, httpResponse.c_str(), httpResponse.size());
 }
 
