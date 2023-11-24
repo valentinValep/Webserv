@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 14:19:07 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/23 11:28:28 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/24 17:34:34 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,8 +145,11 @@ void	CgiRequest::cgiChildProcess()
 void	CgiRequest::cgiParentProcess()
 {
 	close(this->_fd[WRITE]);
+	//@TODO: Waitpit should not block the server while waiting for the child to finish!
 	waitpid(this->_child_pid, NULL, 0);
 	char c;
+	//@TODO: _fd[READ] should be handled by poll to avoid blocking the server!
+	//@TODO: Use a READ_SIZE instead of reading 1 char at a time.
 	while (read(_fd[READ], &c, 1) > 0)
 	{
 		_response += c;
