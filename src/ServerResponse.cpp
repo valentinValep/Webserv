@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/23 17:09:34 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/24 15:06:15 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,6 @@ void ServerResponse::setError(int errorCode)
 {
 	this->_error_code = errorCode;
 }
-
-
 
 void ServerResponse::prepare(const ClientRequest &request)
 {
@@ -88,9 +86,15 @@ void ServerResponse::prepare(const ClientRequest &request)
 		// Upload
 		this->_body = request.getBodyBody();
 		setUpload();
-		if (this->_file_upload || route->hasUpload())
-			this->_upload_path = route->getUploadPath();
-		std::cout << "upload path: " << this->_upload_path << std::endl;
+		if (this->_file_upload) {
+			if (route->hasUpload()) {
+				this->_upload_path = route->getUploadPath(); }
+			else
+			{
+				std::cout << "Error: upload path has not been set, upload not allowed" << std::endl;
+				_file_upload = false;
+			}
+		}
 	}
 }
 
@@ -247,7 +251,6 @@ void ServerResponse::process()
 
 	if (this->_error_code)	//	check value ?
 	{
-		std::cout << "DEBUUUUUG: error code: " << this->_error_code << std::endl;
 		_sendErrorPage(this->_error_code);
 		return ;
 	}
@@ -329,7 +332,6 @@ void ServerResponse::process()
 	}
 	case POST:
 	{
-		// @TODO: handle error, which ones ? badrequest=400
 		if (this->_file_upload)
 		{
 			createWriteFile();
@@ -567,6 +569,7 @@ void ServerResponse::sendHttpResponse(int const responseCode, std::string const 
 				<< (content.empty() ? 0 : content.size()) << "\r\n"
 				<< (contentType.empty() ? "" : "Content-Type: ")
 				<< (contentType.empty() ? "" : contentType) << "\r\n"
+				<< (responseCode == 400 ? "Connection: close" : "") << "\r\n"
 				<< "\r\n";
 	std::string httpResponse = httpHeaders.str() + content;
 	// @TODO handle broken pipe
