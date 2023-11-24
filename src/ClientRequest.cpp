@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 17:49:04 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/24 14:54:32 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ bool ClientRequest::isFullyReceived() const
 
 bool ClientRequest::isError() const
 {
-	return (this->_state == ERROR);
+	return (this->_errorCode != 0);
 }
 
 bool ClientRequest::isClosed() const
@@ -182,7 +182,7 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 		this->findFirstServer(servers);
 	while (std::getline(this->_raw_data, line))
 	{
-		if (this->_state == ERROR)
+		if (this->getErrorCode() == 400)
 			return;
 
 		//// #### DEBUG
@@ -208,9 +208,8 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 		if (this->_state == RECEIVING_METHOD)
 		{
 			this->parseMethodLine(line);
-			if (this->_state == ERROR)
+			if (this->getErrorCode() == 400)
 				return;
-			this->detectCgi();
 		}
 		else if (this->_state == RECEIVING_HEADER)
 		{
@@ -366,11 +365,10 @@ void ClientRequest::setError(std::string file, int line, int errorCode)
 	(void)line;
 	//std::cout << "Debug: " << file << ":" << line << ": ClientRequest: setError: errorCode: " << errorCode << std::endl;
 	this->_errorCode = errorCode;
-	this->_state = ERROR;
 }
 
 void ClientRequest::print() const {
-	if (this->_state == ERROR) {
+	if (this->isError()) {
 		std::cout << "ClientRequest: Error: " << this->_errorCode << std::endl;
 		return;
 	}
@@ -399,7 +397,7 @@ void ClientRequest::print() const {
 }
 
 void ClientRequest::short_print() const {
-	if (this->_state == ERROR) {
+	if (this->isError()) {
 		std::cout << "ClientRequest: Error: " << this->_errorCode << std::endl;
 		return;
 	}

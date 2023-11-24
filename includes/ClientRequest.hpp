@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 15:36:00 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/24 13:59:25 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ enum State {
 	RECEIVING_BODY,
 	REQUEST_FULLY_RECEIVED,
 	CLOSED,
-	ERROR,
 };
 
 class ClientRequest {
@@ -49,7 +48,7 @@ private:
 		}
 	};
 
-	bool								_cgiRequest;
+	bool								_cgiRequest; // @TODO remove
 	in_port_t							_port;
 	int									_errorCode;
 	int									_clientSocket;
