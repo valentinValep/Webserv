@@ -71,7 +71,7 @@ void ServerReactor::setupNetwork(std::vector<Server> &servers)
 			throw std::runtime_error("listen() failed: " + std::string(strerror(errno)));
 
 		// Add to epoll
-		EventHandler	*handler = new AcceptHandler(server_fd);
+		EventHandler	*handler = new AcceptHandler(server_fd, it->getPort());
 		struct epoll_event	event;
 		event.events = EPOLLIN;
 		event.data.ptr = handler;
@@ -96,7 +96,7 @@ ServerReactor::~ServerReactor()
  *							Methods							*
  ************************************************************/
 
-int	ServerReactor::addClient(int socket_fd)
+int	ServerReactor::addClient(int socket_fd, int port)
 {
 	if (this->event_handlers.size() >= MAX_CONNECTION)
 	{
@@ -105,7 +105,7 @@ int	ServerReactor::addClient(int socket_fd)
 	}
 
 	// Add to epoll
-	EventHandler	*handler = new ProcessHandler(socket_fd);
+	EventHandler	*handler = new ProcessHandler(socket_fd, port);
 	struct epoll_event	event;
 	event.events = EPOLLIN;
 	event.data.ptr = handler;
@@ -122,7 +122,7 @@ int	ServerReactor::addClient(int socket_fd)
 	return 0;
 }
 
-void ServerReactor::deleteConnection(int socket_fd)
+void ServerReactor::deleteClient(int socket_fd)
 {
 	for (std::vector<EventHandler*>::iterator it = this->event_handlers.begin(); it != this->event_handlers.end(); it++)
 	{
@@ -136,6 +136,28 @@ void ServerReactor::deleteConnection(int socket_fd)
 
 	errno = 0;
 	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_DEL, socket_fd, NULL) == -1)
+		return perror(SCSTR(__FILE__ << ":" << __LINE__ << " epoll_ctl() failed"));
+}
+
+void ServerReactor::listenClient(int socket_fd, EventHandler &handler)
+{
+	struct epoll_event	event;
+
+	event.events = EPOLLIN;
+	event.data.ptr = &handler;
+	errno = 0;
+	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_MOD, socket_fd, &event) == -1)
+		return perror(SCSTR(__FILE__ << ":" << __LINE__ << " epoll_ctl() failed"));
+}
+
+void ServerReactor::talkToClient(int socket_fd, EventHandler &handler)
+{
+	struct epoll_event	event;
+
+	event.events = EPOLLOUT;
+	event.data.ptr = &handler;
+	errno = 0;
+	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_MOD, socket_fd, &event) == -1)
 		return perror(SCSTR(__FILE__ << ":" << __LINE__ << " epoll_ctl() failed"));
 }
 

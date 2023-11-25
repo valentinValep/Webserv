@@ -1,13 +1,21 @@
 #include "EventHandler.hpp"
+#include <iostream>
+#include <unistd.h>
 
-EventHandler::EventHandler(int socket_fd)
+EventHandler::EventHandler(int socket_fd, int port): _socket_fd(socket_fd), _port(port)
+{}
+
+EventHandler::~EventHandler()
 {
-	this->socket_fd = socket_fd;
+	close(this->_socket_fd);
 }
-
-EventHandler::~EventHandler() {}
 
 int EventHandler::getSocketFd() const
 {
-	return (this->socket_fd);
+	return (this->_socket_fd);
+}
+
+int EventHandler::getPort() const
+{
+	return (this->_port);
 }

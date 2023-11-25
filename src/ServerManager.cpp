@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/25 20:39:08 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/25 22:04:54 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,19 +101,54 @@ catch(const fp::FileParser::FileParserSyntaxException& e)
 	throw ServerManager::ParsingException();
 }
 
-int	ServerManager::addClient(int socket_fd)
-{
-	return this->reactor.addClient(socket_fd);
-}
-
 /************************************************************
  *						RUN									*
  ************************************************************/
+
+int	ServerManager::addClient(int socket_fd, int port)
+{
+	return this->reactor.addClient(socket_fd, port);
+}
+
+void ServerManager::deleteClient(int socket_fd)
+{
+	this->reactor.deleteClient(socket_fd);
+}
+
+void ServerManager::listenClient(int socket_fd, EventHandler &handler)
+{
+	this->reactor.listenClient(socket_fd, handler);
+}
+
+void ServerManager::talkToClient(int socket_fd, EventHandler &handler)
+{
+	this->reactor.talkToClient(socket_fd, handler);
+}
 
 void ServerManager::run()
 {
 	this->reactor.run();
 };
+
+Server &ServerManager::getServer(int port)
+{
+	for (std::vector<Server>::iterator it = this->servers.begin(); it != this->servers.end(); it++)
+	{
+		if (it->getPort() == port)
+			return *it;
+	}
+	throw ServerManager::ServerNotFoundException();
+}
+
+Server &ServerManager::getServer(int port, std::string const &server_name)
+{
+	for (std::vector<Server>::iterator it = this->servers.begin(); it != this->servers.end(); it++)
+	{
+		if (it->getPort() == port && it->hasServerName(server_name))
+			return *it;
+	}
+	throw ServerManager::ServerNotFoundException();
+}
 
 //void ServerManager::handleEvent(pollfd &pollfd)
 //{

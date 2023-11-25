@@ -23,7 +23,9 @@ public:
 	// Setters
 
 	// Methods
-	int					addClient(int socket_fd);
-	void				deleteConnection(int socket_fd);
+	int					addClient(int socket_fd, int port);
+	void				deleteClient(int socket_fd);
+	void				listenClient(int socket_fd, EventHandler &handler);
+	void				talkToClient(int socket_fd, EventHandler &handler);
 	void				run();
 };

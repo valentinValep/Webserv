@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/25 20:35:15 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/25 22:04:08 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include "ServerResponse.hpp"
 # include "Server.hpp"
 # include "ServerReactor.hpp"
+# include "EventHandler.hpp"
 # include <string>
 # include <vector>
 # include <map>
@@ -78,12 +79,24 @@ public:
 	static ServerManager *getInstance(std::string config_file = DEFAULT_CONFIG_FILE);
 	~ServerManager();
 
-	int		addClient(int socket_fd);
+	int		addClient(int socket_fd, int port);
+	void	deleteClient(int socket_fd);
+	void	listenClient(int socket_fd, EventHandler &handler);
+	void	talkToClient(int socket_fd, EventHandler &handler);
 	void	run();
+
+	Server	&getServer(int port);
+	Server	&getServer(int port, std::string const &server_name);
 
 	class ParsingException : public std::exception {
 		virtual const char* what() const throw() {
 			return "Parsing error";
+		}
+	};
+
+	class ServerNotFoundException : public std::exception {
+		virtual const char* what() const throw() {
+			return "No server found";
 		}
 	};
 };

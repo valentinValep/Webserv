@@ -24,6 +24,9 @@ OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)EventHandler.o \
 	$(BUILD_DIR)AcceptHandler.o \
 	$(BUILD_DIR)ProcessHandler.o \
+	$(BUILD_DIR)ProcessState.o \
+	$(BUILD_DIR)ReadState.o \
+	$(BUILD_DIR)ResponseBuildState.o \
 
 MAIN_OBJ := $(BUILD_DIR)main.o
 

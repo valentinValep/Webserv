@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/24 13:59:25 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/25 21:28:45 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,7 @@ private:
 	RequestStream						_raw_data;
 
 	void	detectCgi();
-	void	findFirstServer(std::vector<Server> &servers);
-	void	findFinalServer(std::vector<Server> &servers);
+	void	findFinalServer();
 	void	parseMethodLine(const std::string line);
 	void	parseHeaderLine(const std::string line);
 	bool	needBody();
@@ -78,10 +77,9 @@ public:
 	void		short_print() const;
 
 	void		operator<<(const std::string &data);
-	void		parse(std::vector<Server> &servers);
+	void		parse();
 	bool		isFullyReceived() const;
 	bool		isError() const;
-	bool		isClosed() const;
 	std::string	getHeader(const std::string &key) const;
 	std::string	getBodyBody() const;
 	void		reset();

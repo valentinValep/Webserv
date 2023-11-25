@@ -7,14 +7,16 @@
 class EventHandler {
 private:
 	// Attributes
-	int		socket_fd;
+	int		_socket_fd;
+	int		_port;
 public:
 	// Constructors & Destructor
-	EventHandler(int socket_fd);
+	EventHandler(int socket_fd, int port);
 	// @TODO close socket in destructor ?
 	virtual ~EventHandler();
 	// Getters
 	int				getSocketFd() const;
+	int				getPort() const;
 
 	// Setters
 

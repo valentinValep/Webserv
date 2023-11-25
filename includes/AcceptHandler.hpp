@@ -9,7 +9,7 @@ private:
 	// Attributes
 public:
 	// Constructors & Destructor
-	AcceptHandler(int socket_fd);
+	AcceptHandler(int socket_fd, int port);
 	~AcceptHandler();
 	// Getters
 
