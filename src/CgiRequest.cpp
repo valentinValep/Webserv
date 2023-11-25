@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiRequest.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 14:19:07 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/23 11:28:28 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/24 15:22:39 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ CgiRequest::CgiRequest(ServerResponse &response) : serverResponse(response){
 
 CgiRequest::~CgiRequest(){
 };
- 
+
 /************************************************************
  *						ENV STUFF							*
  ************************************************************/
@@ -57,7 +57,7 @@ void		CgiRequest::setEnv()
 		_env["QUERY_STRING"] = "";
 		_cgiBody = _queryString;
 	}
-	
+
 };
 
 void	CgiRequest::convertEnv()
@@ -87,9 +87,9 @@ void	CgiRequest::setPath(){
 	_queryString = "";
 	size_t queryPos = path.find("?");
 	if (queryPos != std::string::npos)
-	{	
+	{
 		_path = path.substr(0, queryPos);
-		_queryString = path.substr(queryPos + 1); 
+		_queryString = path.substr(queryPos + 1);
 	}
 	else
 	{
@@ -124,12 +124,12 @@ void	CgiRequest::cgiChildProcess()
 
 	std::string scriptName = serverResponse.getRoot() + _path;
 	_scriptName = scriptName.c_str();
-	
+
 	const char *args[] = {_cgiInterpreter, _scriptName, NULL};
-	
+
 	close(this->_fd[READ]);
 	dup2(this->_fd[WRITE], STDOUT_FILENO);
-	
+
 	if (_cgiBody.length() > 0)
 	{
 		int _fd2[2];
@@ -145,7 +145,7 @@ void	CgiRequest::cgiChildProcess()
 void	CgiRequest::cgiParentProcess()
 {
 	close(this->_fd[WRITE]);
-	waitpid(this->_child_pid, NULL, 0);
+	waitpid(this->_child_pid, NULL, 0); // @TODO use this->_pid instead of this->_child_pid because it's not initialized
 	char c;
 	while (read(_fd[READ], &c, 1) > 0)
 	{

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 15:43:52 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/24 16:58:30 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # include <vector>
 
 # define ACCEPTED_CGI_TABSIZE 1
-# define ACCEPTED_CGI (std::string [ACCEPTED_CGI_TABSIZE]){".py"}
+# define ACCEPTED_CGI (std::string [ACCEPTED_CGI_TABSIZE]){".py"} // @TODO remove to be 100% dynamic
 
 class Route {
 	private:

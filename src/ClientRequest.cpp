@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/24 15:06:25 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/24 15:39:13 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,7 +203,7 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 		if ((line.empty() || line.size() == 0) && this->_state != RECEIVING_BODY)
 			return this->setError(__FILE__, __LINE__, 400);
 		//std::cout << "state: " << this->_state << " line: '" << line << "'" << std::endl;
-		if (line[line.size() - 1] != '\r' && this->_state != RECEIVING_BODY)
+		if (this->_state != RECEIVING_BODY && line[line.size() - 1] != '\r')
 			return this->setError(__FILE__, __LINE__, 400);
 		if (this->_state == RECEIVING_METHOD)
 		{
