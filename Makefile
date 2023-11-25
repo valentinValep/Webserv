@@ -20,6 +20,10 @@ OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)Route.o \
 	$(BUILD_DIR)utils.o \
 	$(BUILD_DIR)Body.o \
+	$(BUILD_DIR)ServerReactor.o \
+	$(BUILD_DIR)EventHandler.o \
+	$(BUILD_DIR)AcceptHandler.o \
+	$(BUILD_DIR)ProcessHandler.o \
 
 MAIN_OBJ := $(BUILD_DIR)main.o
 
