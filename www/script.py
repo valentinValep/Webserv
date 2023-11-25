@@ -7,7 +7,7 @@ print("<title>CGI Script in Python</title>")
 print("</head><body>")
 
 print("<h1>Python CGI Form</h1>")
-print("<form method='post' action='script.py' enctype='multipart/form-data'>")
+print("<form method='post' action='/cgi/uploads' enctype='multipart/form-data'>")
 print("<p>File: <input type='file' name='fichier' /></p>")
 print("<p>Name: <input type='text' name='nom' /></p>")
 print("<p>First Name: <input type='text' name='prenom' /></p>")

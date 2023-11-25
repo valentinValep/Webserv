@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/24 14:54:32 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/25 22:12:00 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,19 +238,16 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 
 void ClientRequest::detectCgi()
 {
-	if (this->_path.find("/cgi-bin/") == 0) {
-		this->_cgiRequest = true;
-		return;
-	}
-
 	std::string pathWithoutQuery = this->_path;
 	size_t queryPos = this->_path.find("?");
 	if (queryPos != std::string::npos) {
 		pathWithoutQuery = this->_path.substr(0, queryPos);
 	}
 
-	const char* cgiExtensions[] = {".cgi", ".pl", ".py"};
-	const size_t numExtensions = sizeof(cgiExtensions) / sizeof(cgiExtensions[0]);
+	//	@TODO: Send 404 if dont have script + Searching for extension is not enough. Accessing localhost:8080/hdxfcghbj.py returns respons 200. (Same problem with ,py)
+	// @TODO: remove all extensions but .py
+	const char* cgiExtensions[] = {".cgi", ".pl", ".py"};	//	Use a Vector<std::string>	//	char * transformed to std::String below
+	const size_t numExtensions = sizeof(cgiExtensions) / sizeof(cgiExtensions[0]);	//	useless
 
 	for (size_t i = 0; i < numExtensions; ++i) {
 		std::string ext = cgiExtensions[i];
@@ -261,7 +258,6 @@ void ClientRequest::detectCgi()
 	}
 	this->_cgiRequest = false;
 }
-
 
 void ClientRequest::findFirstServer(std::vector<Server> &servers)
 {
@@ -347,6 +343,7 @@ void ClientRequest::close()
 {
 	this->_state = CLOSED;
 	::close(this->_clientSocket);
+	this->_clientSocket = -1;
 }
 
 void ClientRequest::operator<<(const std::string &data)

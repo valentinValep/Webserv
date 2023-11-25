@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/23 17:10:28 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/25 22:12:09 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,9 @@
 #include "FileParser.hpp"
 #include "utils.hpp"
 
-#define MAX_CONNECTION 10 // always < 1024
+#define MAX_CONNECTION 1020 // always < 1024
 #define NO_EVENT 0
+#define TIMEOUT 120
 #define CR std::cout << std::endl;
 
 #define SCSTR( x ) static_cast< std::ostringstream & >( \
@@ -113,6 +114,11 @@ int ServerManager::setupNetwork() {
 		}
 
 		int opt = 1;
+		if (fcntl(serverSocket, F_SETFL, O_NONBLOCK) < 0) {
+			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In fnctl"));
+			exit(EXIT_FAILURE);
+		}
+
 		// @TODO change SOL_SOCKET by TCP protocol (man setsockopt) ? check return < 0 ?
 		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int))) {
 			perror(SCSTR(__FILE__ << ":" << __LINE__ << "setsockopt"));
@@ -164,6 +170,7 @@ void ServerManager::start()
 				handleEvent(this->fds[index]);
 			}
 		}
+		this->detectTimeOut();
 		this->cleanFdsAndActiveSockets();
 	}
 };
@@ -172,9 +179,7 @@ void ServerManager::handleEvent(pollfd &pollfd)
 {
 	if (listeningSockets.find(pollfd.fd) != listeningSockets.end())
 	{
-		int ret = acceptNewConnexion(pollfd.fd);
-		(void) ret;
-		// @TODO check return value
+		acceptNewConnexion(pollfd.fd);
 		return;
 	}
 	if (pollfd.revents & POLLIN)
@@ -224,58 +229,33 @@ void ServerManager::handleEvent(pollfd &pollfd)
  *						NETWORK STUFF						*
  ************************************************************/
 
-void ServerManager::cleanFdsAndActiveSockets() {
-	for (std::vector<struct pollfd>::iterator it = this->fds.begin(); it != this->fds.end();)
-	{
-		if (it->fd == -1)
-		{
-			it = this->fds.erase(it);
-			this->nfds--;
-		}
-		else
-			++it;
-	}
-
-	for (std::map<int, SocketInfo>::iterator it = this->clientSockets.begin(); it != this->clientSockets.end();) {
-		if (it->second.request.getClientSocket() == -1) {
-			std::map<int, SocketInfo>::iterator toErase = it;
-			++it;
-			this->clientSockets.erase(toErase);
-		} else {
-			++it;
-		}
-	}
-}
-
-int ServerManager::acceptNewConnexion(int server_fd) {
+void ServerManager::acceptNewConnexion(int server_fd) {
 
 	int					clientSocket = 0;
 	struct sockaddr_in	clientAddress;
 	socklen_t			clientAddressLength = sizeof(clientAddress);
 
-	// @TODO loop over accept() until no more pending connections (Check non blocking accept) (limit to N simultaneous connections)
 	clientSocket = accept(server_fd, (struct sockaddr*)&clientAddress, &clientAddressLength);
 
-	// @TODO check Linux specific errno
 	if (clientSocket < 0)
 	{
 		std::cout << "server_fd: " << server_fd << std::endl;
 		perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In accept"));
-		return (EXIT_FAILURE);
+		return ;
 	}
 
 	if (this->clientSockets.size() >= MAX_CONNECTION) // @TODO move before accept() ?!
 	{
 		std::cout << "\033[93mWarning\033[0m: max number of connections reached" << std::endl;
 		close(clientSocket);
-		return (EXIT_FAILURE);
+		return ;
 	}
 	this->clientSockets[clientSocket] = (SocketInfo){ClientRequest(clientSocket, this->listeningSockets[server_fd]), time(NULL)};
 	this->fds.push_back((struct pollfd){clientSocket, POLLIN, NO_EVENT});
 	this->nfds++;
 
 	std::cout << "✅ New connexion on fd [" << clientSocket << "]" << std::endl;
-	return (EXIT_SUCCESS);
+	return ;
 };
 
 /************************************************************
@@ -296,7 +276,6 @@ int	ServerManager::readClientRequest(ClientRequest &request) {
 	ssize_t bytesRead = recv(request.getClientSocket(), this->buffer, BUFFER_SIZE, 0);
 
 	if (bytesRead <= 0) {
-		// @TODO better handling of error here
 		if (bytesRead < 0)
 			perror(SCSTR(__FILE__ << ":" << __LINE__ << ": In read"));
 		if (bytesRead == 0)
@@ -323,4 +302,47 @@ void ServerManager::printActiveSockets() {
 void	ServerManager::updateSocketActivity(int socket) {
 
 	clientSockets[socket].lastActivity = time(NULL);
+}
+
+void	ServerManager::detectTimeOut() {
+	time_t currentTime = time(NULL);
+
+	for (std::map<int, SocketInfo>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
+		time_t lastActivity = it->second.lastActivity;
+		double secondsSinceLastActivity = difftime(currentTime, lastActivity);
+
+		if (secondsSinceLastActivity > TIMEOUT) {
+			std::cout << "🕑 Inactive socket [" << it->second.request.getClientSocket() << "] will be removed." << std::endl;
+			 for (std::vector<struct pollfd>::iterator fd_it = fds.begin(); fd_it != fds.end(); ++fd_it) {
+				if (fd_it->fd == it->first) {
+					fd_it->fd = -1;
+					break;
+				}
+			}
+			it->second.request.close();
+		}
+	}
+}
+
+void ServerManager::cleanFdsAndActiveSockets() {
+	for (std::vector<struct pollfd>::iterator it = this->fds.begin(); it != this->fds.end();)
+	{
+		if (it->fd == -1)
+		{
+			it = this->fds.erase(it);
+			this->nfds--;
+		}
+		else
+			++it;
+	}
+
+	for (std::map<int, SocketInfo>::iterator it = this->clientSockets.begin(); it != this->clientSockets.end();) {
+		if (it->second.request.getClientSocket() == -1) {
+			std::map<int, SocketInfo>::iterator toErase = it;
+			++it;
+			this->clientSockets.erase(toErase);
+		} else {
+			++it;
+		}
+	}
 }
