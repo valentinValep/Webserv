@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/24 16:58:30 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/26 16:34:12 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ class Route {
 		// Attributes
 		bool		autoindex;
 		int			methods;
-		int			redirect_type; // 301 or 302
-		std::string	redirect; // if redirect_type
+		int			redirect_code; // 301 or 302
+		std::string	redirect_dest; // if redirect_type
 		std::string	index; // ? "if request is a directory"
 		std::string	root;
 		std::string	cgi_extension; // one to implement
@@ -64,8 +64,8 @@ class Route {
 		// Getters
 		bool		getAutoindex() const;
 		int			getMethods() const;
-		int			getRedirectType() const;
-		std::string	getRedirect() const;
+		int			getRedirectCode() const;
+		std::string	getRedirectDest() const;
 		std::string	getIndex() const;
 		std::string	getRoot() const;
 		std::string	getCgiExtension() const;

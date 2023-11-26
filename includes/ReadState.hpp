@@ -17,7 +17,7 @@ public:
 	// Constructors & Destructor
 	ReadState();
 	ReadState(ProcessHandler* handler, int socket_fd);
-	~ReadState();
+	virtual ~ReadState();
 	// Methods
 	void	process();
 };

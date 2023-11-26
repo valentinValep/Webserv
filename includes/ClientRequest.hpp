@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/25 21:28:45 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/26 16:13:31 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ private:
 		}
 	};
 
-	bool								_cgiRequest; // @TODO remove
+	bool								_cgiRequest;
 	in_port_t							_port;
 	int									_errorCode;
 	int									_clientSocket;

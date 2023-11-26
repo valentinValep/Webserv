@@ -29,8 +29,8 @@ void ReadState::process()
 	if (this->request.isFullyReceived()
 		|| this->request.getErrorCode() == 400)
 	{
-		this->getHandler()->setState(new ResponseBuildState(this->getHandler(), this->getSocketFd(), this->request));
 		ServerManager::getInstance()->talkToClient(this->getSocketFd(), *this->getHandler());
+		this->getHandler()->setState(new ResponseBuildState(this->getHandler(), this->getSocketFd(), this->request)); // @TODO check destroy
 	}
 }
 

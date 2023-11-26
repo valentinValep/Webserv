@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/25 16:09:44 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/26 20:09:16 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,77 +25,81 @@ void ServerResponse::setError(int errorCode)
 
 void ServerResponse::prepare(const ClientRequest &request)
 {
-	if (!request.getServer())
-		return this->setError(500);
+	//if (!request.getServer())
+	//	return this->setError(500);
 
-	const Route	*route = request.getServer()->getRoute(request.getPath());
+	//const Route	*route = request.getServer()->getRoute(request.getPath());
 
-	this->_port = request.getPort();
+	//this->_port = request.getPort();
 
-	// Client socket
-	this->_client_socket = request.getClientSocket();
-	// Error pages
+	//// Client socket
+	//this->_client_socket = request.getClientSocket();
+	// Error pages for ERROR STRAT
 	this->_error_pages = request.getServer()->getErrorPages();
-	// Autoindex
-	if (route && route->hasAutoindex())
-		this->_autoindex = route->getAutoindex();
-	else
-		this->_autoindex = request.getServer()->getAutoindex();
-	// Root
-	if (route && route->hasRoot())
-		this->_root = route->getRoot();
-	else
-		this->_root = request.getServer()->getRoot();
-	// Index
-	if (route && route->hasIndex())
-		this->_index = route->getIndex();
-	else
-		this->_index = request.getServer()->getIndex();
-	// Error
-	if (request.getErrorCode())
-		return this->setError(request.getErrorCode());
+	//// Autoindex for INDEX STRAT
+	//if (route && route->hasAutoindex())
+	//	this->_autoindex = route->getAutoindex();
+	//else
+	//	this->_autoindex = request.getServer()->getAutoindex();
+	//// Root for ALL STRAT
+	//if (route && route->hasRoot())
+	//	this->_root = route->getRoot();
+	//else
+	//	this->_root = request.getServer()->getRoot();
+	// Index for INDEX STRAT
+	//if (route && route->hasIndex())
+	//	this->_index = route->getIndex();
+	//else if (route && request.getPath() == "/")
+	//	this->_index = request.getServer()->getIndex();
+	//else if (route)
+	//	this->_index = "";
+	//else
+	//	this->_index = request.getServer()->getIndex();
+	//// Error
+	//if (request.getErrorCode())
+	//	return this->setError(request.getErrorCode());
 
-	// Method
-	if (route && route->hasMethods())
-		this->_method = route->getMethods() & request.getMethod();
-	else
-		this->_method = request.getServer()->getMethods() & request.getMethod();
-	std::cout << "method: " << this->_method << std::endl;
-	if (!this->_method)
-		return this->setError(405);
+	//// Method
+	//if (route && route->hasMethods())
+	//	this->_method = route->getMethods() & request.getMethod();
+	//else
+	//	this->_method = request.getServer()->getMethods() & request.getMethod();
+	//std::cout << "method: " << this->_method << std::endl;
+	//if (!this->_method)
+	//	return this->setError(405);
 	if (request.getProtocol() != HTTP_PROTOCOL && request.getProtocol() != "undefined") // @TODO move to ClientRequest ?
 		return this->setError(505);
-	this->_path = request.getPath();
-	this->_headers = request.getHeaders();
+	//this->_path = request.getPath();
+	//this->_headers = request.getHeaders();
 
-	if (route)
-	{
-		// Redirect
-		if (route->hasRedirect())
-		{
-			this->_redirect_type = route->getRedirectType();
-			this->_redirect = route->getRedirect();
-		}
+	//if (route)
+	//{
+		//// Redirect
+		//if (route->hasRedirect())
+		//{
+		//	this->_redirect_type = route->getRedirectCode();
+		//	this->_redirect = route->getRedirectDest();
+		//}
 		// CGI
-		if (route->hasCgi() || request.isCgiRequest()) // @TODO remove the check from request ?
-		{
-			this->_cgi_request = true;
-			this->_cgi_extension = route->getCgiExtension();
-			this->_cgi_path = route->getCgiPath();
-		}
-		// Upload
-		this->_body = request.getBodyBody();
-		setUpload();
-		if (this->_file_upload) {
-			if (route->hasUpload()) {
-				this->_upload_path = route->getUploadPath(); }
-			else
-			{
-				std::cout << "Error: upload path has not been set, upload not allowed" << std::endl;
-				_file_upload = false;
-			}
-		}
-	}
+		//if (route->hasCgi() || request.isCgiRequest()) // @TODO remove the check from request ?
+		//{
+		//	this->_cgi_request = true;
+		//	this->_cgi_extension = route->getCgiExtension();
+		//	this->_cgi_path = route->getCgiPath();
+		//}
+		//// Upload
+		//this->_body = request.getBodyBody();
+		//setUpload();
+		//if (this->_file_upload) {
+		//	if (route->hasUpload()) {
+		//		this->_upload_path = route->getUploadPath(); }
+		//	else
+		//	{
+		//		std::cout << "Error: upload path has not been set, upload not allowed" << std::endl;
+		//		_file_upload = false;
+		//	}
+		//}
+	//}
 }
 
 std::string		ServerResponse::_getGenericErrorPage(int errorCode) const
@@ -306,6 +310,7 @@ void ServerResponse::process()
 //					//	HANDLE CGI HERE
 //					return ;
 //				}
+				// @TODO check this->index not empty
 				indexPath = locationPath + "/" + this->_index;
 				if (!access(indexPath.c_str(), F_OK))
 				{

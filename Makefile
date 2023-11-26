@@ -27,6 +27,14 @@ OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)ProcessState.o \
 	$(BUILD_DIR)ReadState.o \
 	$(BUILD_DIR)ResponseBuildState.o \
+	$(BUILD_DIR)ResponseBuildingStrategy.o \
+	$(BUILD_DIR)ErrorStrategy.o \
+	$(BUILD_DIR)RedirectStrategy.o \
+	$(BUILD_DIR)CgiStrategy.o \
+	$(BUILD_DIR)UploadStrategy.o \
+	$(BUILD_DIR)DeleteStrategy.o \
+	$(BUILD_DIR)GetStrategy.o \
+	$(BUILD_DIR)ResponseSendState.o \
 
 MAIN_OBJ := $(BUILD_DIR)main.o
 

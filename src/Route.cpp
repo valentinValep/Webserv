@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Route.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/23 11:27:21 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/26 20:28:34 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,10 @@
  *					CONSTRUCTORS/DESTRUCTOR					*
  ***********************************************************/
 
-Route::Route(): autoindex(true), methods(), redirect_type(), redirect(), index(""), root(""), cgi_extension(""), cgi_path(""), upload_path(""), _autoindex_set(false), _methods_set(false), _redirect_set(false), _index_set(false), _root_set(false), _cgi_set(false), _upload_set(false)
+Route::Route(): autoindex(true), methods(), redirect_code(), redirect_dest(), index(""), root(""), cgi_extension(""), cgi_path(""), upload_path(""), _autoindex_set(false), _methods_set(false), _redirect_set(false), _index_set(false), _root_set(false), _cgi_set(false), _upload_set(false)
 {}
 
-Route::Route(fp::Module &mod): autoindex(true), methods(), redirect_type(), redirect(), index(""), root(""), cgi_extension(""), cgi_path(""), upload_path(""), _autoindex_set(false), _methods_set(false), _redirect_set(false), _index_set(false), _root_set(false), _cgi_set(false), _upload_set(false)
+Route::Route(fp::Module &mod): autoindex(true), methods(), redirect_code(), redirect_dest(), index(""), root(""), cgi_extension(""), cgi_path(""), upload_path(""), _autoindex_set(false), _methods_set(false), _redirect_set(false), _index_set(false), _root_set(false), _cgi_set(false), _upload_set(false)
 {
 	this->parseMethods(mod);
 	this->parseRoot(mod);
@@ -51,14 +51,14 @@ int Route::getMethods() const
 	return this->methods;
 }
 
-int Route::getRedirectType() const
+int Route::getRedirectCode() const
 {
-	return this->redirect_type;
+	return this->redirect_code;
 }
 
-std::string Route::getRedirect() const
+std::string Route::getRedirectDest() const
 {
-	return this->redirect;
+	return this->redirect_dest;
 }
 
 std::string Route::getIndex() const
@@ -295,6 +295,6 @@ void Route::parseRedirect(fp::Module &mod)
 		throw ServerManager::ParsingException();
 	}
 	this->_redirect_set = true;
-	this->redirect_type = var->getAttributes()[0] == "301" ? 301 : 302;
-	this->redirect = var->getAttributes()[1];
+	this->redirect_code = var->getAttributes()[0] == "301" ? 301 : 302;
+	this->redirect_dest = var->getAttributes()[1];
 }
