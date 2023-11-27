@@ -25,4 +25,5 @@ void ResponseSendState::process()
 		return ;
 	}
 	this->getHandler()->setState(new ReadState(this->getHandler(), this->getSocketFd()));
+	ServerManager::getInstance()->listenClient(this->getSocketFd(), *this->getHandler());
 }

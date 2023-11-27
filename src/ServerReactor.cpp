@@ -124,6 +124,11 @@ int	ServerReactor::addClient(int socket_fd, int port)
 
 void ServerReactor::deleteClient(int socket_fd)
 {
+	errno = 0;
+	std::cout << "Deleting client " << socket_fd << std::endl;
+	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_DEL, socket_fd, NULL) == -1)
+		return perror(SCSTR(__FILE__ << ":" << __LINE__ << " epoll_ctl() failed"));
+
 	for (std::vector<EventHandler*>::iterator it = this->event_handlers.begin(); it != this->event_handlers.end(); it++)
 	{
 		if ((*it)->getSocketFd() == socket_fd)
@@ -133,10 +138,6 @@ void ServerReactor::deleteClient(int socket_fd)
 			break ;
 		}
 	}
-
-	errno = 0;
-	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_DEL, socket_fd, NULL) == -1)
-		return perror(SCSTR(__FILE__ << ":" << __LINE__ << " epoll_ctl() failed"));
 }
 
 void ServerReactor::listenClient(int socket_fd, EventHandler &handler)
@@ -169,14 +170,17 @@ void ServerReactor::run()
 	while (true)
 	{
 		errno = 0;
-		event_count = epoll_wait(this->epoll_fd, events, MAX_CONNECTION, -1);
+		event_count = epoll_wait(this->epoll_fd, events, MAX_CONNECTION, 10000);
 		if (event_count == -1)
 			std::cerr << __FILE__ << ":" << __LINE__ << " epoll_wait(): " << strerror(errno) << std::endl;
+		if (event_count == 0)
+			std::cout << "🕑 Timeout" << std::endl;
 
 		for (int i = 0; i < event_count; i++)
 		{
 			EventHandler	*handler = static_cast<EventHandler*>(events[i].data.ptr);
 
+			std::cout << "🔥 Event on socket_fd: " << handler->getSocketFd() << std::endl;
 			handler->handle();
 		}
 	}
