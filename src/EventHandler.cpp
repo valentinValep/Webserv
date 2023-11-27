@@ -7,6 +7,7 @@ EventHandler::EventHandler(int socket_fd, int port): _socket_fd(socket_fd), _por
 
 EventHandler::~EventHandler()
 {
+	// @TODO close socket in destructor ?
 	close(this->_socket_fd);
 }
 

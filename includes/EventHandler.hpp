@@ -12,7 +12,6 @@ private:
 public:
 	// Constructors & Destructor
 	EventHandler(int socket_fd, int port);
-	// @TODO close socket in destructor ?
 	virtual ~EventHandler();
 	// Getters
 	int				getSocketFd() const;
