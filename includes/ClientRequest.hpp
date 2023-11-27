@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/27 18:15:16 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 19:31:35 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,12 @@
 # include <vector>
 # include <sstream>
 # include <iostream>
+# include <string.h>
+# include <unistd.h>
+# include <sys/types.h>
+# include <sys/wait.h>
+# include <stdio.h>
+# include <stdlib.h>
 
 enum State {
 	RECEIVING_METHOD,

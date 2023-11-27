@@ -14,6 +14,7 @@ private:
 	ResponseBuildingStrategy*			_strategy;
 	std::string							_root;
 	std::string							_path;
+	std::string							_port;
 	std::map<std::string, std::string>	_headers; // @TODO opti: new headers in response and copy the pointer here
 	std::map<int, std::string> 			_error_pages;
 public:
@@ -24,6 +25,7 @@ public:
 	// Getters
 	std::string							getRoot();
 	std::string							getPath();
+	std::string							getPort();
 	std::map<std::string, std::string>	getHeaders();
 	std::map<int, std::string>			getErrorPages();
 

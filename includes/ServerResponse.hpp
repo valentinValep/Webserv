@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:52:18 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 18:10:47 by fguarrac         ###   ########.fr       */
+/*   Updated: 2023/11/27 18:15:29 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,12 +78,12 @@ class ServerResponse {
 		void		sendHttpRedirection(void);
 		void		sendCGIResponse(int clientSocket, const std::string& content, const std::string& contentType);
 
-		// Upload
-		void			setUpload();
-		std::string		extractBoundary();
-		std::string		extractFileBody(size_t filenameEndPos);
-		int				createWriteFile();
-		void			sendUploadResponse(int clientSocket, const std::string& content, const std::string& contentType);
+		// // Upload
+		// void			setUpload();
+		// std::string		extractBoundary();
+		// std::string		extractFileBody(size_t filenameEndPos);
+		// int				createWriteFile();
+		// void			sendUploadResponse(int clientSocket, const std::string& content, const std::string& contentType);
 
 		// Getters
 		int			getMethod() const;
