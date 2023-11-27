@@ -69,7 +69,7 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 		if (requestIsUpload(request))
 		{
 			if (route->hasUpload())
-				this->_strategy = new UploadStrategy(this, route->getUploadPath());
+				this->_strategy = new UploadStrategy(this, route->getUploadPath(), request.getBodyBody(), request.getHeaders());
 			else
 				this->_strategy = new ErrorStrategy(this, 403, this->_error_pages);
 			return;

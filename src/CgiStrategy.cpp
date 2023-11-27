@@ -24,7 +24,6 @@ void CgiStrategy::buildResponse()
 	convertEnv();
 	executeScript();
 	freeEnvp();
-	std::cout << "_response: " << _response << std::endl;
 	builder.setCode(200);
 	builder.addHeader("Content-Type", "text/html");
 	builder.setBody(_response);
