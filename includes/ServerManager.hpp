@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/25 22:04:08 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 15:28:40 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,9 @@
 
 #define SCSTR( x ) static_cast< std::ostringstream & >( \
 		( std::ostringstream() << std::dec << x ) ).str().c_str()
+
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+		( std::ostringstream() << std::dec << x ) ).str()
 
 //struct SocketInfo {
 //	ClientRequest request;
