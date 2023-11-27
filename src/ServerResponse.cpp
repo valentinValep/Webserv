@@ -3,16 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   ServerResponse.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/27 15:17:31 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 18:05:49 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerResponse.hpp"
 #include "ServerManager.hpp"
-#include "CgiRequest.hpp"
 #include "Route.hpp"
 
 ServerResponse::ServerResponse() : _port(0), _autoindex(false), _error_code(0), _method(0), _redirect_type(0), _cgi_request(false), _file_upload(false)
@@ -255,14 +254,14 @@ void ServerResponse::process()
 	{
 	case GET:
 	{
-		if (this->_cgi_request)
-		{
-			CgiRequest cgiRequest(*this);
-			// cgiRequest.printResponse();
-			content = cgiRequest.getResponse();
-			sendCGIResponse(this->_client_socket, content, "text/html");
-			return ;
-		}
+		// if (this->_cgi_request)
+		// {
+		// 	CgiRequest cgiRequest(*this);
+		// 	// cgiRequest.printResponse();
+		// 	content = cgiRequest.getResponse();
+		// 	sendCGIResponse(this->_client_socket, content, "text/html");
+		// 	return ;
+		// }
 		if (!(this->_redirect.empty()))
 		{
 			sendHttpRedirection();
@@ -338,14 +337,14 @@ void ServerResponse::process()
 			return ;
 		}
 
-		if (this->_cgi_request)
-		{
-			CgiRequest cgiRequest(*this);
-			// cgiRequest.printResponse();
-			content = cgiRequest.getResponse();
-			sendCGIResponse(this->_client_socket, content, "text/html");
-			return ;
-		}
+		// if (this->_cgi_request)
+		// {
+		// 	CgiRequest cgiRequest(*this);
+		// 	// cgiRequest.printResponse();
+		// 	content = cgiRequest.getResponse();
+		// 	sendCGIResponse(this->_client_socket, content, "text/html");
+		// 	return ;
+		// }
 		break ;
 	}
 	case DELETE:

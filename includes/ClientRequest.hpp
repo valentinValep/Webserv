@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/26 16:13:31 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 18:08:01 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,12 @@
 # include <vector>
 # include <sstream>
 # include <iostream>
+# include <string.h>
+# include <unistd.h>
+# include <sys/types.h>
+# include <sys/wait.h>
+# include <stdio.h>
+# include <stdlib.h>
 
 enum State {
 	RECEIVING_METHOD,

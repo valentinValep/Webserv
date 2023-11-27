@@ -36,7 +36,7 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 	this->_headers = request.getHeaders();
 	this->_path = request.getPath();
 	this->_root = request.getServer()->getRoot();
-
+	
 	if (request.getErrorCode())
 	{
 		this->_strategy = new ErrorStrategy(this, request.getErrorCode(), this->_error_pages);
@@ -63,7 +63,7 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 		}
 		if (route->hasCgi()) // @TODO discuss finding page without cgi extension
 		{
-			this->_strategy = new CgiStrategy(this, route->getCgiExtension(), route->getCgiPath());
+			this->_strategy = new CgiStrategy(this, route->getCgiPath(), request.getMethod());
 			return;
 		}
 		if (requestIsUpload(request))
@@ -119,6 +119,10 @@ std::string ResponseBuildState::getRoot()
 std::string ResponseBuildState::getPath()
 {
 	return this->_path;
+}
+
+std::string ResponseBuildState::getPort(){
+	return this->_port;
 }
 
 std::map<std::string, std::string> ResponseBuildState::getHeaders()
