@@ -8,11 +8,19 @@ GetFileStrategy::~GetFileStrategy() {}
 
 void GetFileStrategy::buildResponse()
 {
-	ResponseBuilder	builder;
+	if (!this->_file_reader.isInitialized())
+		this->_file_reader = FileReader(this->_file_path);
+	if (!this->_file_reader.isOpen())
+		this->setError(404); // 404 ?
+	this->_file_reader.readChunk();
+	if (this->_file_reader.isTotallyRead())
+	{
+		ResponseBuilder	builder;
 
-	builder.setCode(200);
-	builder.addHeader("Content-Type", "text/html");
-	builder.setBody("<html><body><h1>File</h1></body></html>");
-	this->setResponse(builder.build());
-	this->setAsFinished();
+		builder.setCode(200);
+		builder.addHeader("Content-Type", this->_file_reader.getMimeType());
+		builder.setBody(this->_file_reader.extractFileContent());
+		this->setResponse(builder.build());
+		this->setAsFinished();
+	}
 }
