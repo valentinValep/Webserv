@@ -1,5 +1,11 @@
 # Webserv
 
+<h2> 🔥 DESIGN PATTERS 🔥 </h2>
+
+
+![IMG_8107](https://github.com/chmadran/Webserv/assets/113340699/a92a39bb-89a8-4b29-b6db-ea34709df3b8)
+
+
 <h2> BASICS </h2>
 
 <details><summary><h6>What is a web server ?</h6></summary>
@@ -106,7 +112,7 @@ The server can simultaneously maintain its connection with the client  while it 
 * [The ultime guide to build a web server](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa)
 * To understand [sockets](https://www.youtube.com/watch?v=gntyAFoZp-E&t=1250s)
 * Kaydoo's [README](https://github.com/Kaydooo/Webserv_42)
-  
+* DESIGN PATTERS!!!! Infos [here](https://refactoring.guru/fr/design-patterns/catalog)
 </details>
 
 <details><summary><h4>RANDOM VOCABULARY NOTES</h4></summary>
