@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/27 15:17:31 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 16:25:01 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,95 +100,6 @@ void ServerResponse::prepare(const ClientRequest &request)
 		//	}
 		//}
 	//}
-}
-
-std::string		ServerResponse::_getGenericErrorPage(int errorCode) const
-{
-	static std::map<int, std::string> 	error_codes;
-	static std::stringstream			generic_page;
-
-	error_codes[400] = "Bad Request";
-	error_codes[401] = "Unauthorized";
-	error_codes[402] = "Payment Required";
-	error_codes[403] = "Forbidden";
-	error_codes[404] = "Not Found";
-	error_codes[405] = "Method Not Allowed";
-	error_codes[406] = "Not Acceptable";
-	error_codes[407] = "Proxy Authentication Required";
-	error_codes[408] = "Request Time-out";
-	error_codes[409] = "Conflict";
-	error_codes[410] = "Gone";
-	error_codes[411] = "Length Required";
-	error_codes[412] = "Precondition Failed";
-	error_codes[413] = "Request Entity Too Large";
-	error_codes[414] = "Request-URI Too Long";
-	error_codes[415] = "Unsupported Media Type";
-	error_codes[416] = "Requested range unsatisfiable";
-	error_codes[417] = "Expectation failed";
-	error_codes[418] = "I’m a teapot";
-	error_codes[419] = "Page expired";
-	error_codes[421] = "Bad mapping / Misdirected Request";
-	error_codes[422] = "Unprocessable entity";
-	error_codes[423] = "Locked";
-	error_codes[424] = "Method failure";
-	error_codes[425] = "Too Early";
-	error_codes[426] = "Upgrade Required";
-	error_codes[427] = "Invalid digital signature";
-	error_codes[428] = "Precondition Required";
-	error_codes[429] = "Too Many Requests";
-	error_codes[431] = "Request Header Fields Too Large";
-	error_codes[449] = "Retry With";
-	error_codes[450] = "Blocked by Windows Parental Controls";
-	error_codes[451] = "Unavailable For Legal Reasons";
-	error_codes[456] = "Unrecoverable Error";
-	error_codes[444] = "No Response";
-	error_codes[495] = "SSL Certificate Error";
-	error_codes[496] = "SSL Certificate Required";
-	error_codes[497] = "HTTP Request Sent to HTTPS Port";
-	error_codes[498] = "Token expired/invalid";
-	error_codes[499] = "Client Closed Request";
-	error_codes[500] = "Internal Server Error";
-	error_codes[501] = "Not Implemented";
-	error_codes[502] = "Bad Gateway ou Proxy Error";
-	error_codes[503] = "Service Unavailable";
-	error_codes[504] = "Gateway Time-out";
-	error_codes[505] = "HTTP Version not supported";
-	error_codes[506] = "Variant Also Negotiates";
-	error_codes[507] = "Insufficient storage";
-	error_codes[508] = "Loop detected";
-	error_codes[509] = "Bandwidth Limit Exceeded";
-	error_codes[510] = "Not extended";
-	error_codes[511] = "Network authentication required";
-	error_codes[520] = "Unknown Error";
-	error_codes[521] = "Web Server Is Down";
-	error_codes[522] = "Connection Timed Out";
-	error_codes[523] = "Origin Is Unreachable";
-	error_codes[524] = "A Timeout Occurred";
-	error_codes[525] = "SSL Handshake Failed";
-	error_codes[526] = "Invalid SSL Certificate";
-	error_codes[527] = "Railgun Error";
-
-	generic_page << "<!DOCTYPE html>\n<html lang=\"en\">\n\t<head>\n\t\t<meta charset=\"UTF-8\">\n\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t\t<title>"
-		<< errorCode << " " << error_codes[errorCode] << "</title>\n\t</head>\n\t<body>\n\t\t<center><h1>"
-		<< errorCode << " " << error_codes[errorCode] << "</h1></center>\n\t\t<hr><center>webserv</center>\n\t</body>\n</html>";
-	return (generic_page.str());
-}
-
-
-void	ServerResponse::_sendErrorPage(int errorCode)	//	chec for correct value ?
-{
-	std::string		content;
-	std::string		mimeType;
-
-	if (this->_error_pages.find(errorCode) != this->_error_pages.end())
-	{
-		content = readFileContent(this->_root + "/" + this->_error_pages[errorCode], mimeType);
-		if (content.empty())
-			content = _getGenericErrorPage(errorCode);
-	}
-	else
-		content = _getGenericErrorPage(errorCode);
-	sendHttpResponse(errorCode, content, "text/html");
 }
 
 void	ServerResponse::_sendAutoIndexed(std::string const &locationPath)

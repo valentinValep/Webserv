@@ -135,9 +135,12 @@ void ResponseBuildState::process()
 {
 	if (!this->_strategy)
 	{
-		std::cout << __FILE__ << ":" << __LINE__ << ": " << "Strategy is NULL" << std::endl;
+		std::cout << __FILE__ << ":" << __LINE__ << ": " << "CRITIC: Strategy is NULL" << std::endl;
 		return;
 	}
+	if (this->_strategy->getError())
+		this->_strategy = new ErrorStrategy(this, this->_strategy->getError(), this->_error_pages);
+
 	this->_strategy->buildResponse();
 
 	if (this->_strategy->isFinished())

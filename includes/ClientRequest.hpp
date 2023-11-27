@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/26 16:13:31 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 18:15:16 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ private:
 			//std::cout << "RequestStream copy constructor" << other.str() << std::endl;
 			*this << other.str();
 		}
-		~RequestStream() {}
 		RequestStream &operator=(const RequestStream &other) {
 			if (this != &other) {
 				this->clear();

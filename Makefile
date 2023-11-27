@@ -36,6 +36,7 @@ OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)GetAutoIndexStrategy.o \
 	$(BUILD_DIR)GetFileStrategy.o \
 	$(BUILD_DIR)ResponseBuilder.o \
+	$(BUILD_DIR)FileReader.o \
 
 MAIN_OBJ := $(BUILD_DIR)main.o
 

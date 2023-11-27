@@ -52,7 +52,6 @@ ResponseBuildingStrategy *GetStrategyCreator::createGetStrategy(ResponseBuildSta
 				return (new GetFileStrategy(state, indexPath));
 			return (new ErrorStrategy(state, 403, state->getErrorPages()));
 		}
-		return (new ErrorStrategy(state, 404, state->getErrorPages()));
 	}
 	return (new ErrorStrategy(state, 404, state->getErrorPages()));
 }
