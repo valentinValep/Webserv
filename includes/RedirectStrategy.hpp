@@ -3,6 +3,8 @@
 #pragma once
 
 #include "ResponseBuildingStrategy.hpp"
+#include "ResponseBuilder.hpp"
+#include <iostream>
 
 class RedirectStrategy: public ResponseBuildingStrategy {
 private:
