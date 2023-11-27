@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/25 21:53:23 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 12:22:34 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,8 @@ void ClientRequest::parseMethodLine(const std::string line)
 		this->_method = DELETE;
 	else
 		return this->setError(__FILE__, __LINE__, 405);
+	if (this->_protocol != HTTP_PROTOCOL && this->_protocol != "undefined")
+		return this->setError(__FILE__, __LINE__, 505);
 	this->_state = RECEIVING_HEADER;
 }
 

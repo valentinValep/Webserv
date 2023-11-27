@@ -7,7 +7,7 @@
 #include "CgiStrategy.hpp"
 #include "UploadStrategy.hpp"
 #include "DeleteStrategy.hpp"
-#include "GetStrategy.hpp"
+#include "GetStrategyCreator.hpp"
 #include "ResponseSendState.hpp"
 
 ResponseBuildState::ResponseBuildState(): ProcessState(), _strategy(NULL)
@@ -21,7 +21,7 @@ bool requestIsUpload(const ClientRequest &request)
 	return (content_type.find("multipart/form-data") != std::string::npos);
 }
 
-ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, const ClientRequest &request): ProcessState(handler, socket_fd)
+ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, const ClientRequest &request): ProcessState(handler, socket_fd), _strategy(NULL), _root(""), _path("")
 {
 	const Route	*route;
 
@@ -33,6 +33,9 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 	}
 
 	this->_error_pages = request.getServer()->getErrorPages();
+	this->_headers = request.getHeaders();
+	this->_path = request.getPath();
+	this->_root = request.getServer()->getRoot();
 
 	if (request.getErrorCode())
 	{
@@ -49,11 +52,10 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 		return;
 	}
 
-	// @TODO error pages
-
-	// RedirectStrategy
 	if (route)
 	{
+		if (route->hasRoot())
+			this->_root = route->getRoot();
 		if (route->hasRedirect())
 		{
 			this->_strategy = new RedirectStrategy(this, route->getRedirectCode(), route->getRedirectDest());
@@ -97,7 +99,7 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 		else
 			index = request.getServer()->getIndex();
 
-		this->_strategy = new GetStrategy(this, autoindex, index);
+		this->_strategy = GetStrategyCreator::createGetStrategy(this, autoindex, index);
 		return;
 	}
 	this->_strategy = new ErrorStrategy(this, 501, this->_error_pages);
@@ -107,6 +109,26 @@ ResponseBuildState::~ResponseBuildState()
 {
 	if (this->_strategy)
 		delete this->_strategy;
+}
+
+std::string ResponseBuildState::getRoot()
+{
+	return this->_root;
+}
+
+std::string ResponseBuildState::getPath()
+{
+	return this->_path;
+}
+
+std::map<std::string, std::string> ResponseBuildState::getHeaders()
+{
+	return this->_headers;
+}
+
+std::map<int, std::string> ResponseBuildState::getErrorPages()
+{
+	return this->_error_pages;
 }
 
 void ResponseBuildState::process()

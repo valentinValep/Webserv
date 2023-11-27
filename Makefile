@@ -14,9 +14,7 @@ LIBS_DIR := lib/
 
 OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)ServerManager.o \
-	$(BUILD_DIR)ServerResponse.o \
 	$(BUILD_DIR)ClientRequest.o \
-	$(BUILD_DIR)CgiRequest.o \
 	$(BUILD_DIR)Route.o \
 	$(BUILD_DIR)utils.o \
 	$(BUILD_DIR)Body.o \
@@ -33,8 +31,10 @@ OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)CgiStrategy.o \
 	$(BUILD_DIR)UploadStrategy.o \
 	$(BUILD_DIR)DeleteStrategy.o \
-	$(BUILD_DIR)GetStrategy.o \
 	$(BUILD_DIR)ResponseSendState.o \
+	$(BUILD_DIR)GetStrategyCreator.o \
+	$(BUILD_DIR)GetAutoIndexStrategy.o \
+	$(BUILD_DIR)GetFileStrategy.o \
 
 MAIN_OBJ := $(BUILD_DIR)main.o
 

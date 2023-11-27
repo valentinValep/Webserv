@@ -12,4 +12,5 @@ void RedirectStrategy::buildResponse()
 	(void)_code;
 	(void)_destination;
 	std::cout << "RedirectStrategy::buildResponse()" << std::endl;
+	this->setAsFinished();
 }

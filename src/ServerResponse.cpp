@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/26 20:09:16 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 14:51:43 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,32 +32,32 @@ void ServerResponse::prepare(const ClientRequest &request)
 
 	//this->_port = request.getPort();
 
-	//// Client socket
-	//this->_client_socket = request.getClientSocket();
+	// Client socket
+	this->_client_socket = request.getClientSocket();
 	// Error pages for ERROR STRAT
 	this->_error_pages = request.getServer()->getErrorPages();
-	//// Autoindex for INDEX STRAT
-	//if (route && route->hasAutoindex())
-	//	this->_autoindex = route->getAutoindex();
-	//else
-	//	this->_autoindex = request.getServer()->getAutoindex();
-	//// Root for ALL STRAT
-	//if (route && route->hasRoot())
-	//	this->_root = route->getRoot();
-	//else
-	//	this->_root = request.getServer()->getRoot();
-	// Index for INDEX STRAT
-	//if (route && route->hasIndex())
-	//	this->_index = route->getIndex();
-	//else if (route && request.getPath() == "/")
-	//	this->_index = request.getServer()->getIndex();
-	//else if (route)
-	//	this->_index = "";
-	//else
-	//	this->_index = request.getServer()->getIndex();
-	//// Error
-	//if (request.getErrorCode())
-	//	return this->setError(request.getErrorCode());
+	// Autoindex for INDEX STRAT
+	if (route && route->hasAutoindex())
+		this->_autoindex = route->getAutoindex();
+	else
+		this->_autoindex = request.getServer()->getAutoindex();
+	// Root for ALL STRAT
+	if (route && route->hasRoot())
+		this->_root = route->getRoot();
+	else
+		this->_root = request.getServer()->getRoot();
+	 Index for INDEX STRAT
+	if (route && route->hasIndex())
+		this->_index = route->getIndex();
+	else if (route && request.getPath() == "/")
+		this->_index = request.getServer()->getIndex();
+	else if (route)
+		this->_index = "";
+	else
+		this->_index = request.getServer()->getIndex();
+	// Error
+	if (request.getErrorCode())
+		return this->setError(request.getErrorCode());
 
 	//// Method
 	//if (route && route->hasMethods())
@@ -67,8 +67,8 @@ void ServerResponse::prepare(const ClientRequest &request)
 	//std::cout << "method: " << this->_method << std::endl;
 	//if (!this->_method)
 	//	return this->setError(405);
-	if (request.getProtocol() != HTTP_PROTOCOL && request.getProtocol() != "undefined") // @TODO move to ClientRequest ?
-		return this->setError(505);
+	//if (request.getProtocol() != HTTP_PROTOCOL && request.getProtocol() != "undefined") // @TODO move to ClientRequest ?
+	//	return this->setError(505);
 	//this->_path = request.getPath();
 	//this->_headers = request.getHeaders();
 
@@ -174,14 +174,6 @@ std::string		ServerResponse::_getGenericErrorPage(int errorCode) const
 	return (generic_page.str());
 }
 
-std::string		trimTrailingSlashes(std::string &path)
-{
-	size_t	index;
-
-	if (!(path.empty()) && ((index = path.find_last_not_of("/")) != path.npos))
-			path.erase(index + 1);
-	return (path);
-}
 
 void	ServerResponse::_sendErrorPage(int errorCode)	//	chec for correct value ?
 {

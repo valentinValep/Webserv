@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   CgiRequest.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 13:59:35 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/21 11:05:37 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/27 12:24:05 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CGIREQUEST_HPP
 # define CGIREQUEST_HPP
 
-# include "ServerResponse.hpp"
+//# include "ServerResponse.hpp"
 # include <string>
 # include <map>
 # include <sys/wait.h>

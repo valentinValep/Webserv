@@ -12,4 +12,5 @@ void UploadStrategy::buildResponse()
 {
 	(void)_upload_dir;
 	std::cout << "UploadStrategy::buildResponse()" << std::endl;
+	this->setAsFinished();
 }

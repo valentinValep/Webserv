@@ -6,11 +6,12 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 14:19:07 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/24 15:22:39 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 12:24:23 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CgiRequest.hpp"
+#include <iostream>
 
 #define GET 1
 #define POST 2

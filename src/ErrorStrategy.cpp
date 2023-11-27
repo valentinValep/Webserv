@@ -12,4 +12,5 @@ void ErrorStrategy::buildResponse()
 	(void)_error_pages;
 	(void)_error_code;
 	std::cout << "ErrorStrategy::buildResponse()" << std::endl;
+	this->setAsFinished();
 }

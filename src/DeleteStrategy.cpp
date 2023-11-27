@@ -10,4 +10,5 @@ DeleteStrategy::~DeleteStrategy()
 void DeleteStrategy::buildResponse()
 {
 	std::cout << "DeleteStrategy::buildResponse()" << std::endl;
+	this->setAsFinished();
 }

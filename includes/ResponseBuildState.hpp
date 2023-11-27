@@ -25,6 +25,7 @@ public:
 	std::string							getRoot();
 	std::string							getPath();
 	std::map<std::string, std::string>	getHeaders();
+	std::map<int, std::string>			getErrorPages();
 
 	// Methods
 	void	process();

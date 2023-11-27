@@ -1,4 +1,5 @@
 #include "ResponseSendState.hpp"
+#include "ReadState.hpp"
 
 ResponseSendState::ResponseSendState(ProcessHandler *process_handler, int socket_fd, std::string buffer): ProcessState(process_handler, socket_fd), _buffer(buffer)
 {}
@@ -23,4 +24,5 @@ void ResponseSendState::process()
 		std::cerr << __FILE__ << ":" << __LINE__ << ": Error: send() doesn't send all the buffer (ret = " << ret << ", buffer.length() = " << _buffer.length() << ")" << std::endl;
 		return ;
 	}
+	this->getHandler()->setState(new ReadState(this->getHandler(), this->getSocketFd()));
 }
