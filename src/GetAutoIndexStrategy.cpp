@@ -1,15 +1,26 @@
 #include "GetAutoIndexStrategy.hpp"
 
+static std::string		trimTrailingSlashes(std::string path)
+{
+	size_t	index;
+
+	if (!(path.empty()) && ((index = path.find_last_not_of("/")) != path.npos))
+			path.erase(index + 1);
+	return (path);
+}
+
 GetAutoIndexStrategy::GetAutoIndexStrategy(ResponseBuildState *state): ResponseBuildingStrategy(state)
 {
-	if (!(this->_dirStream = opendir((state->getRoot() + "/" + state->getPath()).c_str())))
+	std::string		path = trimTrailingSlashes(state->getPath());
+
+	if (!(this->_dirStream = opendir((state->getRoot() + path).c_str())))
 	{
 		this->setError(500);
 		return ;
 	}
 	this->_autoIndex << "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>"
-		<< state->getPath() << "</title>\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"/style/style.css\">\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"/style/autoindex.css\">\n\t"
-		<< "<link rel=\"icon\" href=\"/favicon.gif\" type=\"image/gif\">\n</head>\n<body>\n\t<h1>Index of " << state->getPath() << "</h1>\n\t<hr>\n";
+		<< path << "</title>\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"/style/style.css\">\n\t<link rel=\"stylesheet\" type=\"text/css\" href=\"/style/autoindex.css\">\n\t"
+		<< "<link rel=\"icon\" href=\"/favicon.gif\" type=\"image/gif\">\n</head>\n<body>\n\t<h1>Index of " << path << "</h1>\n\t<hr>\n";
 }
 
 GetAutoIndexStrategy::~GetAutoIndexStrategy()
@@ -38,7 +49,7 @@ void GetAutoIndexStrategy::buildResponse()
 			break ;
 
 		std::string		fileName(dirContent->d_name);
-		std::string		locationPath = getState()->getRoot() + getState()->getPath();
+		std::string		locationPath = getState()->getRoot() + trimTrailingSlashes(getState()->getPath());
 
 		if (stat((locationPath + "/" + fileName).c_str(), &fileStat))
 		{
