@@ -3,6 +3,10 @@
 #pragma once
 
 #include "ResponseBuildingStrategy.hpp"
+#include "ResponseBuilder.hpp"
+#include <iostream>
+#include <cstdio>
+#include <unistd.h>
 
 class DeleteStrategy: public ResponseBuildingStrategy {
 private:
