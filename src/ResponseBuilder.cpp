@@ -32,8 +32,7 @@ std::string	ResponseBuilder::build()
 		response << " OK";
 	response << "\r\n";
 
-	if (!this->_body.empty())
-		this->addHeader("Content-Length", SSTR(this->_body.size()));
+	this->addHeader("Content-Length", SSTR(this->_body.size()));
 	for (std::map<std::string, std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); it++)
 		response << it->first << ": " << it->second << "\r\n";
 	response << "\r\n";

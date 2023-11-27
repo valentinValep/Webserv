@@ -8,7 +8,7 @@
 
 CgiStrategy::CgiStrategy(ResponseBuildState *state, std::string cgiInterpreter, int method): ResponseBuildingStrategy(state), _interpreter(cgiInterpreter), _method(method)
 {
-	
+
 }
 
 CgiStrategy::~CgiStrategy()
@@ -19,17 +19,31 @@ void CgiStrategy::buildResponse()
 {
 	ResponseBuilder	builder;
 
+	if (access(_interpreter.c_str(), F_OK) || access(_interpreter.c_str(), X_OK))
+	{
+		this->setError(502);
+		return;
+	}
+
 	setPath();
+	if (this->getError())
+		return;
 	setEnv();
 	convertEnv();
 	executeScript();
 	freeEnvp();
+	if (this->_response.empty())
+	{
+		this->setError(500); // @TODO check NGINX behavior
+		return;
+	}
 	builder.setCode(200);
-	builder.addHeader("Content-Type", "text/html");
-	builder.setBody(_response);
-	this->setResponse(builder.build());
-	this->setAsFinished();
-	std::cout << "CgiStrategy::buildResponse()" << std::endl;
+	{
+		builder.addHeader("Content-Type", "text/html");
+		builder.setBody(this->_response);
+		this->setResponse(builder.build());
+		this->setAsFinished();
+	}
 }
 
 
@@ -95,6 +109,18 @@ void	CgiStrategy::setPath(){
 	{
 		_path = path;
 	}
+
+	this->_scriptName = this->getState()->getRoot() + _path;
+
+	if (access(_scriptName.c_str(), F_OK))
+	{
+		this->setError(404);
+		return;
+	}
+	if (access(_scriptName.c_str(), R_OK))
+	{
+		this->setError(403);
+	}
 };
 
 
@@ -119,11 +145,7 @@ void		CgiStrategy::executeScript()
 
 void	CgiStrategy::cgiChildProcess()
 {
-	_cgiInterpreter = _interpreter.c_str();
-	std::string scriptName = this->getState()->getRoot() + _path;
-	_scriptName = scriptName.c_str();
-
-	const char *args[] = {_cgiInterpreter, _scriptName, NULL};
+	const char *args[] = {_interpreter.c_str(), this->_scriptName.c_str(), NULL};
 
 	close(this->_fd[READ]);
 	dup2(this->_fd[WRITE], STDOUT_FILENO);
@@ -142,12 +164,20 @@ void	CgiStrategy::cgiChildProcess()
 
 void	CgiStrategy::cgiParentProcess()
 {
-	close(this->_fd[WRITE]);
-	waitpid(this->_pid, NULL, 0);
+	int	status;
 	char c;
+
+	close(this->_fd[WRITE]);
+	waitpid(this->_pid, &status, 0);
+	if (WEXITSTATUS(status) == ERROR)
+	{
+		std::cout << "CGI ERROR: " << WEXITSTATUS(status) << std::endl;
+		this->_response = "";
+		return;
+	}
 	while (read(_fd[READ], &c, 1) > 0)
 	{
-		_response += c;
+		this->_response += c;
 	}
 	close(this->_fd[READ]);
 };
@@ -170,5 +200,3 @@ std::string	CgiStrategy::getContentType(std::map<std::string, std::string> heade
 		contentType = it->second;
 	return (contentType);
 }
-
-

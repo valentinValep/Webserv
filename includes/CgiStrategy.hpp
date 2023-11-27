@@ -19,9 +19,8 @@ private:
 		std::string							_response;
 		std::string							_cgiBody;
 		std::string							_interpreter;
+		std::string							_scriptName;
 		int									_method;
-		const char*							_cgiInterpreter;
-		const char*							_scriptName;
 		char**								_envp;
 		std::map<std::string, std::string>	_env;
 		int									_fd[2];
@@ -30,7 +29,7 @@ public:
 	// Constructors & Destructor
 	CgiStrategy(ResponseBuildState* state, std::string cgiInterpreter, int method);
 	virtual ~CgiStrategy();
-	
+
 	// Methods
 	void			setEnv();
 	void			executeScript();
