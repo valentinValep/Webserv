@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/24 13:59:25 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 19:31:35 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,12 @@
 # include <vector>
 # include <sstream>
 # include <iostream>
+# include <string.h>
+# include <unistd.h>
+# include <sys/types.h>
+# include <sys/wait.h>
+# include <stdio.h>
+# include <stdlib.h>
 
 enum State {
 	RECEIVING_METHOD,
@@ -38,7 +44,6 @@ private:
 			//std::cout << "RequestStream copy constructor" << other.str() << std::endl;
 			*this << other.str();
 		}
-		~RequestStream() {}
 		RequestStream &operator=(const RequestStream &other) {
 			if (this != &other) {
 				this->clear();
@@ -48,7 +53,7 @@ private:
 		}
 	};
 
-	bool								_cgiRequest; // @TODO remove
+	bool								_cgiRequest;
 	in_port_t							_port;
 	int									_errorCode;
 	int									_clientSocket;
@@ -62,8 +67,7 @@ private:
 	RequestStream						_raw_data;
 
 	void	detectCgi();
-	void	findFirstServer(std::vector<Server> &servers);
-	void	findFinalServer(std::vector<Server> &servers);
+	void	findFinalServer();
 	void	parseMethodLine(const std::string line);
 	void	parseHeaderLine(const std::string line);
 	bool	needBody();
@@ -78,10 +82,9 @@ public:
 	void		short_print() const;
 
 	void		operator<<(const std::string &data);
-	void		parse(std::vector<Server> &servers);
+	void		parse();
 	bool		isFullyReceived() const;
 	bool		isError() const;
-	bool		isClosed() const;
 	std::string	getHeader(const std::string &key) const;
 	std::string	getBodyBody() const;
 	void		reset();

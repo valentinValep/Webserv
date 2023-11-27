@@ -6,13 +6,12 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 15:53:57 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/25 22:12:16 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 21:44:04 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerResponse.hpp"
 #include "ServerManager.hpp"
-#include "CgiRequest.hpp"
 #include "Route.hpp"
 
 ServerResponse::ServerResponse() : _port(0), _autoindex(false), _error_code(0), _method(0), _redirect_type(0), _cgi_request(false), _file_upload(false)
@@ -25,174 +24,81 @@ void ServerResponse::setError(int errorCode)
 
 void ServerResponse::prepare(const ClientRequest &request)
 {
-	if (!request.getServer())
-		return this->setError(500);
+	//if (!request.getServer())
+	//	return this->setError(500);
 
-	const Route	*route = request.getServer()->getRoute(request.getPath());
+	//const Route	*route = request.getServer()->getRoute(request.getPath());
 
-	this->_port = request.getPort();
+	//this->_port = request.getPort();
 
 	// Client socket
 	this->_client_socket = request.getClientSocket();
-	// Error pages
+	// Error pages for ERROR STRAT
 	this->_error_pages = request.getServer()->getErrorPages();
-	// Autoindex
+	// Autoindex for INDEX STRAT
 	if (route && route->hasAutoindex())
 		this->_autoindex = route->getAutoindex();
 	else
 		this->_autoindex = request.getServer()->getAutoindex();
-	// Root
+	// Root for ALL STRAT
 	if (route && route->hasRoot())
 		this->_root = route->getRoot();
 	else
 		this->_root = request.getServer()->getRoot();
-	// Index
+	 Index for INDEX STRAT
 	if (route && route->hasIndex())
 		this->_index = route->getIndex();
+	else if (route && request.getPath() == "/")
+		this->_index = request.getServer()->getIndex();
+	else if (route)
+		this->_index = "";
 	else
 		this->_index = request.getServer()->getIndex();
 	// Error
 	if (request.getErrorCode())
 		return this->setError(request.getErrorCode());
 
-	// Method
-	if (route && route->hasMethods())
-		this->_method = route->getMethods() & request.getMethod();
-	else
-		this->_method = request.getServer()->getMethods() & request.getMethod();
-	std::cout << "method: " << this->_method << std::endl;
-	if (!this->_method)
-		return this->setError(405);
-	if (request.getProtocol() != HTTP_PROTOCOL && request.getProtocol() != "undefined") // @TODO move to ClientRequest ?
-		return this->setError(505);
-	this->_path = request.getPath();
-	this->_headers = request.getHeaders();
+	//// Method
+	//if (route && route->hasMethods())
+	//	this->_method = route->getMethods() & request.getMethod();
+	//else
+	//	this->_method = request.getServer()->getMethods() & request.getMethod();
+	//std::cout << "method: " << this->_method << std::endl;
+	//if (!this->_method)
+	//	return this->setError(405);
+	//if (request.getProtocol() != HTTP_PROTOCOL && request.getProtocol() != "undefined") // @TODO move to ClientRequest ?
+	//	return this->setError(505);
+	//this->_path = request.getPath();
+	//this->_headers = request.getHeaders();
 
-	if (route)
-	{
-		// Redirect
-		if (route->hasRedirect())
-		{
-			this->_redirect_type = route->getRedirectType();
-			this->_redirect = route->getRedirect();
-		}
+	//if (route)
+	//{
+		//// Redirect
+		//if (route->hasRedirect())
+		//{
+		//	this->_redirect_type = route->getRedirectCode();
+		//	this->_redirect = route->getRedirectDest();
+		//}
 		// CGI
-		if (route->hasCgi() || request.isCgiRequest()) // @TODO remove the check from request ?
-		{
-			this->_cgi_request = true;
-			this->_cgi_extension = route->getCgiExtension();
-			this->_cgi_path = route->getCgiPath();
-		}
-		// Upload
-		this->_body = request.getBodyBody();
-		setUpload();
-		if (this->_file_upload) {
-			if (route->hasUpload()) {
-				this->_upload_path = route->getUploadPath(); }
-			else
-			{
-				std::cout << "Error: upload path has not been set, upload not allowed" << std::endl;
-				_file_upload = false;
-			}
-		}
-	}
-}
-
-std::string		ServerResponse::_getGenericErrorPage(int errorCode) const
-{
-	static std::map<int, std::string> 	error_codes;
-	static std::stringstream			generic_page;
-
-	error_codes[400] = "Bad Request";
-	error_codes[401] = "Unauthorized";
-	error_codes[402] = "Payment Required";
-	error_codes[403] = "Forbidden";
-	error_codes[404] = "Not Found";
-	error_codes[405] = "Method Not Allowed";
-	error_codes[406] = "Not Acceptable";
-	error_codes[407] = "Proxy Authentication Required";
-	error_codes[408] = "Request Time-out";
-	error_codes[409] = "Conflict";
-	error_codes[410] = "Gone";
-	error_codes[411] = "Length Required";
-	error_codes[412] = "Precondition Failed";
-	error_codes[413] = "Request Entity Too Large";
-	error_codes[414] = "Request-URI Too Long";
-	error_codes[415] = "Unsupported Media Type";
-	error_codes[416] = "Requested range unsatisfiable";
-	error_codes[417] = "Expectation failed";
-	error_codes[418] = "I’m a teapot";
-	error_codes[419] = "Page expired";
-	error_codes[421] = "Bad mapping / Misdirected Request";
-	error_codes[422] = "Unprocessable entity";
-	error_codes[423] = "Locked";
-	error_codes[424] = "Method failure";
-	error_codes[425] = "Too Early";
-	error_codes[426] = "Upgrade Required";
-	error_codes[427] = "Invalid digital signature";
-	error_codes[428] = "Precondition Required";
-	error_codes[429] = "Too Many Requests";
-	error_codes[431] = "Request Header Fields Too Large";
-	error_codes[449] = "Retry With";
-	error_codes[450] = "Blocked by Windows Parental Controls";
-	error_codes[451] = "Unavailable For Legal Reasons";
-	error_codes[456] = "Unrecoverable Error";
-	error_codes[444] = "No Response";
-	error_codes[495] = "SSL Certificate Error";
-	error_codes[496] = "SSL Certificate Required";
-	error_codes[497] = "HTTP Request Sent to HTTPS Port";
-	error_codes[498] = "Token expired/invalid";
-	error_codes[499] = "Client Closed Request";
-	error_codes[500] = "Internal Server Error";
-	error_codes[501] = "Not Implemented";
-	error_codes[502] = "Bad Gateway ou Proxy Error";
-	error_codes[503] = "Service Unavailable";
-	error_codes[504] = "Gateway Time-out";
-	error_codes[505] = "HTTP Version not supported";
-	error_codes[506] = "Variant Also Negotiates";
-	error_codes[507] = "Insufficient storage";
-	error_codes[508] = "Loop detected";
-	error_codes[509] = "Bandwidth Limit Exceeded";
-	error_codes[510] = "Not extended";
-	error_codes[511] = "Network authentication required";
-	error_codes[520] = "Unknown Error";
-	error_codes[521] = "Web Server Is Down";
-	error_codes[522] = "Connection Timed Out";
-	error_codes[523] = "Origin Is Unreachable";
-	error_codes[524] = "A Timeout Occurred";
-	error_codes[525] = "SSL Handshake Failed";
-	error_codes[526] = "Invalid SSL Certificate";
-	error_codes[527] = "Railgun Error";
-
-	generic_page << "<!DOCTYPE html>\n<html lang=\"en\">\n\t<head>\n\t\t<meta charset=\"UTF-8\">\n\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t\t<title>"
-		<< errorCode << " " << error_codes[errorCode] << "</title>\n\t</head>\n\t<body>\n\t\t<center><h1>"
-		<< errorCode << " " << error_codes[errorCode] << "</h1></center>\n\t\t<hr><center>webserv</center>\n\t</body>\n</html>";
-	return (generic_page.str());
-}
-
-std::string		trimTrailingSlashes(std::string &path)
-{
-	size_t	index;
-
-	if (!(path.empty()) && ((index = path.find_last_not_of("/")) != path.npos))
-			path.erase(index + 1);
-	return (path);
-}
-
-void	ServerResponse::_sendErrorPage(int errorCode)	//	chec for correct value ?
-{
-	std::string		content;
-	std::string		mimeType;
-
-	if (this->_error_pages.find(errorCode) != this->_error_pages.end())
-	{
-		content = readFileContent(this->_root + "/" + this->_error_pages[errorCode], mimeType);
-		if (content.empty())
-			content = _getGenericErrorPage(errorCode);
-	}
-	else
-		content = _getGenericErrorPage(errorCode);
-	sendHttpResponse(errorCode, content, "text/html");
+		//if (route->hasCgi() || request.isCgiRequest()) // @TODO remove the check from request ?
+		//{
+		//	this->_cgi_request = true;
+		//	this->_cgi_extension = route->getCgiExtension();
+		//	this->_cgi_path = route->getCgiPath();
+		//}
+		//// Upload
+		//this->_body = request.getBodyBody();
+		//setUpload();
+		//if (this->_file_upload) {
+		//	if (route->hasUpload()) {
+		//		this->_upload_path = route->getUploadPath(); }
+		//	else
+		//	{
+		//		std::cout << "Error: upload path has not been set, upload not allowed" << std::endl;
+		//		_file_upload = false;
+		//	}
+		//}
+	//}
 }
 
 void	ServerResponse::_sendAutoIndexed(std::string const &locationPath)
@@ -259,14 +165,14 @@ void ServerResponse::process()
 	{
 	case GET:
 	{
-		if (this->_cgi_request)
-		{
-			CgiRequest cgiRequest(*this);
-			// cgiRequest.printResponse();
-			content = cgiRequest.getResponse();
-			sendCGIResponse(this->_client_socket, content, "text/html");
-			return ;
-		}
+		// if (this->_cgi_request)
+		// {
+		// 	CgiRequest cgiRequest(*this);
+		// 	// cgiRequest.printResponse();
+		// 	content = cgiRequest.getResponse();
+		// 	sendCGIResponse(this->_client_socket, content, "text/html");
+		// 	return ;
+		// }
 		if (!(this->_redirect.empty()))
 		{
 			sendHttpRedirection();
@@ -306,6 +212,7 @@ void ServerResponse::process()
 //					//	HANDLE CGI HERE
 //					return ;
 //				}
+				// @TODO check this->index not empty
 				indexPath = locationPath + "/" + this->_index;
 				if (!access(indexPath.c_str(), F_OK))
 				{
@@ -332,23 +239,23 @@ void ServerResponse::process()
 	}
 	case POST:
 	{
-		if (this->_file_upload)
-		{
-			createWriteFile();
-			std::string mimeTypehere = "text/html";
-			std::string content = readFileContent(this->_root + "/204.html", mimeTypehere);
-			sendUploadResponse(this->_client_socket, content, "text/html");
-			return ;
-		}
+		// if (this->_file_upload)
+		// {
+		// 	createWriteFile();
+		// 	std::string mimeTypehere = "text/html";
+		// 	std::string content = readFileContent(this->_root + "/204.html", mimeTypehere);
+		// 	sendUploadResponse(this->_client_socket, content, "text/html");
+		// 	return ;
+		// }
 
-		if (this->_cgi_request)
-		{
-			CgiRequest cgiRequest(*this);
-			// cgiRequest.printResponse();
-			content = cgiRequest.getResponse();
-			sendCGIResponse(this->_client_socket, content, "text/html");
-			return ;
-		}
+		// if (this->_cgi_request)
+		// {
+		// 	CgiRequest cgiRequest(*this);
+		// 	// cgiRequest.printResponse();
+		// 	content = cgiRequest.getResponse();
+		// 	sendCGIResponse(this->_client_socket, content, "text/html");
+		// 	return ;
+		// }
 		break ;
 	}
 	case DELETE:
@@ -369,92 +276,6 @@ void ServerResponse::process()
 		}
 	default:
 		std::cerr << " \033[91mCRITIC Error\033[0m: Unauthorized method not catched in ServerResponse!" << std::endl;
-	}
-}
-
-/************************************************************
- *						UPLOAD								*
- ************************************************************/
-
-int ServerResponse::createWriteFile() {
-	int status = EXIT_SUCCESS;
-
-	for (std::map<std::string, std::string>::iterator it = _upload_file_data.begin(); it != _upload_file_data.end(); ++it) {
-		std::string filename = it->first;
-		std::string fileContent = it->second;
-		std::string path = _root + "/" + _upload_path + filename;
-
-		std::ifstream file(path.c_str());
-		if (file) {
-			std::cout << "Warning: A file with the same name (" << filename << ") already exists and will be overwritten." << std::endl;
-			file.close();
-		}
-		std::ofstream newFile(path.c_str());
-		if (!newFile) {
-			status = EXIT_FAILURE;
-			std::cout << "ERROR: Failed to create file: " << filename << std::endl;
-			continue;
-		}
-		newFile.write(fileContent.c_str(), fileContent.size());
-		newFile.close();
-	}
-	return (status);
-}
-
-std::string ServerResponse::extractFileBody(size_t filenameEndPos) {
-	std::string content = "";
-	size_t fileStartPos = _body.find("\r\n\r\n", filenameEndPos) + 4;
-	size_t fileEndPos = _body.find(_boundary, fileStartPos);
-	if (fileStartPos < fileEndPos) {
-		content = _body.substr(fileStartPos, fileEndPos - fileStartPos - 2);
-	}
-	return (content);
-}
-
-std::string ServerResponse::extractBoundary() {
-	std::string boundary = "";
-	std::string boundaryPrefix = "boundary=";
-	std::map<std::string, std::string>::iterator it = _headers.find("Content-Type");
-
-	if (it != _headers.end()) {
-		size_t boundaryPos = it->second.find(boundaryPrefix);
-		if (boundaryPos != std::string::npos) {
-			boundaryPos += boundaryPrefix.length();
-			boundary = it->second.substr(boundaryPos);
-		}
-		boundary.erase(std::remove(boundary.begin(), boundary.end(), '\r'), boundary.end());
-		boundary.erase(std::remove(boundary.begin(), boundary.end(), '\n'), boundary.end());
-	}
-	return (boundary);
-}
-
-void ServerResponse::setUpload() {
-	std::map<std::string, std::string>::const_iterator it = this->_headers.find("Content-Type");
-
-	if (it != this->_headers.end() && it->second.find("multipart/form-data") != std::string::npos) {
-
-		size_t pos = 0;
-		while ((pos = _body.find("filename=\"", pos)) != std::string::npos) {
-			size_t filenamePos = pos;
-			size_t filenameEndPos = _body.find("\"", filenamePos + 10);
-			pos = filenameEndPos;
-			if (filenameEndPos != std::string::npos && filenameEndPos > filenamePos + 10) {
-				if (_file_upload == false)
-				{
-					this->_file_upload = true;
-					this->_boundary = extractBoundary();
-				}
-				std::string filename = _body.substr(filenamePos + 10, filenameEndPos - (filenamePos + 10));
-				std::string fileContent = extractFileBody(filenameEndPos);
-				if (fileContent.size() > MAX_FILE_SIZE)
-				{
-					std::cout << "ERROR: File too large will not be uploaded: " << filename << std::endl;
-					_sendErrorPage(413);
-					continue;
-				}
-				_upload_file_data[filename] = fileContent;
-			}
-		}
 	}
 }
 

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/25 22:12:00 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/27 21:42:57 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,11 +34,6 @@ bool ClientRequest::isFullyReceived() const
 bool ClientRequest::isError() const
 {
 	return (this->_errorCode != 0);
-}
-
-bool ClientRequest::isClosed() const
-{
-	return (this->_state == CLOSED);
 }
 
 in_port_t ClientRequest::getPort() const
@@ -115,6 +110,8 @@ void ClientRequest::parseMethodLine(const std::string line)
 		this->_method = DELETE;
 	else
 		return this->setError(__FILE__, __LINE__, 405);
+	if (this->_protocol != HTTP_PROTOCOL && this->_protocol != "undefined")
+		return this->setError(__FILE__, __LINE__, 505);
 	this->_state = RECEIVING_HEADER;
 }
 
@@ -174,12 +171,21 @@ void ClientRequest::parseBodyLine(const std::string &line)
 	}
 }
 
-void	ClientRequest::parse(std::vector<Server> &servers)
+void	ClientRequest::parse()
 {
 	std::string	line;
 
 	if (!this->_server)
-		this->findFirstServer(servers);
+	{
+		try
+		{
+			this->_server = &ServerManager::getInstance()->getServer(this->_port);
+		}
+		catch(const ServerManager::ServerNotFoundException& e)
+		{
+			return this->setError(__FILE__, __LINE__, 500);
+		}
+	}
 	while (std::getline(this->_raw_data, line))
 	{
 		if (this->getErrorCode() == 400)
@@ -203,7 +209,7 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 		if ((line.empty() || line.size() == 0) && this->_state != RECEIVING_BODY)
 			return this->setError(__FILE__, __LINE__, 400);
 		//std::cout << "state: " << this->_state << " line: '" << line << "'" << std::endl;
-		if (line[line.size() - 1] != '\r' && this->_state != RECEIVING_BODY)
+		if (this->_state != RECEIVING_BODY && line[line.size() - 1] != '\r')
 			return this->setError(__FILE__, __LINE__, 400);
 		if (this->_state == RECEIVING_METHOD)
 		{
@@ -216,7 +222,7 @@ void	ClientRequest::parse(std::vector<Server> &servers)
 			this->parseHeaderLine(line);
 			if (this->_state != RECEIVING_HEADER)
 			{
-				this->findFinalServer(servers);
+				this->findFinalServer();
 				try
 				{
 					this->_body.setMaxBodySize(this->_server->getMaxBodySize());
@@ -259,21 +265,7 @@ void ClientRequest::detectCgi()
 	this->_cgiRequest = false;
 }
 
-void ClientRequest::findFirstServer(std::vector<Server> &servers)
-{
-	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
-	{
-		if (it->getPort() == this->_port)
-		{
-			this->_server = &(*it);
-			break;
-		}
-	}
-	if (!this->_server)
-		return this->setError(__FILE__, __LINE__, 5);
-}
-
-void ClientRequest::findFinalServer(std::vector<Server> &servers)
+void ClientRequest::findFinalServer()
 {
 	std::string			port_str;
 	std::string			host_name;
@@ -300,15 +292,12 @@ void ClientRequest::findFinalServer(std::vector<Server> &servers)
 	}
 	if (port != this->_port)
 		return this->setError(__FILE__, __LINE__, 400);
-	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
+	try
 	{
-		if (it->hasServerName(host_name) && it->getPort() == port)
-		{
-			this->_server = &(*it);
-			return;
-		}
+		this->_server = &ServerManager::getInstance()->getServer(this->_port, host_name);
 	}
-	return;
+	catch(const ServerManager::ServerNotFoundException& e)
+	{}
 }
 
 std::string ClientRequest::getHeader(const std::string & key) const
@@ -337,13 +326,6 @@ void ClientRequest::hard_reset()
 {
 	this->reset();
 	this->_server = NULL;
-}
-
-void ClientRequest::close()
-{
-	this->_state = CLOSED;
-	::close(this->_clientSocket);
-	this->_clientSocket = -1;
 }
 
 void ClientRequest::operator<<(const std::string &data)

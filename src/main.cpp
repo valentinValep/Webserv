@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:41:09 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/22 17:06:15 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/25 22:16:45 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,8 @@ try {
 		return 1;
 	}
 	//signal(SIGINT, sigint_handler);
-	ServerManager webServe(argc == 2 ? argv[1] : DEFAULT_CONFIG_FILE);
+	ServerManager::getInstance(argc == 2 ? argv[1] : DEFAULT_CONFIG_FILE);
+	ServerManager::getInstance()->run();
 	return 0;
 }
 catch (ServerManager::ParsingException &e) {

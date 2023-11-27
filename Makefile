@@ -14,12 +14,29 @@ LIBS_DIR := lib/
 
 OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)ServerManager.o \
-	$(BUILD_DIR)ServerResponse.o \
 	$(BUILD_DIR)ClientRequest.o \
-	$(BUILD_DIR)CgiRequest.o \
 	$(BUILD_DIR)Route.o \
 	$(BUILD_DIR)utils.o \
 	$(BUILD_DIR)Body.o \
+	$(BUILD_DIR)ServerReactor.o \
+	$(BUILD_DIR)EventHandler.o \
+	$(BUILD_DIR)AcceptHandler.o \
+	$(BUILD_DIR)ProcessHandler.o \
+	$(BUILD_DIR)ProcessState.o \
+	$(BUILD_DIR)ReadState.o \
+	$(BUILD_DIR)ResponseBuildState.o \
+	$(BUILD_DIR)ResponseBuildingStrategy.o \
+	$(BUILD_DIR)ErrorStrategy.o \
+	$(BUILD_DIR)RedirectStrategy.o \
+	$(BUILD_DIR)CgiStrategy.o \
+	$(BUILD_DIR)UploadStrategy.o \
+	$(BUILD_DIR)DeleteStrategy.o \
+	$(BUILD_DIR)ResponseSendState.o \
+	$(BUILD_DIR)GetStrategyCreator.o \
+	$(BUILD_DIR)GetAutoIndexStrategy.o \
+	$(BUILD_DIR)GetFileStrategy.o \
+	$(BUILD_DIR)ResponseBuilder.o \
+	$(BUILD_DIR)FileReader.o \
 
 MAIN_OBJ := $(BUILD_DIR)main.o
 
