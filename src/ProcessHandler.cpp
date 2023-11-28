@@ -3,7 +3,7 @@
 #include "ReadState.hpp"
 #include <iostream>
 
-ProcessHandler::ProcessHandler(int socket_fd, int port): EventHandler(socket_fd, port), state(new ReadState(this, socket_fd))
+ProcessHandler::ProcessHandler(int socket_fd, int port): EventHandler(socket_fd), _port(port), state(new ReadState(this, socket_fd))
 {}
 
 ProcessHandler::~ProcessHandler()
@@ -14,6 +14,11 @@ ProcessHandler::~ProcessHandler()
 void ProcessHandler::setState(ProcessState *state)
 {
 	this->state = state;
+}
+
+int ProcessHandler::getPort() const
+{
+	return this->_port;
 }
 
 void ProcessHandler::handle()

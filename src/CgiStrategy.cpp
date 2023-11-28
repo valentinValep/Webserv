@@ -1,5 +1,6 @@
 #include "CgiStrategy.hpp"
 #include "ResponseBuilder.hpp"
+#include "ServerManager.hpp"
 #include <iostream>
 
 /************************************************************
@@ -17,32 +18,63 @@ CgiStrategy::~CgiStrategy()
 
 void CgiStrategy::buildResponse()
 {
-	ResponseBuilder	builder;
-
-	if (access(_interpreter.c_str(), F_OK) || access(_interpreter.c_str(), X_OK))
+	if (this->_scriptName.empty())
 	{
-		this->setError(502);
-		return;
+		setPath();
+		if (this->getError())
+			return;
+		setEnv();
+		convertEnv();
+		executeScript();
+		freeEnvp();
+		close(this->_fd[WRITE]);
+		ServerManager::getInstance()->addCgiChild(this->_fd[READ], this->getState()->getSocketFd(), *this->getState()->getHandler());
+		ServerManager::getInstance()->ignoreClient(this->getState()->getSocketFd());
 	}
+	else
+	{
+		int		status;
+		char	buf[4];
+		bool	is_finished;
+		int		read_ret;
 
-	setPath();
-	if (this->getError())
-		return;
-	setEnv();
-	convertEnv();
-	executeScript();
-	freeEnvp();
-	if (this->_response.empty())
-	{
-		this->setError(500); // @TODO check NGINX behavior
-		return;
-	}
-	builder.setCode(200);
-	{
-		builder.addHeader("Content-Type", "text/html");
-		builder.setBody(this->_response);
-		this->setResponse(builder.build());
-		this->setAsFinished();
+		is_finished = waitpid(this->_pid, &status, WNOHANG);
+		while ((read_ret = read(this->_fd[READ], buf, 4)) > 0)
+			this->_response += std::string(buf, read_ret);
+		if (!is_finished)
+		{
+			ServerManager::getInstance()->ignoreClient(this->getState()->getSocketFd());
+			return;
+		}
+		std::cout << "CGI STATUS: " << WEXITSTATUS(status) << std::endl;
+		if (WEXITSTATUS(status) == ERROR)
+		{
+			std::cout << "CGI ERROR: " << WEXITSTATUS(status) << std::endl;
+			return;
+		}
+		close(this->_fd[READ]);
+		// @TODO delete cgi child handler
+
+		{
+			ResponseBuilder	builder;
+
+			if (access(_interpreter.c_str(), F_OK) || access(_interpreter.c_str(), X_OK))
+			{
+				this->setError(502);
+				return;
+			}
+
+			if (this->_response.empty())
+			{
+				this->setError(500); // @TODO check NGINX behavior
+				return;
+			}
+			builder.setCode(200);
+			builder.addHeader("Content-Type", "text/html");
+			builder.setBody(this->_response);
+			this->setResponse(builder.build());
+			this->setAsFinished();
+		}
 	}
 }
 
@@ -134,13 +166,7 @@ void		CgiStrategy::executeScript()
 	this->_pid = fork();
 
 	if (this->_pid == 0)
-	{
 		cgiChildProcess();
-	}
-	else
-	{
-		cgiParentProcess();
-	}
 };
 
 void	CgiStrategy::cgiChildProcess()
@@ -160,26 +186,6 @@ void	CgiStrategy::cgiChildProcess()
 	}
 	if (execve(args[0], const_cast<char *const *>(args), this->_envp))
 		exit(ERROR);
-};
-
-void	CgiStrategy::cgiParentProcess()
-{
-	int	status;
-	char c;
-
-	close(this->_fd[WRITE]);
-	waitpid(this->_pid, &status, 0);
-	if (WEXITSTATUS(status) == ERROR)
-	{
-		std::cout << "CGI ERROR: " << WEXITSTATUS(status) << std::endl;
-		this->_response = "";
-		return;
-	}
-	while (read(_fd[READ], &c, 1) > 0)
-	{
-		this->_response += c;
-	}
-	close(this->_fd[READ]);
 };
 
 /************************************************************
