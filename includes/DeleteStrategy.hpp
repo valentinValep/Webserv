@@ -7,6 +7,7 @@
 #include <iostream>
 #include <cstdio>
 #include <unistd.h>
+#include <sys/stat.h>
 
 class DeleteStrategy: public ResponseBuildingStrategy {
 private:

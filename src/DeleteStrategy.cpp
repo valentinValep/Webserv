@@ -29,6 +29,20 @@ void DeleteStrategy::buildResponse()
 		this->setError(403);
 		return ;
 	}
+
+	struct stat		statbuf;
+
+	if (stat(locationPath.c_str(), &statbuf))
+	{
+		this->setError(500);
+		return ;
+	}
+	if (!S_ISREG(statbuf.st_mode))
+	{
+		this->setError(403);
+		return ;
+	}
+
 	if (std::remove(locationPath.c_str()))
 	{
 		this->setError(500);
