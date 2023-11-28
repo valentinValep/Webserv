@@ -2,20 +2,12 @@
 #include "ErrorStrategy.hpp"
 #include "GetFileStrategy.hpp"
 #include "GetAutoIndexStrategy.hpp"
+#include "utils.hpp"
 #include <iostream>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-
-std::string		trimTrailingSlashes(std::string path)
-{
-	size_t	index;
-
-	if (!(path.empty()) && ((index = path.find_last_not_of("/")) != path.npos))
-			path.erase(index + 1);
-	return (path);
-}
 
 ResponseBuildingStrategy *GetStrategyCreator::createGetStrategy(ResponseBuildState *state, bool is_autoindex, std::string index_file)
 {

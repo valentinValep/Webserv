@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/27 15:28:40 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/28 15:20:31 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,9 +83,11 @@ public:
 	~ServerManager();
 
 	int		addClient(int socket_fd, int port);
+	int		addCgiChild(int child_fd, int parent_fd, EventHandler &parent_handler);
 	void	deleteClient(int socket_fd);
 	void	listenClient(int socket_fd, EventHandler &handler);
 	void	talkToClient(int socket_fd, EventHandler &handler);
+	void	ignoreClient(int socket_fd);
 	void	run();
 
 	Server	&getServer(int port);

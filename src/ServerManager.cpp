@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/27 21:43:47 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/28 15:20:01 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,11 @@ int	ServerManager::addClient(int socket_fd, int port)
 	return this->reactor.addClient(socket_fd, port);
 }
 
+int ServerManager::addCgiChild(int child_fd, int parent_fd, EventHandler &parent_handler)
+{
+	return this->reactor.addCgiChild(child_fd, parent_fd, parent_handler);
+}
+
 void ServerManager::deleteClient(int socket_fd)
 {
 	this->reactor.deleteClient(socket_fd);
@@ -123,6 +128,11 @@ void ServerManager::listenClient(int socket_fd, EventHandler &handler)
 void ServerManager::talkToClient(int socket_fd, EventHandler &handler)
 {
 	this->reactor.talkToClient(socket_fd, handler);
+}
+
+void ServerManager::ignoreClient(int socket_fd)
+{
+	this->reactor.ignoreClient(socket_fd);
 }
 
 void ServerManager::run()

@@ -9,6 +9,7 @@
 #include "DeleteStrategy.hpp"
 #include "GetStrategyCreator.hpp"
 #include "ResponseSendState.hpp"
+#include "utils.hpp"
 
 ResponseBuildState::ResponseBuildState(): ProcessState(), _strategy(NULL)
 {}
@@ -35,6 +36,18 @@ static bool	hasExtension(std::string path, std::string extension)
 	return extension_pos + extension.length() == question_mark_pos;
 }
 
+bool	is_method_allowed(const Route *route, const ClientRequest &request)
+{
+	int		methods_allowed;
+
+	if (route && route->hasMethods())
+		methods_allowed = route->getMethods();
+	else
+		methods_allowed = request.getServer()->getMethods();
+
+	return (methods_allowed & request.getMethod());
+}
+
 ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, const ClientRequest &request): ProcessState(handler, socket_fd), _strategy(NULL), _root(""), _path("")
 {
 	const Route	*route;
@@ -57,10 +70,9 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 		return;
 	}
 
-	route = request.getServer()->getRoute(request.getPath());
+	route = request.getServer()->getRoute(trimTrailingSlashes(request.getPath()));
 
-	if ((route && route->hasMethods() && !(route->getMethods() & request.getMethod()))
-		|| !(request.getServer()->getMethods() & request.getMethod()))
+	if (!is_method_allowed(route, request))
 	{
 		this->_strategy = new ErrorStrategy(this, 405, this->_error_pages);
 		return;

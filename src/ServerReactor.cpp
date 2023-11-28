@@ -2,6 +2,7 @@
 #include "ServerManager.hpp"
 #include "AcceptHandler.hpp"
 #include "ProcessHandler.hpp"
+#include "CgiChildHandler.hpp"
 #include <sys/epoll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -123,6 +124,25 @@ int	ServerReactor::addClient(int socket_fd, int port)
 	return 0;
 }
 
+int ServerReactor::addCgiChild(int child_fd, int parent_fd, EventHandler &parent_handler)
+{
+	EventHandler	*handler = new CgiChildHandler(child_fd, parent_fd, parent_handler);
+	struct epoll_event	event;
+	event.events = EPOLLIN;
+	event.data.ptr = handler;
+	errno = 0;
+	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, child_fd, &event) == -1)
+	{
+		perror(SCSTR(__FILE__ << ":" << __LINE__ << " epoll_ctl() failed"));
+		close(child_fd);
+		delete handler;
+		return -1;
+	}
+
+	this->event_handlers.push_back(handler);
+	return 0;
+}
+
 void ServerReactor::deleteClient(int socket_fd)
 {
 	errno = 0;
@@ -158,6 +178,16 @@ void ServerReactor::talkToClient(int socket_fd, EventHandler &handler)
 
 	event.events = EPOLLOUT;
 	event.data.ptr = &handler;
+	errno = 0;
+	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_MOD, socket_fd, &event) == -1)
+		return perror(SCSTR(__FILE__ << ":" << __LINE__ << " epoll_ctl() failed"));
+}
+
+void ServerReactor::ignoreClient(int socket_fd)
+{
+	struct epoll_event	event;
+
+	event.events = 0;
 	errno = 0;
 	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_MOD, socket_fd, &event) == -1)
 		return perror(SCSTR(__FILE__ << ":" << __LINE__ << " epoll_ctl() failed"));

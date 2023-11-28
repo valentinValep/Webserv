@@ -2,7 +2,7 @@
 #include <iostream>
 #include <unistd.h>
 
-EventHandler::EventHandler(int socket_fd, int port): _socket_fd(socket_fd), _port(port)
+EventHandler::EventHandler(int socket_fd): _socket_fd(socket_fd)
 {}
 
 EventHandler::~EventHandler()
@@ -14,9 +14,4 @@ EventHandler::~EventHandler()
 int EventHandler::getSocketFd() const
 {
 	return (this->_socket_fd);
-}
-
-int EventHandler::getPort() const
-{
-	return (this->_port);
 }

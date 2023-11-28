@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/23 11:25:58 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/11/28 14:39:47 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -269,7 +269,7 @@ void Server::parseRoutes(fp::Module &mod)
 				std::cerr << "\033[91mError\033[0m: location need a path" << std::endl;
 				throw ServerManager::ParsingException();
 			}
-			path = mod->getAttributes()[0];
+			path = trimTrailingSlashes(mod->getAttributes()[0]);
 			if (path[0] != '/')
 			{
 				std::cerr << "\033[91mError\033[0m: location path need to start with a /" << std::endl;

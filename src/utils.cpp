@@ -61,3 +61,12 @@ int	anti_overflow_atoi(const char *input, int *result)
 	*result = atoi(input);
 	return (0);
 }
+
+std::string		trimTrailingSlashes(std::string path)
+{
+	size_t	index;
+
+	if (!(path.empty()) && ((index = path.find_last_not_of("/")) != path.npos))
+			path.erase(index + 1);
+	return (path);
+}

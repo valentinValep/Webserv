@@ -7,6 +7,7 @@
 class AcceptHandler: public EventHandler {
 private:
 	// Attributes
+	int		_port;
 public:
 	// Constructors & Destructor
 	AcceptHandler(int socket_fd, int port);

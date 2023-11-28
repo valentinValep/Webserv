@@ -37,6 +37,7 @@ OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)GetFileStrategy.o \
 	$(BUILD_DIR)ResponseBuilder.o \
 	$(BUILD_DIR)FileReader.o \
+	$(BUILD_DIR)CgiChildHandler.o \
 
 MAIN_OBJ := $(BUILD_DIR)main.o
 

@@ -12,7 +12,8 @@ class ProcessState;
 class ProcessHandler: public EventHandler {
 private:
 	// Attributes
-	ProcessState*		state;
+	int				_port;
+	ProcessState*	state;
 public:
 	// Constructors & Destructor
 	ProcessHandler(int socket_fd, int port);
@@ -21,6 +22,7 @@ public:
 
 	// Setters
 	void	setState(ProcessState* state);
+	int		getPort() const;
 
 	// Methods
 	void	handle();

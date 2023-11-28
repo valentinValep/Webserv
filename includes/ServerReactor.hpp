@@ -10,7 +10,7 @@ class ServerReactor {
 private:
 	// Attributes
 	int								epoll_fd;
-	std::vector<EventHandler *>		event_handlers;
+	std::vector<EventHandler *>		event_handlers; // @TODO help for timeout
 
 	void setupNetwork(std::vector<Server> &servers);
 public:
@@ -23,9 +23,11 @@ public:
 	// Setters
 
 	// Methods
-	int					addClient(int socket_fd, int port);
-	void				deleteClient(int socket_fd);
-	void				listenClient(int socket_fd, EventHandler &handler);
-	void				talkToClient(int socket_fd, EventHandler &handler);
-	void				run();
+	int		addClient(int socket_fd, int port);
+	int		addCgiChild(int child_fd, int parent_fd, EventHandler &handler);
+	void	deleteClient(int socket_fd);
+	void	listenClient(int socket_fd, EventHandler &handler);
+	void	talkToClient(int socket_fd, EventHandler &handler);
+	void	ignoreClient(int socket_fd);
+	void	run();
 };
