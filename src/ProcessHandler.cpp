@@ -21,7 +21,22 @@ int ProcessHandler::getPort() const
 	return this->_port;
 }
 
+ProcessState *ProcessHandler::getState() const
+{
+	return this->state;
+}
+
 void ProcessHandler::handle()
 {
 	this->state->process();
+}
+
+void ProcessHandler::timeout()
+{
+	ServerManager::getInstance()->deleteClient(this->getSocketFd());
+}
+
+time_t ProcessHandler::getTimeout() const
+{
+	return ProcessHandler::_timeout;
 }

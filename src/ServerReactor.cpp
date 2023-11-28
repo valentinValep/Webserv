@@ -203,8 +203,6 @@ void ServerReactor::run()
 		event_count = epoll_wait(this->epoll_fd, events, MAX_CONNECTION, 10000);
 		if (event_count == -1)
 			std::cerr << __FILE__ << ":" << __LINE__ << " epoll_wait(): " << strerror(errno) << std::endl;
-		if (event_count == 0)
-			std::cout << "🕑 Timeout" << std::endl;
 
 		for (int i = 0; i < event_count; i++)
 		{
@@ -212,6 +210,14 @@ void ServerReactor::run()
 
 			std::cout << "🔥 Event on socket_fd: " << handler->getSocketFd() << std::endl;
 			handler->handle();
+		}
+		if (event_count == 0)
+		{
+			std::vector<EventHandler *>	handlers = this->event_handlers;
+
+			std::cout << "🕑 Timeout time" << std::endl; // @TODO pick right moment
+			for (std::vector<EventHandler*>::iterator it = handlers.begin(); it != handlers.end(); it++)
+				(*it)->checkTimeout();
 		}
 	}
 }

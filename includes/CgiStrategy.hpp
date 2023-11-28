@@ -42,4 +42,5 @@ public:
 	int				getContentLength(std::map<std::string, std::string> headers);
 	std::string		getContentType(std::map<std::string, std::string> headers);
 	void			buildResponse();
+	void			setTimeout();
 };

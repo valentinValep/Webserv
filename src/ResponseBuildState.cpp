@@ -161,6 +161,11 @@ std::map<int, std::string> ResponseBuildState::getErrorPages()
 	return this->_error_pages;
 }
 
+ResponseBuildingStrategy *ResponseBuildState::getStrategy()
+{
+	return this->_strategy;
+}
+
 void ResponseBuildState::process()
 {
 	if (!this->_strategy)

@@ -78,6 +78,12 @@ void CgiStrategy::buildResponse()
 	}
 }
 
+void CgiStrategy::setTimeout()
+{
+	errno = 0;
+	if (kill(this->_pid, SIGKILL) == -1)
+		std::cerr << __FILE__ << ":" << __LINE__ << ": Error: kill(): " << strerror(errno) << std::endl;
+}
 
 /************************************************************
  *						ENV STUFF							*

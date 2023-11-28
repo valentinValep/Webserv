@@ -6,6 +6,7 @@
 
 class CgiChildHandler: public EventHandler {
 private:
+	static const time_t	_timeout = 5;
 	// Attributes
 	int				_parent_fd;
 	EventHandler	&_handler;
@@ -19,4 +20,6 @@ public:
 
 	// Methods
 	void	handle();
+	void	timeout();
+	time_t	getTimeout() const;
 };

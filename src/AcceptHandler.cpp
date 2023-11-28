@@ -1,6 +1,8 @@
 #include "AcceptHandler.hpp"
 #include "ServerManager.hpp"
 
+time_t	AcceptHandler::_timeout = std::numeric_limits<time_t>::max();
+
 AcceptHandler::AcceptHandler(int socket_fd, int port): EventHandler(socket_fd), _port(port)
 {}
 
@@ -19,4 +21,14 @@ void AcceptHandler::handle()
 
 	std::cout << "✅ New connection on client_fd: " << client_fd << std::endl;
 	ServerManager::getInstance()->addClient(client_fd, _port);
+}
+
+void AcceptHandler::timeout()
+{
+	this->updateLastActivity();
+}
+
+time_t AcceptHandler::getTimeout() const
+{
+	return AcceptHandler::_timeout;
 }
