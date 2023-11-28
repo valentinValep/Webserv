@@ -9,6 +9,7 @@
 #include "DeleteStrategy.hpp"
 #include "GetStrategyCreator.hpp"
 #include "ResponseSendState.hpp"
+#include "utils.hpp"
 
 ResponseBuildState::ResponseBuildState(): ProcessState(), _strategy(NULL)
 {}
@@ -57,7 +58,7 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 		return;
 	}
 
-	route = request.getServer()->getRoute(request.getPath());
+	route = request.getServer()->getRoute(trimTrailingSlashes(request.getPath()));
 
 	if ((route && route->hasMethods() && !(route->getMethods() & request.getMethod()))
 		|| !(request.getServer()->getMethods() & request.getMethod()))

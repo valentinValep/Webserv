@@ -1,13 +1,5 @@
 #include "GetAutoIndexStrategy.hpp"
-
-static std::string		trimTrailingSlashes(std::string path)
-{
-	size_t	index;
-
-	if (!(path.empty()) && ((index = path.find_last_not_of("/")) != path.npos))
-			path.erase(index + 1);
-	return (path);
-}
+#include "utils.hpp"
 
 GetAutoIndexStrategy::GetAutoIndexStrategy(ResponseBuildState *state): ResponseBuildingStrategy(state)
 {

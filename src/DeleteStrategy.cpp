@@ -1,19 +1,11 @@
 #include "DeleteStrategy.hpp"
+#include "utils.hpp"
 
 DeleteStrategy::DeleteStrategy(ResponseBuildState *state): ResponseBuildingStrategy(state)
 {}
 
 DeleteStrategy::~DeleteStrategy()
 {}
-
-static std::string		trimTrailingSlashes(std::string path)
-{
-	size_t	index;
-
-	if (!(path.empty()) && ((index = path.find_last_not_of("/")) != path.npos))
-			path.erase(index + 1);
-	return (path);
-}
 
 void DeleteStrategy::buildResponse()
 {
