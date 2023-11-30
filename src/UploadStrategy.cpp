@@ -18,8 +18,8 @@ void UploadStrategy::buildResponse()
 	setUpload();
 	createWriteFile();
 	std::string mimeTypehere = "text/html";
-	std::string content = readFileContent(this->getState()->getRoot() + "/204.html", mimeTypehere);	
-	builder.setCode(200);
+	std::string content = readFileContent("./ressources/201.html", mimeTypehere);	
+	builder.setCode(201);
 	builder.addHeader("Content-Type", "text/html");
 	builder.setBody(content);
 	this->setResponse(builder.build());
