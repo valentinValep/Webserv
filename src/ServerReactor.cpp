@@ -54,8 +54,9 @@ void ServerReactor::setupNetwork(std::vector<Server> &servers)
 			throw std::runtime_error("fcntl() failed: " + std::string(strerror(errno)));
 
 		// Set SO_REUSEADDR
+		int const optval = 1;
 		errno = 0;
-		if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, (int []){1}, sizeof(int)) == -1)
+		if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int)) == -1)
 			throw std::runtime_error("setsockopt() failed: " + std::string(strerror(errno)));
 
 		// Bind
