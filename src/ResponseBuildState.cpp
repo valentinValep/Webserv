@@ -168,6 +168,7 @@ ResponseBuildingStrategy *ResponseBuildState::getStrategy()
 
 void ResponseBuildState::process()
 {
+	std::cout << "\t🔨 Build Event" << std::endl;
 	if (!this->_strategy)
 	{
 		std::cout << __FILE__ << ":" << __LINE__ << ": " << "CRITIC: Strategy is NULL" << std::endl;
@@ -178,14 +179,14 @@ void ResponseBuildState::process()
 
 	this->_strategy->buildResponse();
 
-	if (this->_strategy->isFinished())
-	{
-		this->getHandler()->setState(new ResponseSendState(this->getHandler(), this->getSocketFd(), this->_strategy->getResponse()));
-		return;
-	}
 	if (this->_strategy->getError())
 	{
 		this->_strategy = new ErrorStrategy(this, this->_strategy->getError(), this->_error_pages);
+		return;
+	}
+	if (this->_strategy->isFinished())
+	{
+		this->getHandler()->setState(new ResponseSendState(this->getHandler(), this->getSocketFd(), this->_strategy->getResponse()));
 		return;
 	}
 }

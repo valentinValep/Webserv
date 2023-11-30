@@ -18,6 +18,7 @@ ReadState::~ReadState()
 
 void ReadState::process()
 {
+	std::cout << "\t📩 Read Event" << std::endl;
 	ssize_t bytesRead = 0;
 	bytesRead = readClientRequest();
 	if (bytesRead <= 0)

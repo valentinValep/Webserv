@@ -81,13 +81,12 @@ ErrorStrategy::~ErrorStrategy()
 
 std::string		ErrorStrategy::_getGenericErrorPage()
 {
-	static std::map<int, std::string> 	error_codes;
-	static std::stringstream			generic_page;
-
+	std::stringstream	generic_page;
 
 	generic_page << "<!DOCTYPE html>\n<html lang=\"en\">\n\t<head>\n\t\t<meta charset=\"UTF-8\">\n\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t\t<title>"
-		<< this->_error_code << " " << error_codes[this->_error_code] << "</title>\n\t</head>\n\t<body>\n\t\t<center><h1>"
-		<< this->_error_code << " " << error_codes[this->_error_code] << "</h1></center>\n\t\t<hr><center>webserv</center>\n\t</body>\n</html>";
+		<< this->_error_code << " " << ErrorStrategy::_error_descriptions.at(this->_error_code) << "</title>\n\t</head>\n\t<body>\n\t\t<center><h1>"
+		<< this->_error_code << " " << ErrorStrategy::_error_descriptions.at(this->_error_code) << "</h1></center>\n\t\t<hr><center>webserv</center>\n\t</body>\n</html>";
+	std::cout << generic_page.str() << std::endl;
 	return (generic_page.str());
 }
 

@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/27 21:42:57 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/30 14:28:18 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -348,18 +348,18 @@ void ClientRequest::setError(std::string file, int line, int errorCode)
 
 void ClientRequest::print() const {
 	if (this->isError()) {
-		std::cout << "ClientRequest: Error: " << this->_errorCode << std::endl;
+		std::cout << "\tClientRequest: Error: " << this->_errorCode << std::endl;
 		return;
 	}
 	if (this->_state != REQUEST_FULLY_RECEIVED) {
-		std::cout << "ClientRequest: not fully received" << std::endl;
+		std::cout << "\tClientRequest: not fully received" << std::endl;
 		return;
 	}
 	if (this->_state == RECEIVING_BODY) {
-		std::cout << "ClientRequest: receiving body" << std::endl;
+		std::cout << "\tClientRequest: receiving body" << std::endl;
 		return;
 	}
-	std::cout << "ClientRequest: " << std::endl;
+	std::cout << "\tClientRequest: " << std::endl;
 	std::cout << "Method: " << (this->_method == GET ? "GET" : this->_method == POST ? "POST"
 																					 : "DELETE")
 			  << std::endl;
@@ -377,14 +377,14 @@ void ClientRequest::print() const {
 
 void ClientRequest::short_print() const {
 	if (this->isError()) {
-		std::cout << "ClientRequest: Error: " << this->_errorCode << std::endl;
+		std::cout << "\tClientRequest: Error: " << this->_errorCode << std::endl;
 		return;
 	}
 	if (this->_state != REQUEST_FULLY_RECEIVED) {
-		std::cout << "ClientRequest: request parse is not finished" << std::endl;
+		std::cout << "\tClientRequest: request parse is not finished" << std::endl;
 		return;
 	}
-	std::cout << "ClientRequest: " << (this->_method == GET ? "GET " : this->_method == POST ? "POST "
+	std::cout << "\tClientRequest: " << (this->_method == GET ? "GET " : this->_method == POST ? "POST "
 																					 : "DELETE ");
 	std::cout << this->_path << std::endl;
 }

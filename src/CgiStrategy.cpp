@@ -7,13 +7,18 @@
  *					CONSTRUCTOR/DESTRUCTOR					*
  ************************************************************/
 
-CgiStrategy::CgiStrategy(ResponseBuildState *state, std::string cgiInterpreter, int method): ResponseBuildingStrategy(state), _interpreter(cgiInterpreter), _method(method)
+CgiStrategy::CgiStrategy(ResponseBuildState *state, std::string cgiInterpreter, int method): ResponseBuildingStrategy(state), _timeout(false), _interpreter(cgiInterpreter), _method(method), _pid(-1)
 {
-
+	this->_fd[READ] = -1;
+	this->_fd[WRITE] = -1;
 }
 
 CgiStrategy::~CgiStrategy()
 {
+	if (this->_fd[READ] != -1)
+		close(this->_fd[READ]);
+	if (this->_fd[WRITE] != -1)
+		close(this->_fd[WRITE]);
 }
 
 void CgiStrategy::buildResponse()
@@ -28,6 +33,7 @@ void CgiStrategy::buildResponse()
 		executeScript();
 		freeEnvp();
 		close(this->_fd[WRITE]);
+		this->_fd[WRITE] = -1;
 		ServerManager::getInstance()->addCgiChild(this->_fd[READ], this->getState()->getSocketFd(), *this->getState()->getHandler());
 		ServerManager::getInstance()->ignoreClient(this->getState()->getSocketFd());
 	}
@@ -39,6 +45,22 @@ void CgiStrategy::buildResponse()
 		int		read_ret;
 
 		is_finished = waitpid(this->_pid, &status, WNOHANG);
+		if (is_finished && !WIFEXITED(status))
+		{
+			if (this->_timeout)
+			{
+				std::cout << "\tCGI TIMEOUT" << std::endl;
+				this->setError(504);
+			}
+			else
+			{
+				std::cout << "\tCGI ERROR" << std::endl;
+				this->setError(502);
+			}
+			ServerManager::getInstance()->deleteClient(this->_fd[READ]);
+			this->_fd[READ] = -1;
+			return ;
+		}
 		while ((read_ret = read(this->_fd[READ], buf, 4)) > 0)
 			this->_response += std::string(buf, read_ret);
 		if (!is_finished)
@@ -46,35 +68,32 @@ void CgiStrategy::buildResponse()
 			ServerManager::getInstance()->ignoreClient(this->getState()->getSocketFd());
 			return;
 		}
-		std::cout << "CGI STATUS: " << WEXITSTATUS(status) << std::endl;
+		ServerManager::getInstance()->deleteClient(this->_fd[READ]);
+		this->_fd[READ] = -1;
 		if (WEXITSTATUS(status) == ERROR)
 		{
-			std::cout << "CGI ERROR: " << WEXITSTATUS(status) << std::endl;
+			std::cout << "\tCGI ERROR: " << WEXITSTATUS(status) << std::endl;
 			return;
 		}
-		close(this->_fd[READ]);
-		// @TODO delete cgi child handler
 
+		ResponseBuilder	builder;
+
+		if (access(_interpreter.c_str(), F_OK) || access(_interpreter.c_str(), X_OK))
 		{
-			ResponseBuilder	builder;
-
-			if (access(_interpreter.c_str(), F_OK) || access(_interpreter.c_str(), X_OK))
-			{
-				this->setError(502);
-				return;
-			}
-
-			if (this->_response.empty())
-			{
-				this->setError(500); // @TODO check NGINX behavior
-				return;
-			}
-			builder.setCode(200);
-			builder.addHeader("Content-Type", "text/html");
-			builder.setBody(this->_response);
-			this->setResponse(builder.build());
-			this->setAsFinished();
+			this->setError(502);
+			return;
 		}
+
+		if (this->_response.empty())
+		{
+			this->setError(500); // @TODO check NGINX behavior
+			return;
+		}
+		builder.setCode(200);
+		builder.addHeader("Content-Type", "text/html");
+		builder.setBody(this->_response);
+		this->setResponse(builder.build());
+		this->setAsFinished();
 	}
 }
 
@@ -83,6 +102,7 @@ void CgiStrategy::setTimeout()
 	errno = 0;
 	if (kill(this->_pid, SIGKILL) == -1)
 		std::cerr << __FILE__ << ":" << __LINE__ << ": Error: kill(): " << strerror(errno) << std::endl;
+	this->_timeout = true;
 }
 
 /************************************************************
@@ -180,6 +200,7 @@ void	CgiStrategy::cgiChildProcess()
 	const char *args[] = {_interpreter.c_str(), this->_scriptName.c_str(), NULL};
 
 	close(this->_fd[READ]);
+	this->_fd[READ] = -1;
 	dup2(this->_fd[WRITE], STDOUT_FILENO);
 
 	if (_cgiBody.length() > 0)
@@ -189,6 +210,7 @@ void	CgiStrategy::cgiChildProcess()
 		dup2(_fd2[READ], STDIN_FILENO);
 		write(_fd2[WRITE], _cgiBody.c_str(), _cgiBody.length());
 		close(_fd2[WRITE]);
+		this->_fd[WRITE] = -1;
 	}
 	if (execve(args[0], const_cast<char *const *>(args), this->_envp))
 		exit(ERROR);

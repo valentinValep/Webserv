@@ -11,7 +11,7 @@ class ProcessState;
 
 class ProcessHandler: public EventHandler {
 private:
-	static const time_t	_timeout = 10;
+	static const time_t	_timeout = 30;
 	// Attributes
 	int				_port;
 	ProcessState*	state;

@@ -9,18 +9,21 @@ CgiChildHandler::CgiChildHandler(int child_fd, int parent_fd, EventHandler &hand
 {}
 
 CgiChildHandler::~CgiChildHandler()
-{}
+{
+	close(this->getSocketFd());
+}
 
 void CgiChildHandler::handle()
 {
-	std::cout << "CgiChildHandler::handle()" << std::endl;
+	EventHandler::handle();
+	std::cout << "\t👶 CGI child event" << std::endl;
 	ServerManager::getInstance()->talkToClient(_parent_fd, _handler);
 }
 
 void	CgiChildHandler::timeout()
 {
 	try {
-		std::cout << "CgiChildHandler::timeout()" << std::endl;
+		std::cout << "\t⏰ A CGI child timed out" << std::endl;
 		ProcessHandler &parent_handler = dynamic_cast<ProcessHandler &>(this->_handler);
 		ResponseBuildState &state = dynamic_cast<ResponseBuildState &>(*parent_handler.getState());
 		CgiStrategy &strategy = dynamic_cast<CgiStrategy &>(*state.getStrategy());

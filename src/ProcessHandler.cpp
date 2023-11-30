@@ -28,11 +28,14 @@ ProcessState *ProcessHandler::getState() const
 
 void ProcessHandler::handle()
 {
+	EventHandler::handle();
+	std::cout << "\t🕹️  Client event" << std::endl;
 	this->state->process();
 }
 
 void ProcessHandler::timeout()
 {
+	std::cout << "\t⏰ A client timed out" << std::endl;
 	ServerManager::getInstance()->deleteClient(this->getSocketFd());
 }
 

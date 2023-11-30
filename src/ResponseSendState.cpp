@@ -10,6 +10,7 @@ ResponseSendState::~ResponseSendState()
 
 void ResponseSendState::process()
 {
+	std::cout << "\t📤 Send Event" << std::endl;
 	int		ret;
 
 	// @TODO send in chunks

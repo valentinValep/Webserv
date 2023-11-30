@@ -14,6 +14,7 @@ class CgiStrategy: public ResponseBuildingStrategy {
 private:
 		// Attributes
 		// ResponseBuildState					*state;
+		bool								_timeout;
 		std::string							_path;
 		std::string							_queryString;
 		std::string							_response;
