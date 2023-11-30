@@ -50,6 +50,7 @@ int UploadStrategy::createWriteFile() {
 		std::ofstream newFile(path.c_str());
 		if (!newFile) {
 			status = EXIT_FAILURE;
+			this->setError(404);
 			std::cout << "ERROR: Failed to create file: " << filename << std::endl;
 			continue;
 		}
