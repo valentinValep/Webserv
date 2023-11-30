@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/27 21:42:57 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/30 16:00:05 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,29 +242,6 @@ void	ClientRequest::parse()
 	this->_raw_data.str("");
 }
 
-void ClientRequest::detectCgi()
-{
-	std::string pathWithoutQuery = this->_path;
-	size_t queryPos = this->_path.find("?");
-	if (queryPos != std::string::npos) {
-		pathWithoutQuery = this->_path.substr(0, queryPos);
-	}
-
-	//	@TODO: Send 404 if dont have script + Searching for extension is not enough. Accessing localhost:8080/hdxfcghbj.py returns respons 200. (Same problem with ,py)
-	// @TODO: remove all extensions but .py
-	const char* cgiExtensions[] = {".cgi", ".pl", ".py"};	//	Use a Vector<std::string>	//	char * transformed to std::String below
-	const size_t numExtensions = sizeof(cgiExtensions) / sizeof(cgiExtensions[0]);	//	useless
-
-	for (size_t i = 0; i < numExtensions; ++i) {
-		std::string ext = cgiExtensions[i];
-		if (pathWithoutQuery.size() >= ext.size() && pathWithoutQuery.compare(pathWithoutQuery.size() - ext.size(), ext.size(), ext) == 0) {
-			this->_cgiRequest = true;
-			return;
-		}
-	}
-	this->_cgiRequest = false;
-}
-
 void ClientRequest::findFinalServer()
 {
 	std::string			port_str;
@@ -348,18 +325,18 @@ void ClientRequest::setError(std::string file, int line, int errorCode)
 
 void ClientRequest::print() const {
 	if (this->isError()) {
-		std::cout << "ClientRequest: Error: " << this->_errorCode << std::endl;
+		std::cout << "\tClientRequest: Error: " << this->_errorCode << std::endl;
 		return;
 	}
 	if (this->_state != REQUEST_FULLY_RECEIVED) {
-		std::cout << "ClientRequest: not fully received" << std::endl;
+		std::cout << "\tClientRequest: not fully received" << std::endl;
 		return;
 	}
 	if (this->_state == RECEIVING_BODY) {
-		std::cout << "ClientRequest: receiving body" << std::endl;
+		std::cout << "\tClientRequest: receiving body" << std::endl;
 		return;
 	}
-	std::cout << "ClientRequest: " << std::endl;
+	std::cout << "\tClientRequest: " << std::endl;
 	std::cout << "Method: " << (this->_method == GET ? "GET" : this->_method == POST ? "POST"
 																					 : "DELETE")
 			  << std::endl;
@@ -377,14 +354,14 @@ void ClientRequest::print() const {
 
 void ClientRequest::short_print() const {
 	if (this->isError()) {
-		std::cout << "ClientRequest: Error: " << this->_errorCode << std::endl;
+		std::cout << "\tClientRequest: Error: " << this->_errorCode << std::endl;
 		return;
 	}
 	if (this->_state != REQUEST_FULLY_RECEIVED) {
-		std::cout << "ClientRequest: request parse is not finished" << std::endl;
+		std::cout << "\tClientRequest: request parse is not finished" << std::endl;
 		return;
 	}
-	std::cout << "ClientRequest: " << (this->_method == GET ? "GET " : this->_method == POST ? "POST "
+	std::cout << "\tClientRequest: " << (this->_method == GET ? "GET " : this->_method == POST ? "POST "
 																					 : "DELETE ");
 	std::cout << this->_path << std::endl;
 }

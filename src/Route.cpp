@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/26 20:28:34 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/30 15:45:50 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,20 +225,6 @@ void Route::parseCgiExtension(fp::Module &mod)
 	}
 	this->_cgi_set = true;
 	this->cgi_extension = var->getAttributes()[0];
-	for (int i = 0; i < ACCEPTED_CGI_TABSIZE; i++)
-	{
-		if (this->cgi_extension == ACCEPTED_CGI[i])
-			return ;
-	}
-	std::cerr << "\033[91mError\033[0m: extension value need to be one of the following: ";
-	for (int i = 0; i < ACCEPTED_CGI_TABSIZE; i++)
-	{
-		std::cerr << ACCEPTED_CGI[i];
-		if (i < ACCEPTED_CGI_TABSIZE - 1)
-			std::cerr << ", ";
-	}
-	std::cerr << std::endl;
-	throw ServerManager::ParsingException();
 }
 
 void Route::parseCgiPath(fp::Module &mod)

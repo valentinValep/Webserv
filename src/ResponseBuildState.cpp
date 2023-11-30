@@ -133,6 +133,7 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 
 ResponseBuildState::~ResponseBuildState()
 {
+	std::cout << "\t🗑️ Delete ResponseBuildState" << std::endl;
 	if (this->_strategy)
 		delete this->_strategy;
 }
@@ -161,8 +162,14 @@ std::map<int, std::string> ResponseBuildState::getErrorPages()
 	return this->_error_pages;
 }
 
+ResponseBuildingStrategy *ResponseBuildState::getStrategy()
+{
+	return this->_strategy;
+}
+
 void ResponseBuildState::process()
 {
+	std::cout << "\t🔨 Build Event" << std::endl;
 	if (!this->_strategy)
 	{
 		std::cout << __FILE__ << ":" << __LINE__ << ": " << "CRITIC: Strategy is NULL" << std::endl;
@@ -173,14 +180,14 @@ void ResponseBuildState::process()
 
 	this->_strategy->buildResponse();
 
-	if (this->_strategy->isFinished())
-	{
-		this->getHandler()->setState(new ResponseSendState(this->getHandler(), this->getSocketFd(), this->_strategy->getResponse()));
-		return;
-	}
 	if (this->_strategy->getError())
 	{
 		this->_strategy = new ErrorStrategy(this, this->_strategy->getError(), this->_error_pages);
 		return;
+	}
+	if (this->_strategy->isFinished())
+	{
+		this->getHandler()->setState(new ResponseSendState(this->getHandler(), this->getSocketFd(), this->_strategy->getResponse()));
+		delete this;
 	}
 }

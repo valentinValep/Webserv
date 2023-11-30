@@ -28,6 +28,7 @@ public:
 	std::string							getPort();
 	std::map<std::string, std::string>	getHeaders();
 	std::map<int, std::string>			getErrorPages();
+	ResponseBuildingStrategy*			getStrategy();
 
 	// Methods
 	void	process();

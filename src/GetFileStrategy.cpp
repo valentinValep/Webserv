@@ -16,9 +16,11 @@ void GetFileStrategy::buildResponse()
 	if (this->_file_reader.isTotallyRead())
 	{
 		ResponseBuilder	builder;
+		std::string	mime_type = this->_file_reader.getMimeType();
 
 		builder.setCode(200);
-		builder.addHeader("Content-Type", this->_file_reader.getMimeType());
+		if (!mime_type.empty())
+			builder.addHeader("Content-Type", mime_type);
 		builder.setBody(this->_file_reader.extractFileContent());
 		this->setResponse(builder.build());
 		this->setAsFinished();

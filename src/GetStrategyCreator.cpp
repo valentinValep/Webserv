@@ -14,7 +14,7 @@ ResponseBuildingStrategy *GetStrategyCreator::createGetStrategy(ResponseBuildSta
 	std::string const	locationPath = state->getRoot() + trimTrailingSlashes(state->getPath());
 	struct stat			fileStat;
 
-	std::cout << "locationPath: " << locationPath << std::endl;
+	std::cout << "\tlocationPath: " << locationPath << std::endl;
 	if(access(locationPath.c_str(), F_OK))
 		return (new ErrorStrategy(state, 404, state->getErrorPages()));
 	if(access(locationPath.c_str(), R_OK))

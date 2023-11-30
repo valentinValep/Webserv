@@ -81,7 +81,7 @@ void ServerReactor::setupNetwork(std::vector<Server> &servers)
 		if (epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, server_fd, &event) == -1)
 			throw std::runtime_error("epoll_ctl() failed: " + std::string(strerror(errno)));
 
-		this->event_handlers.push_back(handler);
+		this->event_handlers.insert(handler);
 		listening_ports.insert(it->getPort());
 	}
 }
@@ -90,7 +90,7 @@ ServerReactor::~ServerReactor()
 {
 	close(this->epoll_fd);
 
-	for (std::vector<EventHandler*>::iterator it = this->event_handlers.begin(); it != this->event_handlers.end(); it++)
+	for (std::set<EventHandler*>::iterator it = this->event_handlers.begin(); it != this->event_handlers.end(); it++)
 		delete *it;
 }
 
@@ -98,34 +98,35 @@ ServerReactor::~ServerReactor()
  *							Methods							*
  ************************************************************/
 
-int	ServerReactor::addClient(int socket_fd, int port)
+int	ServerReactor::addClient(int client_socket, int port)
 {
+	std::cout << "✅ New connection on client_socket: " << client_socket << std::endl;
 	if (this->event_handlers.size() >= MAX_CONNECTION)
 	{
 		std::cout << "🛑 Max connections reached" << std::endl;
 		return -1;
 	}
 
-	// Add to epoll
-	EventHandler	*handler = new ProcessHandler(socket_fd, port);
+	EventHandler	*handler = new ProcessHandler(client_socket, port);
 	struct epoll_event	event;
 	event.events = EPOLLIN;
 	event.data.ptr = handler;
 	errno = 0;
-	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, socket_fd, &event) == -1)
+	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, client_socket, &event) == -1)
 	{
 		perror(SCSTR(__FILE__ << ":" << __LINE__ << " epoll_ctl() failed"));
-		close(socket_fd);
+		close(client_socket);
 		delete handler;
 		return -1;
 	}
 
-	this->event_handlers.push_back(handler);
+	this->event_handlers.insert(handler);
 	return 0;
 }
 
 int ServerReactor::addCgiChild(int child_fd, int parent_fd, EventHandler &parent_handler)
 {
+	std::cout << "\t🧸 New cgi child on socket: " << child_fd << std::endl;
 	EventHandler	*handler = new CgiChildHandler(child_fd, parent_fd, parent_handler);
 	struct epoll_event	event;
 	event.events = EPOLLIN;
@@ -139,18 +140,18 @@ int ServerReactor::addCgiChild(int child_fd, int parent_fd, EventHandler &parent
 		return -1;
 	}
 
-	this->event_handlers.push_back(handler);
+	this->event_handlers.insert(handler);
 	return 0;
 }
 
 void ServerReactor::deleteClient(int socket_fd)
 {
 	errno = 0;
-	std::cout << "Deleting client " << socket_fd << std::endl;
+	std::cout << "\tDeleting socket " << socket_fd << std::endl;
 	if (epoll_ctl(this->epoll_fd, EPOLL_CTL_DEL, socket_fd, NULL) == -1)
 		return perror(SCSTR(__FILE__ << ":" << __LINE__ << " epoll_ctl() failed"));
 
-	for (std::vector<EventHandler*>::iterator it = this->event_handlers.begin(); it != this->event_handlers.end(); it++)
+	for (std::set<EventHandler*>::iterator it = this->event_handlers.begin(); it != this->event_handlers.end(); it++)
 	{
 		if ((*it)->getSocketFd() == socket_fd)
 		{
@@ -201,18 +202,26 @@ void ServerReactor::run()
 	while (true)
 	{
 		errno = 0;
-		event_count = epoll_wait(this->epoll_fd, events, MAX_CONNECTION, 10000);
+		event_count = epoll_wait(this->epoll_fd, events, MAX_CONNECTION, 5000);
 		if (event_count == -1)
 			std::cerr << __FILE__ << ":" << __LINE__ << " epoll_wait(): " << strerror(errno) << std::endl;
-		if (event_count == 0)
-			std::cout << "🕑 Timeout" << std::endl;
 
 		for (int i = 0; i < event_count; i++)
 		{
+			if (this->event_handlers.find(static_cast<EventHandler*>(events[i].data.ptr)) == this->event_handlers.end())
+				continue ;
 			EventHandler	*handler = static_cast<EventHandler*>(events[i].data.ptr);
 
 			std::cout << "🔥 Event on socket_fd: " << handler->getSocketFd() << std::endl;
 			handler->handle();
+		}
+		if (event_count == 0)
+		{
+			std::set<EventHandler *>	handlers = this->event_handlers;
+
+			std::cout << "🕑 Timeout time" << std::endl;
+			for (std::set<EventHandler*>::iterator it = handlers.begin(); it != handlers.end(); it++)
+				(*it)->checkTimeout();
 		}
 	}
 }

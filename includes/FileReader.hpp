@@ -6,7 +6,7 @@
 #include <fstream>
 #include <map>
 
-#define FILE_READER_BUFFER_SIZE 4096
+#define FILE_READER_BUFFER_SIZE 4096 * 42
 
 class FileReader {
 private:

@@ -24,9 +24,9 @@
 class UploadStrategy: public ResponseBuildingStrategy {
 private:
 	// Attributes
-	std::string	_upload_dir;
-	std::string _body;
-	std::string _boundary;
+	std::string							_upload_dir;
+	std::string							_body;
+	std::string							_boundary;
 	std::map<std::string, std::string>	_upload_file_data;
 	std::map<std::string, std::string>	_headers;
 public:

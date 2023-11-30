@@ -4,13 +4,13 @@
 
 #include "EventHandler.hpp"
 #include "Server.hpp"
-#include <vector>
+#include <set>
 
 class ServerReactor {
 private:
 	// Attributes
 	int								epoll_fd;
-	std::vector<EventHandler *>		event_handlers; // @TODO help for timeout
+	std::set<EventHandler *>		event_handlers;
 
 	void setupNetwork(std::vector<Server> &servers);
 public:

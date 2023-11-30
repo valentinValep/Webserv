@@ -14,6 +14,7 @@ class CgiStrategy: public ResponseBuildingStrategy {
 private:
 		// Attributes
 		// ResponseBuildState					*state;
+		bool								_timeout;
 		std::string							_path;
 		std::string							_queryString;
 		std::string							_response;
@@ -42,4 +43,5 @@ public:
 	int				getContentLength(std::map<std::string, std::string> headers);
 	std::string		getContentType(std::map<std::string, std::string> headers);
 	void			buildResponse();
+	void			setTimeout();
 };
