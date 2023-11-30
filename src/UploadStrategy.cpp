@@ -17,6 +17,8 @@ void UploadStrategy::buildResponse()
 	this->getState()->getHeaders() = _headers;
 	setUpload();
 	createWriteFile();
+	if (this->getError() > 0)
+		return;
 	std::string mimeTypehere = "text/html";
 	std::string content = readFileContent("./ressources/201.html", mimeTypehere);	
 	builder.setCode(201);
@@ -101,7 +103,7 @@ void UploadStrategy::setUpload() {
 				if (fileContent.size() > MAX_FILE_SIZE)
 				{
 					std::cout << "ERROR: File too large will not be uploaded: " << filename << std::endl;
-					// _sendErrorPage(413); @@TODO ?
+					this->setError(413);
 					continue;
 				}
 				_upload_file_data[filename] = fileContent;
@@ -198,6 +200,7 @@ std::string		UploadStrategy::readFileContent(std::string const &filePath, std::s
 
 	if (!file.is_open()) {
 		perror(("In opening file " + filePath).c_str()); // @TODO return 404/5xx ?
+		this->setError(404);
 		//exit(EXIT_FAILURE); // @TODO return 404/5xx ?
 	}
 	mimeType = "";
