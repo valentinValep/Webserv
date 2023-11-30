@@ -133,6 +133,7 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 
 ResponseBuildState::~ResponseBuildState()
 {
+	std::cout << "\t🗑️ Delete ResponseBuildState" << std::endl;
 	if (this->_strategy)
 		delete this->_strategy;
 }
@@ -187,6 +188,6 @@ void ResponseBuildState::process()
 	if (this->_strategy->isFinished())
 	{
 		this->getHandler()->setState(new ResponseSendState(this->getHandler(), this->getSocketFd(), this->_strategy->getResponse()));
-		return;
+		delete this;
 	}
 }

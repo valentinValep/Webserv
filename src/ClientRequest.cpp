@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/30 14:28:18 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/30 16:00:05 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,29 +240,6 @@ void	ClientRequest::parse()
 	}
 	this->_raw_data.clear();
 	this->_raw_data.str("");
-}
-
-void ClientRequest::detectCgi()
-{
-	std::string pathWithoutQuery = this->_path;
-	size_t queryPos = this->_path.find("?");
-	if (queryPos != std::string::npos) {
-		pathWithoutQuery = this->_path.substr(0, queryPos);
-	}
-
-	//	@TODO: Send 404 if dont have script + Searching for extension is not enough. Accessing localhost:8080/hdxfcghbj.py returns respons 200. (Same problem with ,py)
-	// @TODO: remove all extensions but .py
-	const char* cgiExtensions[] = {".cgi", ".pl", ".py"};	//	Use a Vector<std::string>	//	char * transformed to std::String below
-	const size_t numExtensions = sizeof(cgiExtensions) / sizeof(cgiExtensions[0]);	//	useless
-
-	for (size_t i = 0; i < numExtensions; ++i) {
-		std::string ext = cgiExtensions[i];
-		if (pathWithoutQuery.size() >= ext.size() && pathWithoutQuery.compare(pathWithoutQuery.size() - ext.size(), ext.size(), ext) == 0) {
-			this->_cgiRequest = true;
-			return;
-		}
-	}
-	this->_cgiRequest = false;
 }
 
 void ClientRequest::findFinalServer()

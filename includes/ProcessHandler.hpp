@@ -5,8 +5,6 @@
 #include "EventHandler.hpp"
 #include "ProcessState.hpp"
 
-// @TODO add timeout for inactive sockets
-
 class ProcessState;
 
 class ProcessHandler: public EventHandler {

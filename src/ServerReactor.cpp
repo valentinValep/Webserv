@@ -219,7 +219,7 @@ void ServerReactor::run()
 		{
 			std::set<EventHandler *>	handlers = this->event_handlers;
 
-			std::cout << "🕑 Timeout time" << std::endl; // @TODO pick right moment
+			std::cout << "🕑 Timeout time" << std::endl;
 			for (std::set<EventHandler*>::iterator it = handlers.begin(); it != handlers.end(); it++)
 				(*it)->checkTimeout();
 		}

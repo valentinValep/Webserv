@@ -14,7 +14,9 @@ ReadState::ReadState(ProcessHandler *handler, int socket_fd): ProcessState(handl
 {}
 
 ReadState::~ReadState()
-{}
+{
+	std::cout << "\t🗑️  ReadState destroyed" << std::endl;
+}
 
 void ReadState::process()
 {
@@ -31,7 +33,8 @@ void ReadState::process()
 		|| this->request.getErrorCode() == 400)
 	{
 		ServerManager::getInstance()->talkToClient(this->getSocketFd(), *this->getHandler());
-		this->getHandler()->setState(new ResponseBuildState(this->getHandler(), this->getSocketFd(), this->request)); // @TODO check destroy
+		this->getHandler()->setState(new ResponseBuildState(this->getHandler(), this->getSocketFd(), this->request));
+		delete this;
 	}
 }
 

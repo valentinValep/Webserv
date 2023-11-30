@@ -8,7 +8,9 @@ ProcessState::ProcessState(ProcessHandler *handler, int socket_fd): handler(hand
 {}
 
 ProcessState::~ProcessState()
-{}
+{
+	std::cout << "\t🗑️  Deleting ProcessState" << std::endl;
+}
 
 ProcessHandler *ProcessState::getHandler() const
 {

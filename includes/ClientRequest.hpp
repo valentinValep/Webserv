@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/27 19:31:35 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/30 16:00:17 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,6 @@ private:
 	Body								_body;
 	RequestStream						_raw_data;
 
-	void	detectCgi();
 	void	findFinalServer();
 	void	parseMethodLine(const std::string line);
 	void	parseHeaderLine(const std::string line);

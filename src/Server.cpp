@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/28 14:39:47 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/11/30 16:27:00 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,6 @@ Server::Server(fp::Module &mod): autoindex(true), port(80), methods(0), max_body
 	this->parseMaxBodySize(mod);
 	this->parseRoot(mod);
 	this->parseIndex(mod);
-	// @TODO if methods is not defined, check if routes are defined and if all these routes have methods
 	this->parseMethods(mod);
 	this->parseServerNames(mod);
 	this->parseErrorPages(mod);
@@ -241,7 +240,7 @@ void Server::parseErrorPages(fp::Module &mod)
 				std::cerr << "\033[91mError\033[0m: error_page code value need to be an integer" << std::endl;
 				throw ServerManager::ParsingException();
 			}
-			if (code < 100 || code > 599) // @TODO check exacts known codes ?
+			if (code < 400 || code > 527)
 			{
 				std::cerr << "\033[91mError\033[0m: error_page code value need to be between 100 and 599" << std::endl;
 				throw ServerManager::ParsingException();

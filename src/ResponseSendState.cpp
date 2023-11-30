@@ -6,7 +6,9 @@ ResponseSendState::ResponseSendState(ProcessHandler *process_handler, int socket
 
 
 ResponseSendState::~ResponseSendState()
-{}
+{
+	std::cout << "\t🗑️ Delete ResponseSendState" << std::endl;
+}
 
 void ResponseSendState::process()
 {
@@ -25,6 +27,7 @@ void ResponseSendState::process()
 		std::cerr << __FILE__ << ":" << __LINE__ << ": Error: send() doesn't send all the buffer (ret = " << ret << ", buffer.length() = " << _buffer.length() << ")" << std::endl;
 		return ;
 	}
-	this->getHandler()->setState(new ReadState(this->getHandler(), this->getSocketFd()));
 	ServerManager::getInstance()->listenClient(this->getSocketFd(), *this->getHandler());
+	this->getHandler()->setState(new ReadState(this->getHandler(), this->getSocketFd()));
+	delete this;
 }

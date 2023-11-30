@@ -130,9 +130,11 @@ std::string FileReader::getFileContent()
 
 std::string FileReader::getMimeType()
 {
-	// @TODO test without '.' in file path
-	// @TODO test a bad file extension in file path
-	return this->_mime_types.find(this->_file_path.substr(this->_file_path.find_last_of('.')))->second;
+	std::size_t pos = this->_file_path.find_last_of('.');
+
+	if (pos == std::string::npos)
+		return "";
+	return this->_mime_types.find(this->_file_path.substr(pos))->second;
 }
 
 void FileReader::readFile()

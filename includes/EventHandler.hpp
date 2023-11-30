@@ -8,7 +8,7 @@ class EventHandler {
 private:
 	// Attributes
 	int		_socket_fd;
-	time_t	lastActivity; // @TODO add _
+	time_t	_lastActivity;
 public:
 	// Constructors & Destructor
 	EventHandler(int socket_fd);

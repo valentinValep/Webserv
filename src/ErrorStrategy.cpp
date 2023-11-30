@@ -51,7 +51,7 @@ const std::map<int, std::string> ErrorStrategy::_createErrorDescriptionsMap()
 	error_descriptions[499] = "Client Closed Request";
 	error_descriptions[500] = "Internal Server Error";
 	error_descriptions[501] = "Not Implemented";
-	error_descriptions[502] = "Bad Gateway ou Proxy Error";
+	error_descriptions[502] = "Bad Gateway or Proxy Error";
 	error_descriptions[503] = "Service Unavailable";
 	error_descriptions[504] = "Gateway Time-out";
 	error_descriptions[505] = "HTTP Version not supported";
@@ -97,7 +97,7 @@ std::string ErrorStrategy::_getErrorPage()
 	if (!this->_file_reader.isOpen())
 		return this->_getGenericErrorPage();
 	this->_file_reader.readChunk();
-	if (this->_file_reader.isTotallyRead()) // @TODO flush file reader istead of waiting for EOF
+	if (this->_file_reader.isTotallyRead())
 		return this->_file_reader.extractFileContent();
 	return "";
 }

@@ -84,11 +84,6 @@ void CgiStrategy::buildResponse()
 			return;
 		}
 
-		if (this->_response.empty())
-		{
-			this->setError(500); // @TODO check NGINX behavior
-			return;
-		}
 		builder.setCode(200);
 		builder.addHeader("Content-Type", "text/html");
 		builder.setBody(this->_response);
