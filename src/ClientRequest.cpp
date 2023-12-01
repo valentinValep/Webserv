@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/30 16:00:05 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/12/01 14:31:32 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,8 @@ void ClientRequest::parseMethodLine(const std::string line)
 		this->_method = DELETE;
 	else
 		return this->setError(__FILE__, __LINE__, 405);
+	if (this->_path.find("/..") != std::string::npos || this->_path.find("../") != std::string::npos)
+		return this->setError(__FILE__, __LINE__, 403);
 	if (this->_protocol != HTTP_PROTOCOL && this->_protocol != "undefined")
 		return this->setError(__FILE__, __LINE__, 505);
 	this->_state = RECEIVING_HEADER;
