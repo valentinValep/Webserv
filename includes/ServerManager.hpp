@@ -6,7 +6,7 @@
 /*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/12/01 16:54:30 by chmadran         ###   ########.fr       */
+/*   Updated: 2023/12/01 17:00:27 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,12 +79,6 @@ public:
 	class ParsingException : public std::exception {
 		virtual const char* what() const throw() {
 			return "Parsing error";
-		}
-	};
-
-	class SignalException : public std::exception {
-		virtual const char* what() const throw() {
-			return "Signal received";
 		}
 	};
 

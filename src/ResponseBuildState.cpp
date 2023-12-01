@@ -182,7 +182,9 @@ void ResponseBuildState::process()
 
 	if (this->_strategy->getError())
 	{
-		this->_strategy = new ErrorStrategy(this, this->_strategy->getError(), this->_error_pages);
+		int error_code = this->_strategy->getError();
+		delete this->_strategy;
+		this->_strategy = new ErrorStrategy(this, error_code, this->_error_pages);
 		return;
 	}
 	if (this->_strategy->isFinished())
