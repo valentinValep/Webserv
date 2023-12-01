@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/30 16:27:00 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/12/01 19:20:10 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ Server::Server(fp::Module &mod): autoindex(true), port(80), methods(0), max_body
 	this->parseRoutes(mod);
 }
 
-Server::~Server(){};
+Server::~Server(){}
 
 /************************************************************
  *							PARSERS							*
