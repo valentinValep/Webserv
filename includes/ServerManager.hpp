@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 14:40:38 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/28 15:20:31 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/12/01 16:54:30 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,32 +52,14 @@
 #define SSTR( x ) static_cast< std::ostringstream & >( \
 		( std::ostringstream() << std::dec << x ) ).str()
 
-//struct SocketInfo {
-//	ClientRequest request;
-//	time_t lastActivity;
-//};
-
 class ServerManager {
 private:
 	static ServerManager		*_instance;
 	std::vector<Server> 		servers;
 	ServerReactor				reactor;
-	//std::vector<struct pollfd>	fds;
-	//std::map<int, int>			listeningSockets; // socket_fd -> port
-	//std::map<int, SocketInfo>	clientSockets; // socket_fd -> clientRequest
-	//char 						buffer[BUFFER_SIZE];
 
 	ServerManager(std::string config_file);
 
-	//int		setupNetwork();
-	//void	handleEvent(pollfd &pollfd);
-	//void	updateSocketActivity(int socket);
-	//void	printActiveSockets();
-	//void	cleanFdsAndActiveSockets();
-	//void	detectTimeOut();
-	//void	handleClientRequest(ClientRequest &request);
-	//int		readClientRequest(ClientRequest &request);
-	//void	setInvalidFd(ClientRequest &request);
 public:
 	static ServerManager *getInstance(std::string config_file = DEFAULT_CONFIG_FILE);
 	~ServerManager();
@@ -85,6 +67,7 @@ public:
 	int		addClient(int socket_fd, int port);
 	int		addCgiChild(int child_fd, int parent_fd, EventHandler &parent_handler);
 	void	deleteClient(int socket_fd);
+	static void	deleteInstance();
 	void	listenClient(int socket_fd, EventHandler &handler);
 	void	talkToClient(int socket_fd, EventHandler &handler);
 	void	ignoreClient(int socket_fd);
@@ -96,6 +79,12 @@ public:
 	class ParsingException : public std::exception {
 		virtual const char* what() const throw() {
 			return "Parsing error";
+		}
+	};
+
+	class SignalException : public std::exception {
+		virtual const char* what() const throw() {
+			return "Signal received";
 		}
 	};
 

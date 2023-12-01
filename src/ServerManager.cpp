@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chmadran <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/02 14:47:38 by vlepille          #+#    #+#             */
-/*   Updated: 2023/11/30 16:28:28 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/12/01 16:55:56 by chmadran         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,15 +37,17 @@ ServerManager *ServerManager::getInstance(std::string config_file)
 	return (ServerManager::_instance);
 }
 
-ServerManager::~ServerManager() // @TODO destroy at the end
-{
-	//delete ServerManager::_instance;
-	//ServerManager::_instance = NULL;
-}
+ServerManager::~ServerManager()
+{}
 
 /************************************************************
  *						INIT								*
  ************************************************************/
+
+void	ServerManager::deleteInstance(){
+	delete _instance;
+	_instance = NULL;
+};
 
 void	configParser(fp::FileParser &parser)
 {
@@ -88,6 +90,7 @@ try {
 	{
 		servers.push_back(Server(*dynamic_cast<fp::Module *>(*it)));
 	}
+	delete mod;
 	return (servers);
 }
 catch (const fp::FileParser::FileParserException &e)

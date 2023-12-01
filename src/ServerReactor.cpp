@@ -13,6 +13,8 @@
 #include <cerrno>
 #include <cstring>
 
+extern sig_atomic_t signal_received;
+
 /************************************************************
  *					Constructors & Destructor				*
  ************************************************************/
@@ -79,7 +81,10 @@ void ServerReactor::setupNetwork(std::vector<Server> &servers)
 		event.data.ptr = handler;
 		errno = 0;
 		if (epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, server_fd, &event) == -1)
+		{
+			delete handler;
 			throw std::runtime_error("epoll_ctl() failed: " + std::string(strerror(errno)));
+		}
 
 		this->event_handlers.insert(handler);
 		listening_ports.insert(it->getPort());
@@ -199,12 +204,16 @@ void ServerReactor::run()
 	struct epoll_event	events[MAX_CONNECTION];
 	int					event_count;
 
-	while (true)
+	while (signal_received == false)
 	{
 		errno = 0;
 		event_count = epoll_wait(this->epoll_fd, events, MAX_CONNECTION, 5000);
 		if (event_count == -1)
+		{
+			if (errno == EINTR)
+				return;
 			std::cerr << __FILE__ << ":" << __LINE__ << " epoll_wait(): " << strerror(errno) << std::endl;
+		}
 
 		for (int i = 0; i < event_count; i++)
 		{
