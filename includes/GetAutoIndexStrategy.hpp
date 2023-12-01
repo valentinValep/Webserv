@@ -3,7 +3,7 @@
 #pragma once
 
 #include "ResponseBuildingStrategy.hpp"
-#include "ResponseBuilder.hpp"
+#include "Response.hpp"
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>

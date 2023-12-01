@@ -1,5 +1,5 @@
 #include "CgiStrategy.hpp"
-#include "ResponseBuilder.hpp"
+#include "Response.hpp"
 #include "ServerManager.hpp"
 #include <iostream>
 
@@ -76,7 +76,7 @@ void CgiStrategy::buildResponse()
 			return;
 		}
 
-		ResponseBuilder	builder;
+		Response	response;
 
 		if (access(_interpreter.c_str(), F_OK) || access(_interpreter.c_str(), X_OK))
 		{
@@ -84,10 +84,10 @@ void CgiStrategy::buildResponse()
 			return;
 		}
 
-		builder.setCode(200);
-		builder.addHeader("Content-Type", "text/html");
-		builder.setBody(this->_response);
-		this->setResponse(builder.build());
+		response.setCode(200);
+		response.addHeader("Content-Type", "text/html");
+		response.setBody(this->_response);
+		this->setResponse(response);
 		this->setAsFinished();
 	}
 }

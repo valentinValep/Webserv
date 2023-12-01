@@ -35,7 +35,7 @@ OBJ := $(BUILD_DIR)Server.o \
 	$(BUILD_DIR)GetStrategyCreator.o \
 	$(BUILD_DIR)GetAutoIndexStrategy.o \
 	$(BUILD_DIR)GetFileStrategy.o \
-	$(BUILD_DIR)ResponseBuilder.o \
+	$(BUILD_DIR)Response.o \
 	$(BUILD_DIR)FileReader.o \
 	$(BUILD_DIR)CgiChildHandler.o \
 

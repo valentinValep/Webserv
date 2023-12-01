@@ -1,5 +1,5 @@
 #include "GetFileStrategy.hpp"
-#include "ResponseBuilder.hpp"
+#include "Response.hpp"
 
 GetFileStrategy::GetFileStrategy(ResponseBuildState *state, std::string file_path): ResponseBuildingStrategy(state), _file_path(file_path)
 {}
@@ -15,14 +15,14 @@ void GetFileStrategy::buildResponse()
 	this->_file_reader.readChunk();
 	if (this->_file_reader.isTotallyRead())
 	{
-		ResponseBuilder	builder;
+		Response	response;
 		std::string	mime_type = this->_file_reader.getMimeType();
 
-		builder.setCode(200);
+		response.setCode(200);
 		if (!mime_type.empty())
-			builder.addHeader("Content-Type", mime_type);
-		builder.setBody(this->_file_reader.extractFileContent());
-		this->setResponse(builder.build());
+			response.addHeader("Content-Type", mime_type);
+		response.setBody(this->_file_reader.extractFileContent());
+		this->setResponse(response);
 		this->setAsFinished();
 	}
 }
