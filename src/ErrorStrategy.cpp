@@ -117,7 +117,7 @@ void ErrorStrategy::buildResponse()
 
 		response.setCode(this->_error_code);
 		response.addHeader("Content-Type", "text/html");
-		if (this->_error_code == 400)
+		if (response.getCode() == 400)
 			response.addHeader("Connection", "close");
 		response.setBody(content);
 		this->setResponse(response);
