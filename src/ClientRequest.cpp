@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/12/01 14:31:32 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/12/01 15:04:06 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,6 @@ void ClientRequest::parseMethodLine(const std::string line)
 		return this->setError(__FILE__, __LINE__, 403);
 	if (this->_protocol != HTTP_PROTOCOL && this->_protocol != "undefined")
 		return this->setError(__FILE__, __LINE__, 505);
-	this->_state = RECEIVING_HEADER;
 }
 
 bool	ClientRequest::needBody()
@@ -208,16 +207,19 @@ void	ClientRequest::parse()
 			return;
 		}
 
-		if ((line.empty() || line.size() == 0) && this->_state != RECEIVING_BODY)
+		if ((line.empty() || line.size() == 0) && (this->_state != RECEIVING_BODY))
 			return this->setError(__FILE__, __LINE__, 400);
 		//std::cout << "state: " << this->_state << " line: '" << line << "'" << std::endl;
 		if (this->_state != RECEIVING_BODY && line[line.size() - 1] != '\r')
 			return this->setError(__FILE__, __LINE__, 400);
 		if (this->_state == RECEIVING_METHOD)
 		{
+			if (line.size() == 1 && line[0] == '\r')
+				continue;
 			this->parseMethodLine(line);
 			if (this->getErrorCode() == 400)
 				return;
+			this->_state = RECEIVING_HEADER;
 		}
 		else if (this->_state == RECEIVING_HEADER)
 		{
