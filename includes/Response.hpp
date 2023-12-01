@@ -1,11 +1,11 @@
-// FileName: ResponseBuilder.hpp
+// FileName: Response.hpp
 
 #pragma once
 
 #include <string>
 #include <map>
 
-class ResponseBuilder {
+class Response {
 private:
 	// Attributes
 	int									_code;
@@ -13,8 +13,10 @@ private:
 	std::string							_body;
 public:
 	// Constructors & Destructor
-	ResponseBuilder();
-	~ResponseBuilder();
+	Response();
+	~Response();
+	// Getters
+	int			getCode() const;
 	// Methods
 	void		setCode(int code);
 	void		addHeader(std::string key, std::string value);

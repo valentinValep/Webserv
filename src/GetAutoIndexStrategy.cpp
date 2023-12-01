@@ -56,12 +56,12 @@ void GetAutoIndexStrategy::buildResponse()
 	{
 		this->_autoIndex << "</body>\n</html>\n";
 
-		ResponseBuilder		builder;
+		Response		response;
 
-		builder.setCode(200);
-		builder.addHeader("Content-Type", "text/html");
-		builder.setBody(this->_autoIndex.str());
-		this->setResponse(builder.build());
+		response.setCode(200);
+		response.addHeader("Content-Type", "text/html");
+		response.setBody(this->_autoIndex.str());
+		this->setResponse(response);
 		this->setAsFinished();
 	}
 }

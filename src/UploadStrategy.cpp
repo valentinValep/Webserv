@@ -1,5 +1,5 @@
 #include "UploadStrategy.hpp"
-#include "ResponseBuilder.hpp"
+#include "Response.hpp"
 #include "FileReader.hpp"
 #include <iostream>
 
@@ -14,7 +14,6 @@ void UploadStrategy::buildResponse()
 {
 	(void)_upload_dir;
 
-	ResponseBuilder	builder;
 	this->getState()->getHeaders() = _headers;
 	setUpload();
 	createWriteFile();
@@ -28,10 +27,12 @@ void UploadStrategy::buildResponse()
 		return;
 	}
 	filereader.readFile();
-	builder.setCode(201);
-	builder.addHeader("Content-Type", "text/html");
-	builder.setBody(filereader.extractFileContent());
-	this->setResponse(builder.build());
+
+	Response	response;
+	response.setCode(201);
+	response.addHeader("Content-Type", "text/html");
+	response.setBody(filereader.extractFileContent());
+	this->setResponse(response);
 	std::cout << "UploadStrategy::buildResponse()" << std::endl;
 	this->setAsFinished();
 }

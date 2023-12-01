@@ -3,7 +3,7 @@
 #pragma once
 
 #include "ResponseBuildingStrategy.hpp"
-#include "ResponseBuilder.hpp"
+#include "Response.hpp"
 #include <iostream>
 #include <cstdio>
 #include <unistd.h>

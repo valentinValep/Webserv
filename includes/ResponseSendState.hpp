@@ -7,10 +7,10 @@
 class ResponseSendState: public ProcessState {
 private:
 	// Attributes
-	std::string	_buffer;
+	Response	_response;
 public:
 	// Constructors & Destructor
-	ResponseSendState(ProcessHandler* process_handler, int socket_fd, std::string buffer);
+	ResponseSendState(ProcessHandler* process_handler, int socket_fd, Response const &response);
 	virtual ~ResponseSendState();
 	// Methods
 	void	process();

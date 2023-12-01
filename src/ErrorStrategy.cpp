@@ -1,5 +1,5 @@
 #include "ErrorStrategy.hpp"
-#include "ResponseBuilder.hpp"
+#include "Response.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -113,14 +113,14 @@ void ErrorStrategy::buildResponse()
 
 	if (!content.empty())
 	{
-		ResponseBuilder	builder;
+		Response	response;
 
-		builder.setCode(this->_error_code);
-		builder.addHeader("Content-Type", "text/html");
+		response.setCode(this->_error_code);
+		response.addHeader("Content-Type", "text/html");
 		if (this->_error_code == 400)
-			builder.addHeader("Connection", "close");
-		builder.setBody(content);
-		this->setResponse(builder.build());
+			response.addHeader("Connection", "close");
+		response.setBody(content);
+		this->setResponse(response);
 		this->setAsFinished();
 	}
 }

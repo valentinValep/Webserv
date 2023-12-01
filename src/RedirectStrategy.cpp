@@ -8,11 +8,11 @@ RedirectStrategy::~RedirectStrategy()
 
 void RedirectStrategy::buildResponse()
 {
-	ResponseBuilder		builder;
+	Response		response;
 
-	builder.setCode(this->_code);
-	builder.addHeader("Location", this->_destination);
+	response.setCode(this->_code);
+	response.addHeader("Location", this->_destination);
 	std::cout << "RedirectStrategy::buildResponse()" << std::endl;
-	this->setResponse(builder.build());
+	this->setResponse(response);
 	this->setAsFinished();
 }

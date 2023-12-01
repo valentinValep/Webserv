@@ -1,29 +1,34 @@
-#include "ResponseBuilder.hpp"
+#include "Response.hpp"
 #include "ServerManager.hpp"
 #include <sstream>
 
-ResponseBuilder::ResponseBuilder(): _code(200)
+Response::Response(): _code(200)
 {}
 
-ResponseBuilder::~ResponseBuilder()
+Response::~Response()
 {}
 
-void ResponseBuilder::setCode(int code)
+int	Response::getCode() const
+{
+	return this->_code;
+}
+
+void Response::setCode(int code)
 {
 	this->_code = code;
 }
 
-void ResponseBuilder::addHeader(std::string key, std::string value)
+void Response::addHeader(std::string key, std::string value)
 {
 	this->_headers[key] = value;
 }
 
-void ResponseBuilder::setBody(std::string body)
+void Response::setBody(std::string body)
 {
 	this->_body = body;
 }
 
-std::string	ResponseBuilder::build()
+std::string	Response::build()
 {
 	std::stringstream	response;
 

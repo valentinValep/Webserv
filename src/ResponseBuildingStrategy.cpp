@@ -5,17 +5,17 @@ ResponseBuildingStrategy::ResponseBuildingStrategy(ResponseBuildState* state): _
 
 ResponseBuildingStrategy::~ResponseBuildingStrategy() {}
 
-int ResponseBuildingStrategy::getError()
+int ResponseBuildingStrategy::getError() const
 {
 	return this->_error_code;
 }
 
-std::string ResponseBuildingStrategy::getResponse()
+Response const	&ResponseBuildingStrategy::getResponse() const
 {
 	return this->_response;
 }
 
-ResponseBuildState *ResponseBuildingStrategy::getState()
+ResponseBuildState *ResponseBuildingStrategy::getState() const
 {
 	return this->_state;
 }
@@ -30,7 +30,7 @@ void ResponseBuildingStrategy::setAsFinished()
 	this->_finished = true;
 }
 
-void ResponseBuildingStrategy::setResponse(std::string response)
+void ResponseBuildingStrategy::setResponse(Response const &response)
 {
 	this->_response = response;
 }
