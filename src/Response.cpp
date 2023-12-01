@@ -8,6 +8,11 @@ Response::Response(): _code(200)
 Response::~Response()
 {}
 
+int	Response::getCode() const
+{
+	return this->_code;
+}
+
 void Response::setCode(int code)
 {
 	this->_code = code;

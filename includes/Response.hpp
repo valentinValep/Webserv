@@ -15,6 +15,8 @@ public:
 	// Constructors & Destructor
 	Response();
 	~Response();
+	// Getters
+	int			getCode() const;
 	// Methods
 	void		setCode(int code);
 	void		addHeader(std::string key, std::string value);
