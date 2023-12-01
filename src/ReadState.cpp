@@ -29,8 +29,7 @@ void ReadState::process()
 	this->request << std::string(this->buffer, bytesRead);
 	this->request.parse();
 	this->request.short_print();
-	if (this->request.isFullyReceived()
-		|| this->request.getErrorCode() == 400)
+	if (this->request.isFullyReceived() || this->request.getErrorCode() == 400)
 	{
 		ServerManager::getInstance()->talkToClient(this->getSocketFd(), *this->getHandler());
 		this->getHandler()->setState(new ResponseBuildState(this->getHandler(), this->getSocketFd(), this->request));
