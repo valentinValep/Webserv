@@ -117,6 +117,8 @@ void ErrorStrategy::buildResponse()
 
 		builder.setCode(this->_error_code);
 		builder.addHeader("Content-Type", "text/html");
+		if (this->_error_code == 400)
+			builder.addHeader("Connection", "close");
 		builder.setBody(content);
 		this->setResponse(builder.build());
 		this->setAsFinished();

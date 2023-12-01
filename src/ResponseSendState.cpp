@@ -28,6 +28,11 @@ void ResponseSendState::process()
 		return ;
 	}
 	ServerManager::getInstance()->listenClient(this->getSocketFd(), *this->getHandler());
+	//	If error code == 400, close connection, remove client and return
+	//if (_error_code == 400)
+	//{
+	//	ServerManager::getInstance()->deleteClient(this->getSocketFd());
+	//}
 	this->getHandler()->setState(new ReadState(this->getHandler(), this->getSocketFd()));
 	delete this;
 }
