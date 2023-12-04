@@ -28,12 +28,12 @@ private:
 		int									_pid;
 public:
 	// Constructors & Destructor
-	CgiStrategy(ResponseBuildState* state, std::string cgiInterpreter, int method);
+	CgiStrategy(ResponseBuildState* state, std::string cgiInterpreter, int method, std::string body);
 	virtual ~CgiStrategy();
 
 	// Methods
 	void			setEnv();
-	void			executeScript();
+	int				executeScript();
 	void			cgiChildProcess();
 	void			cgiParentProcess();
 	void			convertEnv();

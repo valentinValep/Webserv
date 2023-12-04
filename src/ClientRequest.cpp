@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:13:25 by chmadran          #+#    #+#             */
-/*   Updated: 2023/12/01 15:04:06 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/12/04 13:33:52 by vlepille         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,6 @@ bool	ClientRequest::needBody()
 			this->setError(__FILE__, __LINE__, 400);
 			return (false);
 		}
-
 		this->_body.setContentLength(contentLength);
 		return (true);
 	}
@@ -198,7 +197,7 @@ void	ClientRequest::parse()
 		//}
 		//std::cout << std::endl;
 		//// #### END DEBUG
-		if (this->_raw_data.eof())
+		if (this->_raw_data.eof() && this->_state != RECEIVING_BODY)
 		{
 			//std::cout << "eof" << std::endl;
 			this->_raw_data.clear();
@@ -238,7 +237,9 @@ void	ClientRequest::parse()
 			}
 		}
 		else if (this->_state == RECEIVING_BODY)
+		{
 			this->parseBodyLine(line);
+		}
 		else
 			return;
 	}

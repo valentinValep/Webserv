@@ -25,3 +25,31 @@ input {
 	margin: 10px;
 	padding: 5px;
 }
+
+table {
+	border-collapse: collapse;
+}
+
+td {
+	padding: 5px;
+}
+
+td {
+	border: 10px dotted purple;
+}
+
+input[type="submit"] {
+	background-color: purple;
+	color: white;
+	border: none;
+	padding: 10px;
+	margin: 10px;
+}
+
+input[type="file"] {
+	background-color: purple;
+	color: white;
+	border: none;
+	padding: 10px;
+	margin: 10px;
+}

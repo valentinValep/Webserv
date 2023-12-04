@@ -63,6 +63,7 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 	this->_headers = request.getHeaders();
 	this->_path = request.getPath();
 	this->_root = request.getServer()->getRoot();
+	this->_port = request.getServer()->getPort();
 
 	if (request.getErrorCode())
 	{
@@ -89,7 +90,7 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 		}
 		if (route->hasCgi() && hasExtension(request.getPath(), route->getCgiExtension()))
 		{
-			this->_strategy = new CgiStrategy(this, route->getCgiPath(), request.getMethod());
+			this->_strategy = new CgiStrategy(this, route->getCgiPath(), request.getMethod(), request.getBodyBody());
 			return;
 		}
 		if (requestIsUpload(request))
@@ -118,12 +119,14 @@ ResponseBuildState::ResponseBuildState(ProcessHandler *handler, int socket_fd, c
 
 		if (route && route->hasIndex())
 			index = route->getIndex();
-		else if (route && request.getPath() == "/")
+		else if (route && trimTrailingSlashes(this->_path) == "/")
 			index = request.getServer()->getIndex();
 		else if (route)
 			index = "";
-		else
+		else if (trimTrailingSlashes(this->_path) == "/")
 			index = request.getServer()->getIndex();
+		else
+			index = "";
 
 		this->_strategy = GetStrategyCreator::createGetStrategy(this, autoindex, index);
 		return;
@@ -148,7 +151,7 @@ std::string ResponseBuildState::getPath()
 	return this->_path;
 }
 
-std::string ResponseBuildState::getPort(){
+int	ResponseBuildState::getPort(){
 	return this->_port;
 }
 

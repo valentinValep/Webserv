@@ -7,7 +7,7 @@
  *					CONSTRUCTOR/DESTRUCTOR					*
  ************************************************************/
 
-CgiStrategy::CgiStrategy(ResponseBuildState *state, std::string cgiInterpreter, int method): ResponseBuildingStrategy(state), _timeout(false), _interpreter(cgiInterpreter), _method(method), _pid(-1)
+CgiStrategy::CgiStrategy(ResponseBuildState *state, std::string cgiInterpreter, int method, std::string body): ResponseBuildingStrategy(state), _timeout(false), _cgiBody(body), _interpreter(cgiInterpreter), _method(method), _pid(-1)
 {
 	this->_fd[READ] = -1;
 	this->_fd[WRITE] = -1;
@@ -25,15 +25,22 @@ void CgiStrategy::buildResponse()
 {
 	if (this->_scriptName.empty())
 	{
+		int		error;
+
 		setPath();
 		if (this->getError())
 			return;
 		setEnv();
 		convertEnv();
-		executeScript();
+		error = executeScript();
 		freeEnvp();
 		close(this->_fd[WRITE]);
 		this->_fd[WRITE] = -1;
+		if (error)
+		{
+			this->setError(500);
+			return;
+		}
 		ServerManager::getInstance()->addCgiChild(this->_fd[READ], this->getState()->getSocketFd(), *this->getState()->getHandler());
 		ServerManager::getInstance()->ignoreClient(this->getState()->getSocketFd());
 	}
@@ -111,18 +118,18 @@ void		CgiStrategy::setEnv()
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_env["REDIRECT_STATUS"] = "200";
 	_env["SERVER_NAME"] = "webserv";
-	_env["METHOD"] = _method;
-	_env["PORT"] = this->getState()->getPort();
+	_env["METHOD"] = _method == GET ? "GET" : "POST";
+	_env["PORT"] = SSTR(this->getState()->getPort());
 	_env["SCRIPT_FILENAME"] = this->getState()->getRoot() + _path;
-	_env["CONTENT_LENGTH"] = getContentLength(this->getState()->getHeaders());
+	_env["CONTENT_LENGTH"] = SSTR(this->_cgiBody.length());
 	_env["CONTENT_TYPE"] = getContentType(this->getState()->getHeaders());
 	if (_method == GET) {
-		_cgiBody = "";
+		//this->_cgiBody = "";
 		_env["QUERY_STRING"] = _queryString;
 	}
 	else if (_method == POST) {
-		_env["QUERY_STRING"] = "";
-		_cgiBody = _queryString;
+		_env["QUERY_STRING"] = this->_cgiBody;
+		//this->_cgiBody = _queryString;
 	}
 };
 
@@ -141,14 +148,15 @@ void	CgiStrategy::convertEnv()
 	_envp = envp;
 };
 
-void	CgiStrategy::freeEnvp(){
+void	CgiStrategy::freeEnvp()
+{
 	for (int i = 0;  _envp[i]; i++)
 		delete[] _envp[i];
 	delete[] _envp;
 };
 
-void	CgiStrategy::setPath(){
-
+void	CgiStrategy::setPath()
+{
 	std::string	path = "";
 	path = this->getState()->getPath();
 	_queryString = "";
@@ -181,34 +189,42 @@ void	CgiStrategy::setPath(){
  *						EXECUTION							*
  ************************************************************/
 
-void		CgiStrategy::executeScript()
+int	CgiStrategy::executeScript()
 {
 	pipe(this->_fd);
 	this->_pid = fork();
+	if (this->_pid == -1)
+		return (1);
 
 	if (this->_pid == 0)
 		cgiChildProcess();
+	return (0);
 };
 
 void	CgiStrategy::cgiChildProcess()
 {
 	const char *args[] = {_interpreter.c_str(), this->_scriptName.c_str(), NULL};
 
+	for (int i = 0; this->_envp[i]; i++)
+		std::cout << this->_envp[i] << std::endl;
 	close(this->_fd[READ]);
 	this->_fd[READ] = -1;
 	dup2(this->_fd[WRITE], STDOUT_FILENO);
 
-	if (_cgiBody.length() > 0)
+	if (this->_cgiBody.length() > 0)
 	{
 		int _fd2[2];
 		pipe(_fd2);
 		dup2(_fd2[READ], STDIN_FILENO);
-		write(_fd2[WRITE], _cgiBody.c_str(), _cgiBody.length());
+		write(_fd2[WRITE], this->_cgiBody.c_str(), this->_cgiBody.length());
 		close(_fd2[WRITE]);
 		this->_fd[WRITE] = -1;
 	}
 	if (execve(args[0], const_cast<char *const *>(args), this->_envp))
+	{
+		ServerManager::deleteInstance();
 		exit(ERROR);
+	}
 };
 
 /************************************************************

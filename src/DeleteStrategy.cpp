@@ -44,7 +44,6 @@ void DeleteStrategy::buildResponse()
 	Response		response;
 
 	response.setCode(204);
-	response.addHeader("Set-Cookie", locationPath);
 	this->setResponse(response);
 	this->setAsFinished();
 }
