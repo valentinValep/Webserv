@@ -6,7 +6,7 @@
 /*   By: vlepille <vlepille@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 14:41:58 by chmadran          #+#    #+#             */
-/*   Updated: 2023/11/30 16:00:17 by vlepille         ###   ########.fr       */
+/*   Updated: 2023/12/01 19:05:31 by fguarrac         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ enum State {
 	RECEIVING_HEADER,
 	RECEIVING_BODY,
 	REQUEST_FULLY_RECEIVED,
-	CLOSED,
+	CLOSED
 };
 
 class ClientRequest {

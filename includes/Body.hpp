@@ -9,14 +9,14 @@ private:
 	CHUNKED,
 	CONTENT_LENGTH,
 	FINISHED,
-	NO_BODY,
+	NO_BODY
 	};
 
 	enum ChunkExpected {
 		CHUNK_SIZE,
 		CHUNK_DATA,
 		CHUNK_END_R,
-		CHUNK_END_N,
+		CHUNK_END_N
 	};
 
 	bool			_lastChunk;
