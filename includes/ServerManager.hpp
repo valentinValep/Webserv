@@ -14,7 +14,6 @@
 # define SERVER_MANAGER_HPP
 
 # include "ClientRequest.hpp"
-# include "ServerResponse.hpp"
 # include "Server.hpp"
 # include "ServerReactor.hpp"
 # include "EventHandler.hpp"
