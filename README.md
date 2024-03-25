@@ -15,7 +15,6 @@ The Hypertext Transfer Protocol (HTTP) is an application layer protocol used for
 CGI is a standard protocol for interfacing external applications with web servers. It allows a web server to execute programs on the server and return dynamic content to the client. In the context of WebServ, CGI is used to generate dynamic content in response to HTTP requests.
 
 ## UML Class Diagram
-
 Below is a visual representation of the structure and relationships between the classes in our WebServ project, presented through an UML Class Diagram:
 
 ![Class Diagram](https://github.com/valentinValep/Webserv/blob/main/img/uml_webserv.png)
@@ -41,6 +40,5 @@ make
 ./Webserv <optionnal: path to configuration file>
 ```
 
-
-
-
+## Credits
+This project was developed by [djfg0](https://github.com/djfg0), [chmadran](https://github.com/chmadran) and [valentinValep](https://github.com/valentinValep).
